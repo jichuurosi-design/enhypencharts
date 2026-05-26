@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ENHYPEN | SIN:VANITH Streaming Hub</title>
+<title>ENHYPEN | SIN:VANISH Streaming Hub</title>
 <meta name="description" content="Fan streaming tracker para ENHYPEN - Era SIN:VANITH. Apoya a ENHYPEN con cada stream.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,200;14..32,400;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -797,7 +797,7 @@ footer a:hover { color: var(--primary-red); }
 
 <!-- ADMIN PANEL (mismo contenido pero estilo adaptado) -->
 <div class="admin-panel" id="admin-panel">
-  <div class="admin-nav"><h1 style="font-family:Orbitron">⚙️ ADMIN · SIN:VANITH</h1><div><button class="btn btn-ghost btn-sm" onclick="closeAdmin()">✕ Cerrar</button></div></div>
+  <div class="admin-nav"><h1 style="font-family:Orbitron">⚙️ ADMIN · SIN:VANISH</h1><div><button class="btn btn-ghost btn-sm" onclick="closeAdmin()">✕ Cerrar</button></div></div>
   <div class="admin-tabs"><button class="admin-tab active" onclick="switchAdminTab('tab-goals',this)">📊 Metas</button><button class="admin-tab" onclick="switchAdminTab('tab-playlists',this)">🎵 Playlists</button><button class="admin-tab" onclick="switchAdminTab('tab-config',this)">⚙️ Configuración</button><button class="admin-tab" onclick="switchAdminTab('tab-images',this)">🖼️ Imágenes</button></div>
   <div class="admin-content">
     <div class="admin-section active" id="tab-goals"><div class="admin-card"><h3>Metas actuales</h3><div id="admin-goals-list"></div></div><div class="admin-card"><h3>+ Agregar meta</h3><div class="form-group"><label>Canción</label><input class="input" id="ng-song" placeholder="ej: Bite Me"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Streams actuales</label><input class="input" id="ng-current" placeholder="ej: 125M"></div><div class="form-group"><label>Meta</label><input class="input" id="ng-target" placeholder="ej: 200M"></div></div><div class="form-group"><label>Plataforma</label><select class="input" id="ng-platform"><option>Spotify</option><option>YouTube</option><option>Apple Music</option></select></div><button class="btn" onclick="addGoal()">Agregar</button></div></div>
@@ -807,7 +807,7 @@ footer a:hover { color: var(--primary-red); }
   </div>
 </div>
 <div class="toast" id="toast"></div>
-<footer><p>Hecho con 🖤 por ENGENEs · <strong>SIN:VANITH Era</strong></p><div class="footer-links" style="display:flex; gap:1rem; justify-content:center; margin-top:0.5rem"><a href="#" id="foot-twitter" target="_blank">Twitter</a><a href="#" id="foot-instagram" target="_blank">Instagram</a><a href="#" id="foot-spotify" target="_blank">Spotify</a><a href="#" id="foot-weverse" target="_blank">Weverse</a></div><p style="margin-top:0.8rem">Fan project — no oficial. Apoya a ENHYPEN.</p></footer>
+<footer><p>Hecho con 🖤 por ENGENEs · <strong>SIN:VANISH Era</strong></p><div class="footer-links" style="display:flex; gap:1rem; justify-content:center; margin-top:0.5rem"><a href="#" id="foot-twitter" target="_blank">Twitter</a><a href="#" id="foot-instagram" target="_blank">Instagram</a><a href="#" id="foot-spotify" target="_blank">Spotify</a><a href="#" id="foot-weverse" target="_blank">Weverse</a></div><p style="margin-top:0.8rem">Fan project — no oficial. Apoya a ENHYPEN.</p></footer>
 
 <script>
 const { createClient } = supabase;
