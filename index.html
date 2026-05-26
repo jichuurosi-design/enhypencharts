@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EVANcharts — Fan Streaming Hub</title>
-<meta name="description" content="Fan streaming tracker y hub de apoyo para EVAN (Lee Heeseung).">
+<title>ENHYPENcharts — Fan Streaming Hub</title>
+<meta name="description" content="Fan streaming tracker y hub de apoyo para ENHYPEN.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -207,7 +207,7 @@ footer a:hover{color:var(--accent);}
 
 <!-- NAV -->
 <nav>
-  <a class="nav-logo" href="#" onclick="showPage('home')">EVAN<span>charts</span></a>
+  <a class="nav-logo" href="#" onclick="showPage('home')">ENHYPEN<span>charts</span></a>
   <div class="nav-links" id="nav-links">
     <a class="active" onclick="showPage('home',this)">Home</a>
     <a onclick="showPage('spotify',this)">Spotify</a>
@@ -228,19 +228,19 @@ footer a:hover{color:var(--accent);}
 <!-- ═══ HOME ═══ -->
 <div id="home" class="page active">
   <div class="hero">
-    <div class="hero-tag" id="hero-tag">에반 · Lee Heeseung · Solo Era 2026</div>
-    <h1>EVAN<span>charts</span></h1>
+    <div class="hero-tag" id="hero-tag">ENHYPEN · 7 miembros · Belift Lab</div>
+    <h1>ENHYPEN<span>charts</span></h1>
     <p class="hero-sub">Fan streaming tracker &amp; support hub</p>
     <div class="hero-debut">
       <div class="dot-live"></div>
-      <span id="debut-text">Solo debut — Junio 2026 · Belift Lab</span>
+      <span id="debut-text">Debut: Noviembre 2020 · DIMENSION ERA</span>
     </div>
     <div class="stream-cta">
       <a href="#" id="btn-spotify" target="_blank" class="stream-btn">🎵 Spotify</a>
       <a href="#" id="btn-youtube" target="_blank" class="stream-btn">▶ YouTube</a>
       <a href="#" id="btn-applemusic" target="_blank" class="stream-btn">🎶 Apple Music</a>
-      <a href="https://weverse.io/evan/highlight" id="btn-weverse" target="_blank" class="stream-btn">💬 Weverse</a>
-      <a href="https://www.instagram.com/h_evva_n" id="btn-instagram" target="_blank" class="stream-btn">📸 Instagram</a>
+      <a href="https://weverse.io/enhypen/feed" id="btn-weverse" target="_blank" class="stream-btn">💬 Weverse</a>
+      <a href="https://www.instagram.com/enhypen" id="btn-instagram" target="_blank" class="stream-btn">📸 Instagram</a>
     </div>
   </div>
   <section>
@@ -252,7 +252,7 @@ footer a:hover{color:var(--accent);}
       <div class="loading"><div class="spin"></div><br>Cargando...</div>
     </div>
     <div class="tip-box">
-      <p>💙 <strong>¿Cómo ayudar?</strong> Usa las playlists de Spotify para hacer stream efectivo. Cada reproducción de +30 segundos cuenta. ¡Comparte con otros fans de EVAN!</p>
+      <p>💙 <strong>¿Cómo ayudar?</strong> Usa las playlists oficiales de ENHYPEN para hacer stream efectivo. Cada reproducción de +30 segundos cuenta. ¡Comparte con otros ENGENEs!</p>
     </div>
   </section>
   <section>
@@ -339,7 +339,7 @@ footer a:hover{color:var(--accent);}
 <div class="admin-overlay" id="admin-overlay" onclick="closeAdminLogin(event)">
   <div class="admin-modal" onclick="event.stopPropagation()">
     <h2>🔒 Acceso Admin</h2>
-    <p class="sub">Solo el equipo de EVANcharts puede editar el sitio</p>
+    <p class="sub">Solo el equipo de ENHYPENcharts puede editar el sitio</p>
     <div class="form-group">
       <label>Contraseña</label>
       <div class="pass-wrap">
@@ -358,7 +358,7 @@ footer a:hover{color:var(--accent);}
 <!-- ═══ ADMIN PANEL ═══ -->
 <div class="admin-panel" id="admin-panel">
   <div class="admin-nav">
-    <h1>⚙️ EVAN<span style="color:var(--gray);font-weight:400">charts</span> — Admin</h1>
+    <h1>⚙️ ENHYPEN<span style="color:var(--gray);font-weight:400">charts</span> — Admin</h1>
     <div style="display:flex;gap:.7rem;align-items:center">
       <span style="font-size:.75rem;color:var(--gray)">Sesión activa</span>
       <button class="btn btn-ghost btn-sm" onclick="closeAdmin()">✕ Cerrar</button>
@@ -382,10 +382,10 @@ footer a:hover{color:var(--accent);}
       </div>
       <div class="admin-card">
         <h3>+ Agregar nueva meta</h3>
-        <div class="form-group"><label>Nombre de la canción</label><input class="input" id="ng-song" placeholder="ej: Highway 1009"></div>
+        <div class="form-group"><label>Nombre de la canción</label><input class="input" id="ng-song" placeholder="ej: Bite Me"></div>
         <div class="form-row">
-          <div class="form-group"><label>Streams actuales</label><input class="input input-mono" id="ng-current" placeholder="ej: 51100000"></div>
-          <div class="form-group"><label>Meta de streams</label><input class="input input-mono" id="ng-target" placeholder="ej: 100000000"></div>
+          <div class="form-group"><label>Streams actuales</label><input class="input input-mono" id="ng-current" placeholder="ej: 125000000"></div>
+          <div class="form-group"><label>Meta de streams</label><input class="input input-mono" id="ng-target" placeholder="ej: 200000000"></div>
         </div>
         <div class="form-group"><label>Plataforma</label>
           <select class="input" id="ng-platform"><option>Spotify</option><option>YouTube</option><option>Apple Music</option></select>
@@ -402,7 +402,7 @@ footer a:hover{color:var(--accent);}
       </div>
       <div class="admin-card">
         <h3>+ Agregar playlist</h3>
-        <div class="form-group"><label>Nombre</label><input class="input" id="np-name" placeholder="ej: This Is EVAN"></div>
+        <div class="form-group"><label>Nombre</label><input class="input" id="np-name" placeholder="ej: This Is ENHYPEN"></div>
         <div class="form-group"><label>Descripción</label><input class="input" id="np-desc" placeholder="ej: Playlist oficial · actualizada diario"></div>
         <div class="form-group"><label>URL del link</label><input class="input" id="np-url" placeholder="https://open.spotify.com/..."></div>
         <div class="form-row">
@@ -424,17 +424,17 @@ footer a:hover{color:var(--accent);}
     <div class="admin-section" id="tab-config">
       <div class="admin-card">
         <h3>Textos del hero</h3>
-        <div class="form-group"><label>Tag del hero (subtítulo pequeño)</label><input class="input" id="cfg-hero_tag" placeholder="에반 · Lee Heeseung · Solo Era 2026"></div>
-        <div class="form-group"><label>Texto de debut</label><input class="input" id="cfg-debut_text" placeholder="Solo debut — Junio 2026 · Belift Lab"></div>
+        <div class="form-group"><label>Tag del hero (subtítulo pequeño)</label><input class="input" id="cfg-hero_tag" placeholder="ENHYPEN · 7 miembros · Belift Lab"></div>
+        <div class="form-group"><label>Texto de debut</label><input class="input" id="cfg-debut_text" placeholder="Debut: Noviembre 2020 · DIMENSION ERA"></div>
       </div>
       <div class="admin-card">
         <h3>Links sociales</h3>
         <div class="form-group"><label>🎵 Spotify (URL artista)</label><input class="input" id="cfg-spotify_url" placeholder="https://open.spotify.com/artist/..."></div>
-        <div class="form-group"><label>▶ YouTube (URL canal)</label><input class="input" id="cfg-youtube_url" placeholder="https://www.youtube.com/@evan"></div>
+        <div class="form-group"><label>▶ YouTube (URL canal)</label><input class="input" id="cfg-youtube_url" placeholder="https://www.youtube.com/@ENHYPEN"></div>
         <div class="form-group"><label>🎶 Apple Music</label><input class="input" id="cfg-applemusic_url" placeholder="https://music.apple.com/..."></div>
-        <div class="form-group"><label>💬 Weverse</label><input class="input" id="cfg-weverse_url" placeholder="https://weverse.io/evan/highlight"></div>
-        <div class="form-group"><label>📸 Instagram</label><input class="input" id="cfg-instagram_url" placeholder="https://instagram.com/..."></div>
-        <div class="form-group"><label>🐦 Twitter / X</label><input class="input" id="cfg-twitter_url" placeholder="https://x.com/..."></div>
+        <div class="form-group"><label>💬 Weverse</label><input class="input" id="cfg-weverse_url" placeholder="https://weverse.io/enhypen/feed"></div>
+        <div class="form-group"><label>📸 Instagram</label><input class="input" id="cfg-instagram_url" placeholder="https://instagram.com/enhypen"></div>
+        <div class="form-group"><label>🐦 Twitter / X</label><input class="input" id="cfg-twitter_url" placeholder="https://x.com/ENHYPEN"></div>
         <button class="btn" onclick="saveConfig()">💾 Guardar configuración</button>
       </div>
     </div>
@@ -442,7 +442,7 @@ footer a:hover{color:var(--accent);}
     <!-- IMÁGENES -->
     <div class="admin-section" id="tab-images">
       <div class="admin-card">
-        <h3>Imágenes de EVAN</h3>
+        <h3>Imágenes de ENHYPEN</h3>
         <div id="admin-images-grid" class="img-grid"></div>
         <div class="form-group" style="margin-top:1rem"><label>URL de imagen (de internet)</label>
           <div style="display:flex;gap:.7rem">
@@ -450,7 +450,7 @@ footer a:hover{color:var(--accent);}
             <button class="btn" onclick="addImage()" style="white-space:nowrap">Agregar</button>
           </div>
         </div>
-        <p style="font-size:.72rem;color:var(--gray);margin-top:.5rem">Pega el link directo de una imagen de EVAN (de Twitter, Weverse, etc.)</p>
+        <p style="font-size:.72rem;color:var(--gray);margin-top:.5rem">Pega el link directo de una imagen de ENHYPEN (de Twitter, Weverse, etc.)</p>
       </div>
     </div>
 
@@ -462,30 +462,30 @@ footer a:hover{color:var(--accent);}
 
 <!-- FOOTER -->
 <footer>
-  <p>Hecho con 💙 por fans · <strong>EVAN (에반)</strong> · Lee Heeseung</p>
+  <p>Hecho con 💙 por ENGENEs · <strong>ENHYPEN (엔하이픈)</strong></p>
   <div class="footer-links">
     <a href="#" id="foot-twitter" target="_blank">Twitter / X</a>
-    <a href="https://www.instagram.com/h_evva_n" id="foot-instagram" target="_blank">Instagram</a>
+    <a href="#" id="foot-instagram" target="_blank">Instagram</a>
     <a href="#" id="foot-spotify" target="_blank">Spotify</a>
-    <a href="https://weverse.io/evan/highlight" id="foot-weverse" target="_blank">Weverse</a>
+    <a href="#" id="foot-weverse" target="_blank">Weverse</a>
   </div>
-  <p style="margin-top:.8rem;font-size:.7rem">Este sitio no tiene afiliación oficial con EVAN, Lee Heeseung ni Belift Lab / HYBE.</p>
+  <p style="margin-top:.8rem;font-size:.7rem">Este sitio no tiene afiliación oficial con ENHYPEN, Belift Lab o HYBE. Es un proyecto de fans para apoyar el streaming.</p>
 </footer>
 
 <script>
 // ═══════════════════════════════════════
-// SUPABASE
+// SUPABASE - claves actualizadas
 // ═══════════════════════════════════════
 const { createClient } = supabase;
 const sb = createClient(
-  'https://zvgyomaewqnzmwhzwspc.supabase.co',
-  'sb_publishable_rd93YFrd6sbdbRySDgTOcg_8M8IwlCh'
+  'https://kwduielzkoxlbwycuxdc.supabase.co',
+  'sb_publishable_uNIwBIggyhpQCSBD2j7b4A_dT9qN1vC'
 );
 
 // ═══════════════════════════════════════
 // ADMIN AUTH
 // ═══════════════════════════════════════
-const ADMIN_PASS = '@Evan152026';
+const ADMIN_PASS = '@Evan152026';  // puedes cambiarla después
 let isAdmin = false;
 
 function openAdminLogin() {
@@ -576,7 +576,7 @@ async function loadConfig() {
 async function loadGoalsPublic() {
   const { data } = await sb.from('goals').select('*').order('sort_order');
   if (!data || !data.length) {
-    document.getElementById('home-goal-card').innerHTML = '<div class="empty"><div class="e-icon">🎯</div><p class="title">Sin metas aún</p></div>';
+    document.getElementById('home-goal-card').innerHTML = '<div class="empty"><div class="e-icon">🎯</div><p class="title">Sin metas aún</p><p>El admin puede añadir metas desde el panel</p></div>';
     document.getElementById('goals-list').innerHTML = '<div class="empty"><div class="e-icon">🎯</div><p class="title">No hay metas aún</p><p>El admin puede agregar metas desde el panel</p></div>';
     document.getElementById('charts-goals-table').innerHTML = '<div class="empty"><p>Sin datos aún</p></div>';
     return;
@@ -619,7 +619,7 @@ async function loadGoalsPublic() {
       <thead><tr><th>#</th><th>Canción</th><th>Streams</th><th>Progreso</th></tr></thead>
       <tbody>${data.map((g,i) => {
         const p = Math.min(100,Math.round(g.current/g.target*100));
-        return `<tr><td>0${i+1}</td><td class="song-name">${g.song}</td><td>${fmt(g.current)}</td><td><span class="chart-badge">${p}% de ${fmt(g.target)}</span></td></tr>`;
+        return `<tr><td>${i+1}</td><td class="song-name">${g.song}</td><td>${fmt(g.current)}</td><td><span class="chart-badge">${p}% de ${fmt(g.target)}</span></td></tr>`;
       }).join('')}</tbody>
     </table>`;
 }
@@ -704,7 +704,7 @@ async function loadAdminImages() {
   if (!data) return;
   document.getElementById('admin-images-grid').innerHTML = data.length ? data.map(img => `
     <div class="img-item">
-      <img src="${img.url}" alt="${img.caption||'EVAN'}" onerror="this.parentElement.style.display='none'">
+      <img src="${img.url}" alt="${img.caption||'ENHYPEN'}" onerror="this.parentElement.style.display='none'">
       <button class="img-del" onclick="deleteImage(${img.id})">✕</button>
     </div>`).join('') : '<p style="color:var(--gray);font-size:.83rem;grid-column:1/-1">No hay imágenes aún</p>';
 }
@@ -872,7 +872,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// También: doble tap en el logo (mobile)
+// Doble tap en el logo (mobile)
 let _tapCount = 0, _tapTimer;
 document.querySelector('.nav-logo').addEventListener('click', () => {
   _tapCount++;
