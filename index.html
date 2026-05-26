@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ENHYPEN | SIN:VANISH Streaming Hub</title>
-<meta name="description" content="Fan streaming tracker para ENHYPEN - Era SIN:VANITH. Apoya a ENHYPEN con cada stream.">
+<meta name="description" content="Fan streaming tracker para ENHYPEN - Era SIN:VANISH. Apoya a ENHYPEN con cada stream.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,200;14..32,400;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -705,7 +705,7 @@ footer a:hover { color: var(--primary-red); }
 <body>
 
 <nav>
-  <a class="nav-logo" href="#" onclick="showPage('home')">SIN:<span>VANITH</span></a>
+  <a class="nav-logo" href="#" onclick="showPage('home')">SIN:<span>VANISH</span></a>
   <div class="nav-links" id="nav-links">
     <a class="active" onclick="showPage('home',this)">Home</a>
     <a onclick="showPage('spotify',this)">Spotify</a>
@@ -726,8 +726,8 @@ footer a:hover { color: var(--primary-red); }
 <!-- HOME -->
 <div id="home" class="page active">
   <div class="hero">
-    <div class="hero-tag" id="hero-tag">SIN:VANITH // THEY FELL FOR THE FORBIDDEN</div>
-    <h1>ENHYPEN<br><span style="font-size: 0.5em; display: block;">SIN & VANITH</span></h1>
+    <div class="hero-tag" id="hero-tag">SIN:VANISH // THEY FELL FOR THE FORBIDDEN</div>
+    <h1>ENHYPEN<br><span style="font-size: 0.5em; display: block;">SIN & VANISH</span></h1>
     <p class="hero-sub">Streaming hub | Apoya la era oscura</p>
     <div class="hero-debut">
       <div class="dot-live"></div>
@@ -789,7 +789,7 @@ footer a:hover { color: var(--primary-red); }
 <div class="admin-overlay" id="admin-overlay" onclick="closeAdminLogin(event)">
   <div class="admin-modal" onclick="event.stopPropagation()">
     <h2>🔐 Acceso Admin</h2>
-    <p class="sub" style="color:var(--text-muted); margin-bottom:1.5rem">Solo staff de SIN:VANITH</p>
+    <p class="sub" style="color:var(--text-muted); margin-bottom:1.5rem">Solo staff de SIN:VANISH</p>
     <div class="form-group"><label>Contraseña</label><div class="pass-wrap"><input class="input" id="admin-pass" type="password" placeholder="******" onkeydown="if(event.key==='Enter')checkAdmin()"><button class="eye-btn" onclick="togglePassVis()" style="background:none; border:none; color:var(--text-muted); margin-left:0.5rem">👁️</button></div><div class="error-msg" id="login-error" style="display:none; color:var(--primary-red)">Contraseña incorrecta</div></div>
     <div style="display:flex; gap:0.8rem; justify-content:flex-end; margin-top:1rem"><button class="btn btn-ghost" onclick="closeAdminLogin()">Cancelar</button><button class="btn" onclick="checkAdmin()">Entrar</button></div>
   </div>
@@ -802,7 +802,7 @@ footer a:hover { color: var(--primary-red); }
   <div class="admin-content">
     <div class="admin-section active" id="tab-goals"><div class="admin-card"><h3>Metas actuales</h3><div id="admin-goals-list"></div></div><div class="admin-card"><h3>+ Agregar meta</h3><div class="form-group"><label>Canción</label><input class="input" id="ng-song" placeholder="ej: Bite Me"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Streams actuales</label><input class="input" id="ng-current" placeholder="ej: 125M"></div><div class="form-group"><label>Meta</label><input class="input" id="ng-target" placeholder="ej: 200M"></div></div><div class="form-group"><label>Plataforma</label><select class="input" id="ng-platform"><option>Spotify</option><option>YouTube</option><option>Apple Music</option></select></div><button class="btn" onclick="addGoal()">Agregar</button></div></div>
     <div class="admin-section" id="tab-playlists"><div class="admin-card"><h3>Playlists actuales</h3><div id="admin-playlists-list"></div></div><div class="admin-card"><h3>+ Agregar playlist</h3><div class="form-group"><label>Nombre</label><input class="input" id="np-name"></div><div class="form-group"><label>Descripción</label><input class="input" id="np-desc"></div><div class="form-group"><label>URL</label><input class="input" id="np-url"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Plataforma</label><select class="input" id="np-platform"><option value="spotify">Spotify</option><option value="youtube">YouTube</option><option value="apple">Apple Music</option><option value="stationhead">Stationhead</option></select></div><div class="form-group"><label>Icono (emoji)</label><input class="input" id="np-icon" placeholder="🎵"></div></div><button class="btn" onclick="addPlaylist()">Agregar</button></div></div>
-    <div class="admin-section" id="tab-config"><div class="admin-card"><h3>Textos del hero</h3><div class="form-group"><label>Tag</label><input class="input" id="cfg-hero_tag" placeholder="SIN:VANITH // ..."></div><div class="form-group"><label>Texto debut</label><input class="input" id="cfg-debut_text" placeholder="Awaken need to love"></div></div><div class="admin-card"><h3>Links sociales</h3><div class="form-group"><label>🎵 Spotify URL</label><input class="input" id="cfg-spotify_url"></div><div class="form-group"><label>▶ YouTube</label><input class="input" id="cfg-youtube_url"></div><div class="form-group"><label>🎶 Apple Music</label><input class="input" id="cfg-applemusic_url"></div><div class="form-group"><label>💬 Weverse</label><input class="input" id="cfg-weverse_url"></div><div class="form-group"><label>📸 Instagram</label><input class="input" id="cfg-instagram_url"></div><div class="form-group"><label>🐦 Twitter/X</label><input class="input" id="cfg-twitter_url"></div><button class="btn" onclick="saveConfig()">Guardar configuración</button></div></div>
+    <div class="admin-section" id="tab-config"><div class="admin-card"><h3>Textos del hero</h3><div class="form-group"><label>Tag</label><input class="input" id="cfg-hero_tag" placeholder="SIN:VANISH // ..."></div><div class="form-group"><label>Texto debut</label><input class="input" id="cfg-debut_text" placeholder="Awaken need to love"></div></div><div class="admin-card"><h3>Links sociales</h3><div class="form-group"><label>🎵 Spotify URL</label><input class="input" id="cfg-spotify_url"></div><div class="form-group"><label>▶ YouTube</label><input class="input" id="cfg-youtube_url"></div><div class="form-group"><label>🎶 Apple Music</label><input class="input" id="cfg-applemusic_url"></div><div class="form-group"><label>💬 Weverse</label><input class="input" id="cfg-weverse_url"></div><div class="form-group"><label>📸 Instagram</label><input class="input" id="cfg-instagram_url"></div><div class="form-group"><label>🐦 Twitter/X</label><input class="input" id="cfg-twitter_url"></div><button class="btn" onclick="saveConfig()">Guardar configuración</button></div></div>
     <div class="admin-section" id="tab-images"><div class="admin-card"><h3>Imágenes de la era</h3><div id="admin-images-grid" class="img-grid"></div><div class="form-group" style="margin-top:1rem"><label>URL de imagen</label><div style="display:flex; gap:0.5rem"><input class="input" id="img-url" placeholder="https://..."><button class="btn" onclick="addImage()">Agregar</button></div></div></div></div>
   </div>
 </div>
