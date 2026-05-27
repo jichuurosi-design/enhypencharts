@@ -751,6 +751,24 @@ footer a:hover { color: var(--primary-red); }
 
     <!-- Spotify Data -->
     <div class="admin-section" id="tab-spotifydata">
+      <!-- Artist Chart Manual -->
+      <div class="admin-card" style="border-color:rgba(29,185,84,0.25)">
+        <h3 style="color:#1db954">🎧 Artist Chart — Oyentes y Seguidores</h3>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1.2rem">Los Total Streams se calculan automáticamente. Actualiza Oyentes y Seguidores manualmente cuando quieras.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+          <div class="form-group">
+            <label>Monthly Listeners</label>
+            <input class="input" id="sp-monthly-listeners" placeholder="ej: 9495882" style="font-family:'Orbitron',monospace">
+            <span style="font-size:0.68rem;color:var(--text-muted);margin-top:0.3rem;display:block">Número sin puntos ni comas</span>
+          </div>
+          <div class="form-group">
+            <label>Total Followers</label>
+            <input class="input" id="sp-followers" placeholder="ej: 14980663" style="font-family:'Orbitron',monospace">
+            <span style="font-size:0.68rem;color:var(--text-muted);margin-top:0.3rem;display:block">Número sin puntos ni comas</span>
+          </div>
+        </div>
+        <button class="btn" style="background:#1a5c2e" onclick="saveArtistChartManual()">💾 Guardar Artist Chart</button>
+      </div>
       <div class="admin-card">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:1rem">
           <h3 style="margin:0">⚡ Actualización Rápida</h3>
@@ -1551,12 +1569,10 @@ function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').
 function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
 // ========== KWORB ARTIST CHART ==========
-// ENHYPEN Kworb artist ID
 const KWORB_ARTIST_SLUG = 'enhypen';
-const KWORB_CACHE_KEY = 'enhypen_kworb_cache';
-const KWORB_CACHE_TTL = 15 * 60 * 1000; // 15 min
+const KWORB_CACHE_KEY   = 'enhypen_kworb_cache';
+const KWORB_CACHE_TTL   = 15 * 60 * 1000;
 
-// Usamos allorigins como proxy CORS para scrapear kworb.net
 async function fetchKworbHtml(url) {
   const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
   const res = await fetch(proxy);
@@ -1565,176 +1581,98 @@ async function fetchKworbHtml(url) {
   return json.contents;
 }
 
-function parseKworbArtist(html) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-
-  // Extraer monthly listeners, followers, total streams
-  // Kworb los muestra en tablas o divs con clase específica
-  let listeners = null, followers = null, streams = null;
-  let listenersDaily = null, followersDaily = null, streamsDaily = null;
-
-  // Buscar en texto de la página las estadísticas clave
-  const text = doc.body ? doc.body.innerText || doc.body.textContent : '';
-
-  // Buscar patrones numéricos comunes en kworb
-  // Monthly Listeners
-  const listM = html.match(/Monthly\s+Listeners[^0-9]*?([\d,]+)/i);
-  if (listM) listeners = parseInt(listM[1].replace(/,/g,''));
-
-  // Followers
-  const folM = html.match(/Followers[^0-9]*?([\d,]+)/i);
-  if (folM) followers = parseInt(folM[1].replace(/,/g,''));
-
-  // Total streams - buscar en tablas de kworb
-  // Kworb artist page tiene una tabla con streams totales de canciones
-  let totalStreams = 0;
-  const tables = doc.querySelectorAll('table');
-  tables.forEach(table => {
-    const rows = table.querySelectorAll('tr');
-    rows.forEach(row => {
-      const cells = row.querySelectorAll('td');
-      if (cells.length >= 2) {
-        // Las celdas de streams suelen ser números grandes
-        cells.forEach(cell => {
-          const val = parseInt((cell.textContent || '').replace(/,/g,'').trim());
-          if (!isNaN(val) && val > 1000000) totalStreams += val;
-        });
-      }
-    });
-  });
-
-  // Buscar valores directamente en spans/divs con datos numéricos grandes
-  const allNums = html.match(/"([\d,]{7,})"/g);
-  let maxNum = 0;
-  if (allNums) {
-    allNums.forEach(n => {
-      const v = parseInt(n.replace(/[",]/g,''));
-      if (v > maxNum) maxNum = v;
-    });
-  }
-
-  // Buscar datos de incremento diario
-  const dailyM = html.match(/\+\s*([\d,]+)\s*Today/gi);
-  if (dailyM && dailyM.length > 0) {
-    streamsDaily = parseInt(dailyM[0].replace(/[^0-9]/g,''));
-  }
-  if (dailyM && dailyM.length > 1) {
-    listenersDaily = parseInt(dailyM[1].replace(/[^0-9]/g,''));
-  }
-
-  return { listeners, followers, streams: streams || totalStreams || null, listenersDaily, followersDaily, streamsDaily };
-}
-
-function renderArtistChart(data, fromCache = false) {
-  const { listeners, followers, streams, listenersDaily, followersDaily, streamsDaily } = data;
-
-  function statCard(label, value, daily, liveText) {
-    const valHtml = value != null
-      ? `<div class="ast-value">${fmtLong(value)}</div>`
-      : `<div class="ast-value" style="font-size:1rem;color:var(--text-muted)">—</div>`;
-    const liveHtml = `<div class="ast-live"><div class="ast-live-dot"></div>${liveText || 'LIVE'}</div>`;
-    const dailyHtml = daily != null && daily > 0
-      ? `<div class="ast-daily">▲ +${fmtLong(daily)} Today</div>` : '';
-    return `<div class="artist-stat-card">
-      <div class="ast-label">${label}</div>
-      ${valHtml}
-      ${liveHtml}
-      ${dailyHtml}
-    </div>`;
-  }
-
-  const html = `<div class="artist-chart-grid">
-    ${statCard('Monthly Listeners', listeners, listenersDaily, 'Live')}
-    ${statCard('Total Followers', followers, followersDaily, 'LIVE')}
-    ${statCard('Total Streams', streams, streamsDaily, streams != null ? `+${fmtLong(streamsDaily||0)} Today` : 'Live')}
-  </div>`;
-
-  document.getElementById('artist-chart-content').innerHTML = html;
-  const now = new Date();
-  document.getElementById('kworb-updated').textContent =
-    `Fuente: kworb.net · ${now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}${fromCache?' (caché)':''}`;
-}
-
 function fmtLong(n) {
-  if (n == null) return '—';
+  if (!n) return '—';
   return Number(n).toLocaleString('en-US');
+}
+
+function renderArtistChart(listeners, followers, streams, streamsDaily) {
+  function statCard(label, value, liveLabel, daily) {
+    const valHtml = value
+      ? `<div class="ast-value">${fmtLong(value)}</div>`
+      : `<div class="ast-value" style="font-size:0.9rem;color:var(--text-muted)">—</div>`;
+    const liveHtml = `<div class="ast-live"><div class="ast-live-dot"></div>${liveLabel}</div>`;
+    const dailyHtml = daily ? `<div class="ast-daily">▲ +${fmtLong(daily)} Today</div>` : '';
+    return `<div class="artist-stat-card">${valHtml}<div class="ast-label" style="margin-top:0.5rem">${label}</div>${liveHtml}${dailyHtml}</div>`;
+  }
+  const streamsLive = streamsDaily ? `+${fmtLong(streamsDaily)} Today` : 'Live';
+  document.getElementById('artist-chart-content').innerHTML = `
+    <div class="artist-chart-grid">
+      ${statCard('Monthly Listeners', listeners, 'Live', null)}
+      ${statCard('Total Followers',   followers, 'LIVE', null)}
+      ${statCard('Total Streams',     streams,   streamsLive, null)}
+    </div>`;
 }
 
 async function loadKworbArtist(forceRefresh = false) {
   const btn = document.getElementById('kworb-btn');
   if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
 
-  // Revisar caché primero
+  // 1. Listeners y Followers desde Supabase (manual)
+  let listeners = null, followers = null;
+  try {
+    const { data: cfg } = await sb.from('site_config').select('key,value').in('key', ['sp_monthly_listeners','sp_followers']);
+    if (cfg) {
+      cfg.forEach(r => {
+        if (r.key === 'sp_monthly_listeners') listeners = parseInt(r.value) || null;
+        if (r.key === 'sp_followers')          followers = parseInt(r.value) || null;
+      });
+    }
+    const elL = document.getElementById('sp-monthly-listeners');
+    const elF = document.getElementById('sp-followers');
+    if (elL && listeners) elL.value = listeners;
+    if (elF && followers) elF.value = followers;
+  } catch(e) { console.warn('Supabase artist config error:', e); }
+
+  // 2. Total streams desde discografía local
+  const totalStreams = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.streams || 0), 0);
+  const totalDaily   = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.daily  || 0), 0);
+
+  // 3. Cache check
   if (!forceRefresh) {
     try {
       const cached = JSON.parse(sessionStorage.getItem(KWORB_CACHE_KEY) || 'null');
       if (cached && (Date.now() - cached.ts) < KWORB_CACHE_TTL) {
-        renderArtistChart(cached.data, true);
+        renderArtistChart(listeners, followers, totalStreams, cached.streamsDaily || totalDaily);
+        document.getElementById('kworb-updated').textContent =
+          `Fuente: kworb.net · ${new Date(cached.ts).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})} (caché)`;
         if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
         return;
       }
     } catch(e) {}
   }
 
+  // Render inmediato con lo que hay
+  renderArtistChart(listeners, followers, totalStreams, totalDaily);
+
+  // 4. Intentar kworb solo para daily streams (no bloquea si falla)
+  let streamsDaily = totalDaily;
   try {
-    // Kworb artist page for ENHYPEN
-    const url = `https://kworb.net/spotify/artist/${KWORB_ARTIST_SLUG}.html`;
+    const url = `https://kworb.net/spotify/artist/${KWORB_ARTIST_SLUG}_songs.html`;
     const html = await fetchKworbHtml(url);
-    const data = parseKworbArtist(html);
-
-    // Si no se pudo parsear listeners/followers, intentar con la página de overview
-    if (!data.listeners && !data.followers) {
-      // Intentar con la página principal de artistas de kworb
-      try {
-        const url2 = `https://kworb.net/spotify/artist/${KWORB_ARTIST_SLUG}_songs.html`;
-        const html2 = await fetchKworbHtml(url2);
-        const data2 = parseKworbArtist(html2);
-        Object.assign(data, data2);
-      } catch(e) {}
-    }
-
-    // Calcular total streams sumando todas las canciones si viene en la tabla
-    if (!data.streams || data.streams < 1000000) {
-      // Sumar streams de la discografía local como fallback
-      const totalLocal = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.streams || 0), 0);
-      data.streams = data.streams || totalLocal;
-      data.streamsDaily = data.streamsDaily || ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.daily || 0), 0);
-    }
-
-    // Guardar en caché
-    sessionStorage.setItem(KWORB_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-    renderArtistChart(data);
-
+    const m = html.match(/\+\s*([\d,]+)\s*Today/i);
+    if (m) streamsDaily = parseInt(m[1].replace(/,/g,'')) || totalDaily;
+    sessionStorage.setItem(KWORB_CACHE_KEY, JSON.stringify({ ts: Date.now(), streamsDaily }));
+    document.getElementById('kworb-updated').textContent =
+      `Fuente: kworb.net · ${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`;
   } catch(e) {
-    console.warn('Kworb fetch failed:', e.message);
-    // Fallback: usar datos locales de la discografía
-    const totalStreams = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.streams || 0), 0);
-    const totalDaily  = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.daily  || 0), 0);
-    const fallbackData = {
-      listeners: null,
-      followers: null,
-      streams: totalStreams,
-      listenersDaily: null,
-      followersDaily: null,
-      streamsDaily: totalDaily
-    };
-    document.getElementById('artist-chart-content').innerHTML = `
-      <div class="kworb-error">
-        <strong>⚠ No se pudo conectar con kworb.net</strong> (CORS bloqueado o sin conexión).<br>
-        Mostrando streams calculados desde la discografía local. Monthly Listeners y Followers requieren conexión con kworb.
-      </div>
-      <div style="margin-top:0.8rem"><div class="artist-chart-grid">
-        <div class="artist-stat-card" style="opacity:0.5"><div class="ast-label">Monthly Listeners</div><div class="ast-value" style="font-size:0.85rem;color:var(--text-muted)">Sin datos</div></div>
-        <div class="artist-stat-card" style="opacity:0.5"><div class="ast-label">Total Followers</div><div class="ast-value" style="font-size:0.85rem;color:var(--text-muted)">Sin datos</div></div>
-        <div class="artist-stat-card"><div class="ast-label">Total Streams (local)</div><div class="ast-value">${fmtLong(totalStreams)}</div><div class="ast-daily">▲ +${fmtLong(totalDaily)} Today</div></div>
-      </div></div>`;
-    document.getElementById('kworb-updated').textContent = 'Fallback local · kworb.net no disponible';
+    console.warn('Kworb fetch failed (non-critical):', e.message);
+    document.getElementById('kworb-updated').textContent = 'Streams: cálculo local · kworb.net no disponible';
   }
 
+  renderArtistChart(listeners, followers, totalStreams, streamsDaily);
   if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
 }
 
+async function saveArtistChartManual() {
+  const listeners = (document.getElementById('sp-monthly-listeners').value || '').replace(/\D/g,'');
+  const followers  = (document.getElementById('sp-followers').value || '').replace(/\D/g,'');
+  if (!listeners && !followers) { showToast('Escribe al menos un valor', true); return; }
+  if (listeners) await sb.from('site_config').upsert({ key: 'sp_monthly_listeners', value: listeners });
+  if (followers)  await sb.from('site_config').upsert({ key: 'sp_followers',          value: followers });
+  showToast('Artist Chart guardado ✅');
+  await loadKworbArtist(true);
+}
 // ========== INICIALIZACIÓN ==========
 async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic()]); loadKworbArtist(); }
 loadAll();
