@@ -116,25 +116,23 @@ nav {
   cursor: pointer;
 }
 
-/* HERO CON IMAGEN DE FONDO */
+/* HERO CON IMAGEN DE FONDO DINÁMICA (desde admin) */
 .hero {
   position: relative;
   padding: 8rem 2rem 8rem;
   text-align: center;
   overflow: hidden;
-  /* Aquí debes poner la URL de tu imagen (solo la foto, sin textos) */
-  background-image: url('https://i.scdn.co/image/ab67616100005174590b808769f5826ce94d1dd4.jpg');
   background-size: cover;
   background-position: center 30%;
   background-repeat: no-repeat;
   isolation: isolate;
+  background-color: #0a0a0a; /* fallback */
 }
-/* Overlay oscuro para que el texto sea legible */
 .hero::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,0.6);
   z-index: 0;
 }
 .hero > * {
@@ -256,7 +254,7 @@ section {
   background: linear-gradient(90deg, var(--border-dim), transparent);
 }
 
-/* GOAL CARDS */
+/* GOAL CARDS (igual) */
 .goal-card {
   background: rgba(10,10,10,0.8);
   backdrop-filter: blur(8px);
@@ -373,6 +371,7 @@ section {
 .pl-spotify { background: rgba(30,215,96,0.15); border: 1px solid #1db95433; }
 .pl-youtube { background: rgba(255,0,0,0.15); border: 1px solid #ff000033; }
 .pl-apple { background: rgba(255,45,85,0.15); border: 1px solid #ff2d5533; }
+.pl-stationhead { background: rgba(220,38,38,0.15); border: 1px solid var(--primary-red); }
 .playlist-info {
   flex: 1;
   min-width: 0;
@@ -386,6 +385,38 @@ section {
   font-size: 0.7rem;
   color: var(--text-muted);
   margin-top: 0.15rem;
+}
+
+/* GALERÍA DE IMÁGENES (pública) */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+.gallery-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.gallery-item:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary-red);
+}
+.gallery-item img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+.gallery-item .caption {
+  padding: 0.6rem;
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--text-dim);
+  background: rgba(0,0,0,0.5);
 }
 
 /* TABLES */
@@ -552,7 +583,7 @@ section {
   color: var(--text-muted);
 }
 
-/* ADMIN MODAL / PANEL (estilo oscuro) */
+/* ADMIN MODAL / PANEL */
 .admin-overlay {
   display: none;
   position: fixed;
@@ -709,6 +740,7 @@ footer a:hover { color: var(--primary-red); }
   .goal-stats { grid-template-columns: 1fr 1fr; }
   .admin-tabs { padding: 1rem; }
   .admin-content { padding: 1rem; }
+  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
 </style>
 </head>
@@ -723,6 +755,7 @@ footer a:hover { color: var(--primary-red); }
     <a onclick="showPage('youtube',this)">YouTube</a>
     <a onclick="showPage('charts',this)">Charts</a>
     <a onclick="showPage('goals',this)">Goals</a>
+    <a onclick="showPage('gallery',this)">Galería</a> <!-- NUEVA PÁGINA -->
   </div>
   <div class="nav-right">
     <div class="admin-indicator" id="admin-indicator" style="display:none">
@@ -734,9 +767,9 @@ footer a:hover { color: var(--primary-red); }
   </div>
 </nav>
 
-<!-- HOME con imagen de fondo y texto superpuesto -->
+<!-- HOME -->
 <div id="home" class="page active">
-  <div class="hero">
+  <div class="hero" id="hero-section" style="background-image: url('');">
     <div class="hero-tag" id="hero-tag">SIN:VANISH // THEY FELL FOR THE FORBIDDEN</div>
     <h1>ENHYPEN<br><span style="font-size: 0.5em; display: block;">SIN & VANISH</span></h1>
     <p class="hero-sub">STREAMING HUB | FAN SUPPORT</p>
@@ -779,7 +812,7 @@ footer a:hover { color: var(--primary-red); }
   </section>
 </div>
 
-<!-- YOUTUBE (sin automatización, solo playlists manuales) -->
+<!-- YOUTUBE (playlists) -->
 <div id="youtube" class="page">
   <section><div class="section-header"><div class="section-title">YouTube Playlists</div><div class="section-line"></div></div>
     <div id="youtube-playlists"><div class="loading"><div class="spin"></div></div></div>
@@ -804,6 +837,13 @@ footer a:hover { color: var(--primary-red); }
   </section>
 </div>
 
+<!-- GALERÍA (nueva página) -->
+<div id="gallery" class="page">
+  <section><div class="section-header"><div class="section-title">Galería de imágenes</div><div class="section-line"></div></div>
+    <div id="public-gallery" class="gallery-grid"><div class="loading"><div class="spin"></div><br>Cargando imágenes...</div></div>
+  </section>
+</div>
+
 <!-- ADMIN LOGIN MODAL -->
 <div class="admin-overlay" id="admin-overlay" onclick="closeAdminLogin(event)">
   <div class="admin-modal" onclick="event.stopPropagation()">
@@ -814,7 +854,7 @@ footer a:hover { color: var(--primary-red); }
   </div>
 </div>
 
-<!-- ADMIN PANEL (sin YouTube automation, solo playlists, metas, etc.) -->
+<!-- ADMIN PANEL (con opción de imagen de fondo en configuración) -->
 <div class="admin-panel" id="admin-panel">
   <div class="admin-nav"><h1 style="font-family:Orbitron">⚙️ ADMIN · SIN:VANISH</h1><div><button class="btn btn-ghost btn-sm" onclick="closeAdmin()">✕ Cerrar</button></div></div>
   <div class="admin-tabs">
@@ -830,11 +870,11 @@ footer a:hover { color: var(--primary-red); }
     <!-- Playlists -->
     <div class="admin-section" id="tab-playlists"><div class="admin-card"><h3>Playlists actuales</h3><div id="admin-playlists-list"></div></div><div class="admin-card"><h3>+ Agregar playlist</h3><div class="form-group"><label>Nombre</label><input class="input" id="np-name"></div><div class="form-group"><label>Descripción</label><input class="input" id="np-desc"></div><div class="form-group"><label>URL</label><input class="input" id="np-url"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Plataforma</label><select class="input" id="np-platform"><option value="spotify">Spotify</option><option value="youtube">YouTube</option><option value="apple">Apple Music</option><option value="stationhead">Stationhead</option></select></div><div class="form-group"><label>Icono (emoji)</label><input class="input" id="np-icon" placeholder="🎵"></div></div><button class="btn" onclick="addPlaylist()">Agregar</button></div></div>
 
-    <!-- Configuración -->
-    <div class="admin-section" id="tab-config"><div class="admin-card"><h3>Textos del hero</h3><div class="form-group"><label>Tag</label><input class="input" id="cfg-hero_tag" placeholder="SIN:VANISH // ..."></div><div class="form-group"><label>Texto debut</label><input class="input" id="cfg-debut_text" placeholder="Awaken need to love"></div></div><div class="admin-card"><h3>Links sociales</h3><div class="form-group"><label>🎵 Spotify URL</label><input class="input" id="cfg-spotify_url"></div><div class="form-group"><label>▶ YouTube</label><input class="input" id="cfg-youtube_url"></div><div class="form-group"><label>🎶 Apple Music</label><input class="input" id="cfg-applemusic_url"></div><div class="form-group"><label>💬 Weverse</label><input class="input" id="cfg-weverse_url"></div><div class="form-group"><label>📸 Instagram</label><input class="input" id="cfg-instagram_url"></div><div class="form-group"><label>🐦 Twitter/X</label><input class="input" id="cfg-twitter_url"></div><button class="btn" onclick="saveConfig()">Guardar configuración</button></div></div>
+    <!-- Configuración (incluye fondo del hero) -->
+    <div class="admin-section" id="tab-config"><div class="admin-card"><h3>Textos del hero</h3><div class="form-group"><label>Tag</label><input class="input" id="cfg-hero_tag" placeholder="SIN:VANISH // ..."></div><div class="form-group"><label>Texto debut</label><input class="input" id="cfg-debut_text" placeholder="Awaken need to love"></div><div class="form-group"><label>URL imagen de fondo (hero)</label><input class="input" id="cfg-hero_bg_url" placeholder="https://... (dejar vacío para fondo negro)"></div></div><div class="admin-card"><h3>Links sociales</h3><div class="form-group"><label>🎵 Spotify URL</label><input class="input" id="cfg-spotify_url"></div><div class="form-group"><label>▶ YouTube</label><input class="input" id="cfg-youtube_url"></div><div class="form-group"><label>🎶 Apple Music</label><input class="input" id="cfg-applemusic_url"></div><div class="form-group"><label>💬 Weverse</label><input class="input" id="cfg-weverse_url"></div><div class="form-group"><label>📸 Instagram</label><input class="input" id="cfg-instagram_url"></div><div class="form-group"><label>🐦 Twitter/X</label><input class="input" id="cfg-twitter_url"></div><button class="btn" onclick="saveConfig()">Guardar configuración</button></div></div>
 
-    <!-- Imágenes -->
-    <div class="admin-section" id="tab-images"><div class="admin-card"><h3>Imágenes de la era</h3><div id="admin-images-grid" class="img-grid"></div><div class="form-group" style="margin-top:1rem"><label>URL de imagen</label><div style="display:flex; gap:0.5rem"><input class="input" id="img-url" placeholder="https://..."><button class="btn" onclick="addImage()">Agregar</button></div></div></div></div>
+    <!-- Imágenes (para la galería) -->
+    <div class="admin-section" id="tab-images"><div class="admin-card"><h3>Imágenes de la era (aparecerán en la Galería)</h3><div id="admin-images-grid" class="img-grid"></div><div class="form-group" style="margin-top:1rem"><label>URL de imagen</label><div style="display:flex; gap:0.5rem"><input class="input" id="img-url" placeholder="https://... (link directo a imagen)"><button class="btn" onclick="addImage()">Agregar</button></div><p class="tip-box" style="margin-top:0.5rem; padding:0.5rem">💡 Puedes poner cualquier URL de imagen (de Twitter, Weverse, etc.)</p></div></div></div>
   </div>
 </div>
 
@@ -868,6 +908,13 @@ async function loadConfig(){
   let cfg={}; data.forEach(r=>cfg[r.key]=r.value);
   if(cfg.hero_tag) document.getElementById('hero-tag').innerText=cfg.hero_tag;
   if(cfg.debut_text) document.getElementById('debut-text').innerText=cfg.debut_text;
+  // Imagen de fondo del hero
+  const heroBg = cfg.hero_bg_url;
+  if(heroBg && heroBg.trim() !== ''){
+    document.getElementById('hero-section').style.backgroundImage = `url('${heroBg}')`;
+  } else {
+    document.getElementById('hero-section').style.backgroundImage = 'none';
+  }
   if(cfg.spotify_url){ document.getElementById('btn-spotify').href=cfg.spotify_url; document.getElementById('foot-spotify').href=cfg.spotify_url; }
   if(cfg.applemusic_url) document.getElementById('btn-applemusic').href=cfg.applemusic_url;
   if(cfg.youtube_url) document.getElementById('btn-youtube').href=cfg.youtube_url;
@@ -886,7 +933,7 @@ async function loadGoalsPublic(){
   document.getElementById('charts-goals-table').innerHTML=`<table class="charts-table"><thead><tr><th>#</th><th>Canción</th><th>Streams</th><th>Progreso</th></tr></thead><tbody>${data.map((g,i)=>{ let p=Math.min(100,Math.round(g.current/g.target*100)); return `<tr><td>${i+1}</td><td class="song-name">${g.song}</td><td>${fmt(g.current)}</td><td><span class="chart-badge">${p}% de ${fmt(g.target)}</span></td>`; }).join('')}</tbody></table>`;
 }
 
-// ========== PLAYLISTS (manuales, sin automatización de YouTube) ==========
+// ========== PLAYLISTS ==========
 async function loadPlaylistsPublic(){
   let {data}=await sb.from('playlists').select('*').order('sort_order');
   if(!data||!data.length) return;
@@ -900,7 +947,21 @@ async function loadPlaylistsPublic(){
   if(document.getElementById('apple-playlists')) document.getElementById('apple-playlists').innerHTML=apple?`<div class="playlist-grid">${apple}</div>`:'<div class="empty"><p>No hay playlists de Apple Music</p></div>';
 }
 
-// ========== ADMIN DATA LOAD (metas, playlists, config, imágenes) ==========
+// ========== GALERÍA PÚBLICA ==========
+async function loadPublicGallery(){
+  let {data}=await sb.from('images').select('*').order('sort_order');
+  if(!data || data.length===0){
+    document.getElementById('public-gallery').innerHTML='<div class="empty"><p>🖼️ No hay imágenes aún. El admin puede agregarlas desde el panel.</p></div>';
+    return;
+  }
+  let html='';
+  data.forEach(img=>{
+    html+=`<div class="gallery-item"><img src="${img.url}" alt="${img.caption || 'ENHYPEN'}" loading="lazy" onerror="this.parentElement.style.display='none'"><div class="caption">${img.caption || ''}</div></div>`;
+  });
+  document.getElementById('public-gallery').innerHTML=html;
+}
+
+// ========== ADMIN DATA LOAD ==========
 async function loadAdminData(){
   let {data:goals}=await sb.from('goals').select('*').order('sort_order');
   document.getElementById('admin-goals-list').innerHTML=goals&&goals.length?goals.map(g=>`<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${g.song}</div><div class="ali-sub">${fmt(g.current)} / ${fmt(g.target)} · ${g.platform}</div></div><div class="pct-badge">${Math.min(100,Math.round(g.current/g.target*100))}%</div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editGoal(${g.id},'${g.song.replace(/'/g,"\\'")}',${g.current},${g.target})">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteGoal(${g.id})">✕</button></div></div>`).join(''):'<p>Sin metas</p>';
@@ -922,11 +983,11 @@ async function deleteGoal(id){ if(confirm('¿Eliminar meta?')){ await sb.from('g
 async function addPlaylist(){ let name=document.getElementById('np-name').value.trim(); let description=document.getElementById('np-desc').value.trim(); let url=document.getElementById('np-url').value.trim(); let platform=document.getElementById('np-platform').value; let icon=document.getElementById('np-icon').value.trim()||platformIcon(platform); if(!name){ showToast('Nombre requerido',true); return; } let {data:exist}=await sb.from('playlists').select('sort_order').order('sort_order',{ascending:false}).limit(1); let sort=exist&&exist[0]?exist[0].sort_order+1:1; await sb.from('playlists').insert({name,description,url,platform,icon,sort_order:sort}); showToast('Playlist agregada'); document.getElementById('np-name').value=''; document.getElementById('np-desc').value=''; document.getElementById('np-url').value=''; document.getElementById('np-icon').value=''; await loadAdminData(); await loadPlaylistsPublic(); }
 function editPlaylist(id,name,desc,url,platform){ let newUrl=prompt(`Editar URL de "${name}"`,url); if(newUrl===null) return; sb.from('playlists').update({url:newUrl}).eq('id',id).then(async()=>{ showToast('Playlist actualizada'); await loadAdminData(); await loadPlaylistsPublic(); }); }
 async function deletePlaylist(id){ if(confirm('¿Eliminar playlist?')){ await sb.from('playlists').delete().eq('id',id); showToast('Playlist eliminada'); await loadAdminData(); await loadPlaylistsPublic(); } }
-// Configuración
-async function saveConfig(){ let keys=['hero_tag','debut_text','spotify_url','youtube_url','applemusic_url','weverse_url','instagram_url','twitter_url']; for(let k of keys){ let el=document.getElementById('cfg-'+k); if(el) await sb.from('site_config').upsert({key:k,value:el.value.trim()}); } showToast('Configuración guardada'); await loadConfig(); }
-// Imágenes
-async function addImage(){ let url=document.getElementById('img-url').value.trim(); if(!url){ showToast('URL requerida',true); return; } await sb.from('images').insert({url, sort_order:Date.now()}); showToast('Imagen agregada'); document.getElementById('img-url').value=''; await loadAdminData(); }
-async function deleteImage(id){ if(confirm('¿Eliminar imagen?')){ await sb.from('images').delete().eq('id',id); showToast('Imagen eliminada'); await loadAdminData(); } }
+// Configuración (incluye hero_bg_url)
+async function saveConfig(){ let keys=['hero_tag','debut_text','hero_bg_url','spotify_url','youtube_url','applemusic_url','weverse_url','instagram_url','twitter_url']; for(let k of keys){ let el=document.getElementById('cfg-'+k); if(el) await sb.from('site_config').upsert({key:k,value:el.value.trim()}); } showToast('Configuración guardada'); await loadConfig(); }
+// Imágenes (admin y públicas)
+async function addImage(){ let url=document.getElementById('img-url').value.trim(); if(!url){ showToast('URL requerida',true); return; } await sb.from('images').insert({url, sort_order:Date.now()}); showToast('Imagen agregada'); document.getElementById('img-url').value=''; await loadAdminData(); await loadPublicGallery(); }
+async function deleteImage(id){ if(confirm('¿Eliminar imagen?')){ await sb.from('images').delete().eq('id',id); showToast('Imagen eliminada'); await loadAdminData(); await loadPublicGallery(); } }
 
 // Navegación
 function openAdminLogin(){ if(isAdmin){ openAdminPanel(); return; } document.getElementById('admin-overlay').classList.add('open'); }
@@ -941,7 +1002,7 @@ function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').
 function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
 // Inicialización
-async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic()]); }
+async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadPublicGallery()]); }
 loadAll();
 let seq=''; document.addEventListener('keydown',e=>{ seq=(seq+e.key.toLowerCase()).slice(-3); if(seq==='adm'){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; } });
 let tap=0, timer; document.querySelector('.nav-logo').addEventListener('click',()=>{ tap++; clearTimeout(timer); timer=setTimeout(()=>tap=0,600); if(tap>=5){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; tap=0; } });
