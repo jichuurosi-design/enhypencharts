@@ -434,7 +434,142 @@ footer a:hover { color: var(--primary-red); }
   .admin-content { padding: 1rem; }
   .yt-stats-grid { grid-template-columns: 1fr; }
   .yt-video-table th, .yt-video-table td, .spotify-table th, .spotify-table td { padding: 0.5rem 0.3rem; font-size: 0.7rem; }
+  .artist-chart-grid { grid-template-columns: 1fr !important; }
 }
+
+/* ===== ARTIST CHART ===== */
+.artist-chart-wrap {
+  background: #0c0c0c;
+  border: 1px solid var(--border-dim);
+  border-radius: 20px;
+  padding: 1.4rem;
+  margin-bottom: 1.5rem;
+}
+.artist-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.artist-chart-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1db954;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.artist-chart-title::before { content: ''; display: inline-block; width: 8px; height: 8px; background: #1db954; border-radius: 50%; box-shadow: 0 0 8px #1db954; }
+.kworb-meta {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.kworb-refresh-btn {
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  border-radius: 20px;
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  padding: 0.2rem 0.7rem;
+  cursor: pointer;
+  transition: 0.2s;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.kworb-refresh-btn:hover { border-color: #1db954; color: #1db954; }
+.kworb-refresh-btn.spinning svg { animation: spin 0.7s linear infinite; }
+.artist-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.artist-stat-card {
+  background: #111;
+  border: 1px solid var(--border-dim);
+  border-radius: 16px;
+  padding: 1.1rem 1rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.artist-stat-card:hover { border-color: rgba(29,185,84,0.3); }
+.artist-stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #1db954, transparent);
+}
+.ast-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+}
+.ast-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1;
+}
+.ast-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  color: #4ade80;
+  margin-top: 0.4rem;
+  font-weight: 600;
+}
+.ast-live-dot {
+  width: 6px; height: 6px;
+  background: #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #4ade80;
+  animation: pulse 1.5s infinite;
+}
+.ast-daily {
+  font-size: 0.68rem;
+  color: #4ade80;
+  margin-top: 0.35rem;
+  font-weight: 600;
+}
+.kworb-error {
+  background: rgba(220,38,38,0.06);
+  border: 1px solid rgba(220,38,38,0.2);
+  border-left: 3px solid var(--primary-red);
+  border-radius: 0 12px 12px 0;
+  padding: 0.9rem 1.1rem;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+.kworb-error strong { color: var(--primary-red); }
+.kworb-skeleton {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.skeleton-card {
+  background: #111;
+  border: 1px solid var(--border-dim);
+  border-radius: 16px;
+  padding: 1.1rem;
+  animation: shimmer 1.4s infinite;
+}
+.skeleton-line { height: 10px; border-radius: 6px; background: #1a1a1a; margin-bottom: 0.6rem; }
+.skeleton-line.big { height: 28px; width: 70%; }
+@keyframes shimmer { 0%,100%{opacity:0.5} 50%{opacity:1} }
 </style>
 </head>
 <body>
@@ -491,6 +626,27 @@ footer a:hover { color: var(--primary-red); }
 <!-- SPOTIFY (con tabla de canciones + playlists) -->
 <div id="spotify" class="page">
   <section>
+    <!-- ARTIST CHART (Kworb auto) -->
+    <div class="section-header" style="margin-top:0.5rem"><div class="section-title">Artist Chart</div><div class="section-line"></div></div>
+    <div class="artist-chart-wrap">
+      <div class="artist-chart-header">
+        <div class="artist-chart-title">Spotify · ENHYPEN</div>
+        <div class="kworb-meta">
+          <span id="kworb-updated">—</span>
+          <button class="kworb-refresh-btn" id="kworb-btn" onclick="loadKworbArtist(true)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+            Actualizar
+          </button>
+        </div>
+      </div>
+      <div id="artist-chart-content">
+        <div class="kworb-skeleton">
+          <div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line big"></div></div>
+          <div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line big"></div></div>
+          <div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line big"></div></div>
+        </div>
+      </div>
+    </div>
     <div class="section-header"><div class="section-title">Top Canciones - Spotify</div><div class="section-line"></div></div>
     <div id="spotify-songs-table"><div class="loading"><div class="spin"></div><br>Cargando canciones...</div></div>
     <div class="tip-box"><p>📊 Datos actualizados manualmente por el staff. Los streams diarios se calculan automáticamente al actualizar el total.</p></div>
@@ -1394,8 +1550,193 @@ function toggleMobileNav(){ document.getElementById('nav-links').classList.toggl
 function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.getElementById('spotify-chart').style.display=id==='spotify-chart'?'block':'none'; document.getElementById('yt-chart').style.display=id==='yt-chart'?'block':'none'; document.getElementById('apple-chart').style.display=id==='apple-chart'?'block':'none'; }
 function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
+// ========== KWORB ARTIST CHART ==========
+// ENHYPEN Kworb artist ID
+const KWORB_ARTIST_SLUG = 'enhypen';
+const KWORB_CACHE_KEY = 'enhypen_kworb_cache';
+const KWORB_CACHE_TTL = 15 * 60 * 1000; // 15 min
+
+// Usamos allorigins como proxy CORS para scrapear kworb.net
+async function fetchKworbHtml(url) {
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+  const res = await fetch(proxy);
+  if (!res.ok) throw new Error('Proxy error ' + res.status);
+  const json = await res.json();
+  return json.contents;
+}
+
+function parseKworbArtist(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  // Extraer monthly listeners, followers, total streams
+  // Kworb los muestra en tablas o divs con clase específica
+  let listeners = null, followers = null, streams = null;
+  let listenersDaily = null, followersDaily = null, streamsDaily = null;
+
+  // Buscar en texto de la página las estadísticas clave
+  const text = doc.body ? doc.body.innerText || doc.body.textContent : '';
+
+  // Buscar patrones numéricos comunes en kworb
+  // Monthly Listeners
+  const listM = html.match(/Monthly\s+Listeners[^0-9]*?([\d,]+)/i);
+  if (listM) listeners = parseInt(listM[1].replace(/,/g,''));
+
+  // Followers
+  const folM = html.match(/Followers[^0-9]*?([\d,]+)/i);
+  if (folM) followers = parseInt(folM[1].replace(/,/g,''));
+
+  // Total streams - buscar en tablas de kworb
+  // Kworb artist page tiene una tabla con streams totales de canciones
+  let totalStreams = 0;
+  const tables = doc.querySelectorAll('table');
+  tables.forEach(table => {
+    const rows = table.querySelectorAll('tr');
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      if (cells.length >= 2) {
+        // Las celdas de streams suelen ser números grandes
+        cells.forEach(cell => {
+          const val = parseInt((cell.textContent || '').replace(/,/g,'').trim());
+          if (!isNaN(val) && val > 1000000) totalStreams += val;
+        });
+      }
+    });
+  });
+
+  // Buscar valores directamente en spans/divs con datos numéricos grandes
+  const allNums = html.match(/"([\d,]{7,})"/g);
+  let maxNum = 0;
+  if (allNums) {
+    allNums.forEach(n => {
+      const v = parseInt(n.replace(/[",]/g,''));
+      if (v > maxNum) maxNum = v;
+    });
+  }
+
+  // Buscar datos de incremento diario
+  const dailyM = html.match(/\+\s*([\d,]+)\s*Today/gi);
+  if (dailyM && dailyM.length > 0) {
+    streamsDaily = parseInt(dailyM[0].replace(/[^0-9]/g,''));
+  }
+  if (dailyM && dailyM.length > 1) {
+    listenersDaily = parseInt(dailyM[1].replace(/[^0-9]/g,''));
+  }
+
+  return { listeners, followers, streams: streams || totalStreams || null, listenersDaily, followersDaily, streamsDaily };
+}
+
+function renderArtistChart(data, fromCache = false) {
+  const { listeners, followers, streams, listenersDaily, followersDaily, streamsDaily } = data;
+
+  function statCard(label, value, daily, liveText) {
+    const valHtml = value != null
+      ? `<div class="ast-value">${fmtLong(value)}</div>`
+      : `<div class="ast-value" style="font-size:1rem;color:var(--text-muted)">—</div>`;
+    const liveHtml = `<div class="ast-live"><div class="ast-live-dot"></div>${liveText || 'LIVE'}</div>`;
+    const dailyHtml = daily != null && daily > 0
+      ? `<div class="ast-daily">▲ +${fmtLong(daily)} Today</div>` : '';
+    return `<div class="artist-stat-card">
+      <div class="ast-label">${label}</div>
+      ${valHtml}
+      ${liveHtml}
+      ${dailyHtml}
+    </div>`;
+  }
+
+  const html = `<div class="artist-chart-grid">
+    ${statCard('Monthly Listeners', listeners, listenersDaily, 'Live')}
+    ${statCard('Total Followers', followers, followersDaily, 'LIVE')}
+    ${statCard('Total Streams', streams, streamsDaily, streams != null ? `+${fmtLong(streamsDaily||0)} Today` : 'Live')}
+  </div>`;
+
+  document.getElementById('artist-chart-content').innerHTML = html;
+  const now = new Date();
+  document.getElementById('kworb-updated').textContent =
+    `Fuente: kworb.net · ${now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}${fromCache?' (caché)':''}`;
+}
+
+function fmtLong(n) {
+  if (n == null) return '—';
+  return Number(n).toLocaleString('en-US');
+}
+
+async function loadKworbArtist(forceRefresh = false) {
+  const btn = document.getElementById('kworb-btn');
+  if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
+
+  // Revisar caché primero
+  if (!forceRefresh) {
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(KWORB_CACHE_KEY) || 'null');
+      if (cached && (Date.now() - cached.ts) < KWORB_CACHE_TTL) {
+        renderArtistChart(cached.data, true);
+        if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
+        return;
+      }
+    } catch(e) {}
+  }
+
+  try {
+    // Kworb artist page for ENHYPEN
+    const url = `https://kworb.net/spotify/artist/${KWORB_ARTIST_SLUG}.html`;
+    const html = await fetchKworbHtml(url);
+    const data = parseKworbArtist(html);
+
+    // Si no se pudo parsear listeners/followers, intentar con la página de overview
+    if (!data.listeners && !data.followers) {
+      // Intentar con la página principal de artistas de kworb
+      try {
+        const url2 = `https://kworb.net/spotify/artist/${KWORB_ARTIST_SLUG}_songs.html`;
+        const html2 = await fetchKworbHtml(url2);
+        const data2 = parseKworbArtist(html2);
+        Object.assign(data, data2);
+      } catch(e) {}
+    }
+
+    // Calcular total streams sumando todas las canciones si viene en la tabla
+    if (!data.streams || data.streams < 1000000) {
+      // Sumar streams de la discografía local como fallback
+      const totalLocal = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.streams || 0), 0);
+      data.streams = data.streams || totalLocal;
+      data.streamsDaily = data.streamsDaily || ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.daily || 0), 0);
+    }
+
+    // Guardar en caché
+    sessionStorage.setItem(KWORB_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+    renderArtistChart(data);
+
+  } catch(e) {
+    console.warn('Kworb fetch failed:', e.message);
+    // Fallback: usar datos locales de la discografía
+    const totalStreams = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.streams || 0), 0);
+    const totalDaily  = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.daily  || 0), 0);
+    const fallbackData = {
+      listeners: null,
+      followers: null,
+      streams: totalStreams,
+      listenersDaily: null,
+      followersDaily: null,
+      streamsDaily: totalDaily
+    };
+    document.getElementById('artist-chart-content').innerHTML = `
+      <div class="kworb-error">
+        <strong>⚠ No se pudo conectar con kworb.net</strong> (CORS bloqueado o sin conexión).<br>
+        Mostrando streams calculados desde la discografía local. Monthly Listeners y Followers requieren conexión con kworb.
+      </div>
+      <div style="margin-top:0.8rem"><div class="artist-chart-grid">
+        <div class="artist-stat-card" style="opacity:0.5"><div class="ast-label">Monthly Listeners</div><div class="ast-value" style="font-size:0.85rem;color:var(--text-muted)">Sin datos</div></div>
+        <div class="artist-stat-card" style="opacity:0.5"><div class="ast-label">Total Followers</div><div class="ast-value" style="font-size:0.85rem;color:var(--text-muted)">Sin datos</div></div>
+        <div class="artist-stat-card"><div class="ast-label">Total Streams (local)</div><div class="ast-value">${fmtLong(totalStreams)}</div><div class="ast-daily">▲ +${fmtLong(totalDaily)} Today</div></div>
+      </div></div>`;
+    document.getElementById('kworb-updated').textContent = 'Fallback local · kworb.net no disponible';
+  }
+
+  if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
+}
+
 // ========== INICIALIZACIÓN ==========
-async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic()]); }
+async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic()]); loadKworbArtist(); }
 loadAll();
 let seq=''; document.addEventListener('keydown',e=>{ seq=(seq+e.key.toLowerCase()).slice(-3); if(seq==='adm'){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; } });
 let tap=0, timer; document.querySelector('.nav-logo').addEventListener('click',()=>{ tap++; clearTimeout(timer); timer=setTimeout(()=>tap=0,600); if(tap>=5){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; tap=0; } });
