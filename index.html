@@ -702,7 +702,7 @@ async function fetchYTChannel() {
   try {
     const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${YT_CHANNEL_ID}&key=${YT_API_KEY}`;
     const res = await fetch(url);
-    if (!res.ok) { const e = await res.json().catch(()=>({}))); throw new Error(e?.error?.message||'HTTP '+res.status); }
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message||'HTTP '+res.status); }
     const data = await res.json();
     const s = data.items?.[0]?.statistics;
     if (!s) throw new Error('No stats');
