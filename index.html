@@ -496,6 +496,10 @@ footer a:hover { color: var(--primary-red); }
     <div class="tip-box"><p>📊 Datos actualizados manualmente por el staff. Los streams diarios se calculan automáticamente al actualizar el total.</p></div>
   </section>
   <section>
+    <div class="section-header"><div class="section-title">Album / EP Chart</div><div class="section-line"></div></div>
+    <div id="spotify-albums-table"><div class="loading"><div class="spin"></div><br>Cargando álbumes...</div></div>
+  </section>
+  <section>
     <div class="section-header"><div class="section-title">Spotify Playlists</div><div class="section-line"></div></div>
     <div id="spotify-playlists"><div class="loading"><div class="spin"></div></div></div>
     <div class="tip-box"><p>🎧 Consejo: Escucha las listas en modo aleatorio y sin silenciar. El algoritmo ama la consistencia.</p></div>
@@ -555,6 +559,7 @@ footer a:hover { color: var(--primary-red); }
     <button class="admin-tab" onclick="switchAdminTab('tab-playlists',this)">🎵 Playlists</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-ytdata',this)">📡 YouTube API</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-spotifydata',this)">🎧 Spotify Data</button>
+    <button class="admin-tab" onclick="switchAdminTab('tab-albums',this)">💿 Álbumes</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-config',this)">⚙️ Configuración</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-images',this)">🖼️ Imágenes</button>
   </div>
@@ -624,6 +629,53 @@ footer a:hover { color: var(--primary-red); }
             <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Carga todas las canciones de ENHYPEN con streams en 0. Solo hazlo una vez. Si ya tienes canciones cargadas, se saltarán las duplicadas.</p>
             <button class="btn" onclick="preloadDiscography()">📥 Cargar discografía</button>
             <div id="preload-status" style="margin-top:0.8rem;font-size:0.78rem;color:var(--text-muted)"></div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Álbumes -->
+    <div class="admin-section" id="tab-albums">
+      <div class="admin-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:1rem">
+          <h3 style="margin:0">💿 Álbumes / EPs</h3>
+          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Kworb Albums</a>
+        </div>
+        <div id="admin-albums-list"></div>
+      </div>
+      <div class="admin-card">
+        <details open>
+          <summary style="cursor:pointer;font-weight:600;color:var(--text-dim);font-size:0.85rem">⚡ Actualización rápida de álbumes</summary>
+          <div style="margin-top:1rem">
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Actualiza los streams de todos los álbumes de una vez.</p>
+            <div id="bulk-albums-list"><div class="loading"><div class="spin"></div></div></div>
+            <div style="margin-top:1rem;display:flex;gap:0.8rem;flex-wrap:wrap">
+              <button class="btn" onclick="saveBulkAlbums()">💾 Guardar álbumes</button>
+              <button class="btn btn-ghost" onclick="loadBulkAlbumsList()">🔄 Recargar</button>
+            </div>
+          </div>
+        </details>
+      </div>
+      <div class="admin-card">
+        <details>
+          <summary style="cursor:pointer;font-weight:600;color:var(--text-dim);font-size:0.85rem">📥 Precargar discografía de álbumes</summary>
+          <div style="margin-top:1rem">
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Carga todos los álbumes/EPs de ENHYPEN con sus streams actuales de Kworb.</p>
+            <button class="btn" onclick="preloadAlbums()">📥 Cargar álbumes</button>
+            <div id="preload-albums-status" style="margin-top:0.8rem;font-size:0.78rem;color:var(--text-muted)"></div>
+          </div>
+        </details>
+      </div>
+      <div class="admin-card">
+        <details>
+          <summary style="cursor:pointer;font-weight:600;color:var(--text-dim);font-size:0.85rem">+ Agregar álbum manualmente</summary>
+          <div style="margin-top:1rem">
+            <div class="form-group"><label>Título</label><input class="input" id="na-title" placeholder="ej: DIMENSION : DILEMMA"></div>
+            <div class="form-group"><label>Año</label><input class="input" id="na-year" placeholder="ej: 2021"></div>
+            <div class="form-group"><label>Streams totales</label><input class="input" id="na-streams" placeholder="0"></div>
+            <div class="form-group"><label>Daily streams</label><input class="input" id="na-daily" placeholder="0"></div>
+            <div class="form-group"><label>URL de Spotify (opcional)</label><input class="input" id="na-url" placeholder="https://open.spotify.com/album/..."></div>
+            <button class="btn" style="margin-top:0.5rem" onclick="addAlbum()">Agregar álbum</button>
           </div>
         </details>
       </div>
@@ -929,6 +981,8 @@ async function preloadDiscography() {
   showToast(`Discografía cargada: ${added} canciones`);
   await loadAdminSpotifySongs();
   await loadBulkUpdateList();
+  await loadAdminAlbums();
+  await loadBulkAlbumsList();
   await loadSpotifySongsPublic();
 }
 
@@ -978,6 +1032,156 @@ async function saveBulkStreams() {
   showToast(errors ? `${saved} guardados, ${errors} errores` : `✅ ${saved} canciones actualizadas`);
   await loadAdminSpotifySongs();
   await loadSpotifySongsPublic();
+}
+
+// ========== ALBUMS ==========
+const ENHYPEN_ALBUMS = [
+  { title: "DIMENSION : ANSWER", year: 2022, streams: 1139963107, daily: 357608, spotify_url: "https://open.spotify.com/album/6BY9EGTM7HNkNIDAuCVBKY" },
+  { title: "BORDER : CARNIVAL", year: 2021, streams: 1089017295, daily: 395872, spotify_url: "https://open.spotify.com/album/4wSHsVShwB7xW58d5rthlV" },
+  { title: "ROMANCE : UNTOLD -daydream-", year: 2024, streams: 985473967, daily: 984082, spotify_url: "https://open.spotify.com/album/5IZPD1GFQqkiJNXVNXuF9t" },
+  { title: "DARK BLOOD", year: 2023, streams: 877765199, daily: 491569, spotify_url: "https://open.spotify.com/album/4i7Sl4jRNAx8uTb9yEFDq9" },
+  { title: "ROMANCE : UNTOLD", year: 2024, streams: 767029266, daily: 772727, spotify_url: "https://open.spotify.com/album/0BIULTWShHq1SnMMTDcmPT" },
+  { title: "DIMENSION : DILEMMA", year: 2021, streams: 608570678, daily: 213242, spotify_url: "https://open.spotify.com/album/7iVp3DfqUeUhWxrAkOVcYS" },
+  { title: "BORDER : DAY ONE", year: 2020, streams: 563075790, daily: 171513, spotify_url: "https://open.spotify.com/album/5sHbKmq5mMJEUuFPRqEw1s" },
+  { title: "MANIFESTO : DAY 1", year: 2022, streams: 541491718, daily: 213983, spotify_url: "https://open.spotify.com/album/2YiEt2KqMZrJXS7rDFBvFv" },
+  { title: "SADAME", year: 2023, streams: 520511955, daily: 146413, spotify_url: "" },
+  { title: "ORANGE BLOOD", year: 2023, streams: 422610000, daily: 232160, spotify_url: "https://open.spotify.com/album/7FRdLPPELnVWqGmGdVH2ND" },
+  { title: "DESIRE : UNLEASH", year: 2025, streams: 402580367, daily: 524978, spotify_url: "https://open.spotify.com/album/3y1SBqIAFMSiElxM7VkXAq" },
+  { title: "DARK MOON SPECIAL ALBUM", year: 2023, streams: 394491457, daily: 320796, spotify_url: "" },
+  { title: "THE SIN : VANISH (SUNGHOON Ver.)", year: 2026, streams: 196843560, daily: 740037, spotify_url: "" },
+  { title: "THE SIN : VANISH", year: 2026, streams: 193935458, daily: 726353, spotify_url: "" },
+  { title: "THE SIN : VANISH (HEESEUNG Ver.)", year: 2026, streams: 192571481, daily: 725229, spotify_url: "" },
+  { title: "THE SIN : VANISH (SUNOO Ver.)", year: 2026, streams: 191835057, daily: 725623, spotify_url: "" },
+  { title: "THE SIN : VANISH (NI-KI Ver.)", year: 2026, streams: 191320171, daily: 722156, spotify_url: "" },
+  { title: "THE SIN : VANISH (JAKE Ver.)", year: 2026, streams: 191205986, daily: 721273, spotify_url: "" },
+  { title: "THE SIN : VANISH (JUNGWON Ver.)", year: 2026, streams: 191189532, daily: 722462, spotify_url: "" },
+  { title: "THE SIN : VANISH (JAY Ver.)", year: 2026, streams: 191164482, daily: 721656, spotify_url: "" },
+  { title: "THE SIN : VANISH (English Ver.)", year: 2026, streams: 185755159, daily: 702359, spotify_url: "" },
+  { title: "THE SIN : VANISH (Japanese Ver.)", year: 2026, streams: 182439810, daily: 693374, spotify_url: "" },
+  { title: "THE SIN : VANISH (Chinese Ver.)", year: 2026, streams: 182273771, daily: 692097, spotify_url: "" },
+  { title: "定め", year: 2023, streams: 139993132, daily: 44202, spotify_url: "" },
+  { title: "XO (Only If You Say Yes) (Remixes)", year: 2024, streams: 10611289, daily: 9910, spotify_url: "" },
+];
+
+async function loadSpotifyAlbumsPublic() {
+  try {
+    const { data, error } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
+    if (error) throw error;
+    const container = document.getElementById('spotify-albums-table');
+    if (!container) return;
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="empty"><p>💿 No hay álbumes. El admin puede cargarlos desde el panel.</p></div>';
+      return;
+    }
+    let html = `<table class="spotify-table"><thead><tr><th>RANK</th><th>RELEASE</th><th>TOTAL STREAMS</th><th style="color:#4ade80">DAILY AVG</th><th>LINK</th></tr></thead><tbody>`;
+    data.forEach((a, i) => {
+      const daily = a.daily_streams > 0 ? `<span style="color:#4ade80;font-weight:700">▲ +${fmt(a.daily_streams)}</span>` : '—';
+      const link = a.spotify_url ? `<a href="${a.spotify_url}" target="_blank" style="color:var(--primary-red);text-decoration:none">🎵 Escuchar</a>` : '—';
+      html += `<tr>
+        <td><span style="color:var(--primary-red);font-family:'Orbitron',monospace;font-weight:700;background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.4);border-radius:6px;padding:2px 8px">#${i+1}</span></td>
+        <td><div class="yt-video-title">${escapeHtml(a.title)}</div><div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px">${a.year || ''}</div></td>
+        <td style="color:var(--primary-gold);font-family:'Orbitron',monospace">${fmt(a.total_streams)}</td>
+        <td>${daily}</td>
+        <td>${link}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  } catch(e) { console.error('Albums error:', e); }
+}
+
+async function loadAdminAlbums() {
+  const { data } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
+  const container = document.getElementById('admin-albums-list');
+  if (!container) return;
+  if (!data || data.length === 0) { container.innerHTML = '<p style="color:var(--text-muted)">No hay álbumes. Usa "Precargar discografía".</p>'; return; }
+  container.innerHTML = data.map(a => `<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${escapeHtml(a.title)}</div><div class="ali-sub">${fmt(a.total_streams)} streams | +${fmt(a.daily_streams)} hoy | ${a.year||''}</div></div><div class="ali-actions"><button class="btn btn-sm btn-danger" onclick="deleteAlbum(${a.id})">✕</button></div></div>`).join('');
+}
+
+async function loadBulkAlbumsList() {
+  const container = document.getElementById('bulk-albums-list');
+  if (!container) return;
+  const { data } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
+  if (!data || data.length === 0) { container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">No hay álbumes. Primero precarga la discografía.</p>'; return; }
+  let html = '<div style="display:grid;gap:0.5rem">';
+  data.forEach(a => {
+    html += `<div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:0.8rem;background:#111;border-radius:12px;padding:0.6rem 1rem;border:1px solid var(--border-dim)">
+      <div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--text-main)">${escapeHtml(a.title)}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px">Actual: ${fmt(a.total_streams)} streams</div>
+      </div>
+      <input class="input" id="balb-${a.id}" type="text" value="${a.total_streams || 0}" placeholder="streams" style="width:130px;text-align:right;font-family:'Orbitron',monospace;font-size:0.82rem" data-id="${a.id}">
+    </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+async function saveBulkAlbums() {
+  const inputs = document.querySelectorAll('#bulk-albums-list input[data-id]');
+  if (!inputs.length) { showToast('No hay álbumes', true); return; }
+  const today = new Date().toISOString().slice(0,10);
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yStr = yesterday.toISOString().slice(0,10);
+  let saved = 0;
+  for (const input of inputs) {
+    const id = parseInt(input.dataset.id);
+    const newStreams = parseInt(input.value.replace(/\D/g,'')) || 0;
+    const { data: snap } = await sb.from('spotify_album_snapshots').select('total_streams').eq('album_id', id).eq('snapshot_date', yStr).maybeSingle();
+    const old = snap ? snap.total_streams : 0;
+    const daily = (old && newStreams > old) ? newStreams - old : 0;
+    await sb.from('spotify_albums').update({ total_streams: newStreams, daily_streams: daily }).eq('id', id);
+    await sb.from('spotify_album_snapshots').upsert({ album_id: id, snapshot_date: today, total_streams: newStreams }, { onConflict: 'album_id,snapshot_date' });
+    saved++;
+  }
+  showToast(`✅ ${saved} álbumes actualizados`);
+  await loadAdminAlbums();
+  await loadSpotifyAlbumsPublic();
+}
+
+async function preloadAlbums() {
+  const status = document.getElementById('preload-albums-status');
+  status.textContent = '⏳ Cargando...';
+  const { data: existing } = await sb.from('spotify_albums').select('title');
+  const existingTitles = new Set((existing || []).map(a => a.title.toLowerCase()));
+  const toInsert = ENHYPEN_ALBUMS.filter(a => !existingTitles.has(a.title.toLowerCase()));
+  if (toInsert.length === 0) { status.textContent = '✅ Todos los álbumes ya están cargados.'; return; }
+  let added = 0;
+  const today = new Date().toISOString().slice(0,10);
+  for (const album of toInsert) {
+    const { data: ins, error } = await sb.from('spotify_albums').insert({ title: album.title, year: album.year, total_streams: album.streams || 0, daily_streams: album.daily || 0, spotify_url: album.spotify_url || null }).select();
+    if (!error && ins && ins[0]) {
+      await sb.from('spotify_album_snapshots').upsert({ album_id: ins[0].id, snapshot_date: today, total_streams: album.streams || 0 }, { onConflict: 'album_id,snapshot_date' });
+      added++;
+    }
+  }
+  status.textContent = `✅ ${added} álbumes cargados con datos de Kworb (27 May 2026).`;
+  showToast(`Álbumes cargados: ${added}`);
+  await loadAdminAlbums();
+  await loadBulkAlbumsList();
+  await loadSpotifyAlbumsPublic();
+}
+
+async function addAlbum() {
+  const title = document.getElementById('na-title').value.trim();
+  const year = parseInt(document.getElementById('na-year').value) || null;
+  const total_streams = parseInt(document.getElementById('na-streams').value.replace(/\D/g,'')) || 0;
+  const daily_streams = parseInt(document.getElementById('na-daily').value.replace(/\D/g,'')) || 0;
+  const spotify_url = document.getElementById('na-url').value.trim();
+  if (!title) { showToast('Escribe el título', true); return; }
+  const { error } = await sb.from('spotify_albums').insert({ title, year, total_streams, daily_streams, spotify_url: spotify_url || null });
+  if (error) { showToast('Error al guardar', true); return; }
+  showToast('Álbum agregado ✅');
+  ['na-title','na-year','na-streams','na-daily','na-url'].forEach(id => document.getElementById(id).value = '');
+  await loadAdminAlbums(); await loadBulkAlbumsList(); await loadSpotifyAlbumsPublic();
+}
+
+async function deleteAlbum(id) {
+  if (!confirm('¿Eliminar álbum?')) return;
+  await sb.from('spotify_albums').delete().eq('id', id);
+  await sb.from('spotify_album_snapshots').delete().eq('album_id', id);
+  showToast('Álbum eliminado');
+  await loadAdminAlbums(); await loadBulkAlbumsList(); await loadSpotifyAlbumsPublic();
 }
 
 // ========== YOUTUBE API (todo tu código original, sin modificaciones) ==========
@@ -1147,6 +1351,8 @@ async function deleteYTVideo(id){ if(!confirm('¿Eliminar video?')) return; awai
 async function loadAdminData(){
   updateAdminYTStatus();
   await loadBulkUpdateList();
+  await loadAdminAlbums();
+  await loadBulkAlbumsList();
   let {data:goals}=await sb.from('goals').select('*').order('sort_order');
   document.getElementById('admin-goals-list').innerHTML=goals&&goals.length?goals.map(g=>`<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${g.song}</div><div class="ali-sub">${fmt(g.current)} / ${fmt(g.target)} · ${g.platform}</div></div><div class="pct-badge">${Math.min(100,Math.round(g.current/g.target*100))}%</div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editGoal(${g.id},'${g.song.replace(/'/g,"\\'")}',${g.current},${g.target})">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteGoal(${g.id})">✕</button></div></div>`).join(''):'<p>Sin metas</p>';
   let {data:playlists}=await sb.from('playlists').select('*').order('sort_order');
@@ -1189,7 +1395,7 @@ function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').
 function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
 // ========== INICIALIZACIÓN ==========
-async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadYTDataPublic()]); }
+async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic()]); }
 loadAll();
 let seq=''; document.addEventListener('keydown',e=>{ seq=(seq+e.key.toLowerCase()).slice(-3); if(seq==='adm'){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; } });
 let tap=0, timer; document.querySelector('.nav-logo').addEventListener('click',()=>{ tap++; clearTimeout(timer); timer=setTimeout(()=>tap=0,600); if(tap>=5){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; tap=0; } });
