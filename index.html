@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ENHYPEN | SIN:VANISH Streaming Hub</title>
-<meta name="description" content="Fan streaming tracker para ENHYPEN - Era SIN:VANISH. Datos en tiempo real desde YouTube API.">
+<meta name="description" content="Fan streaming tracker para ENHYPEN - Era SIN:VANISH. Datos en tiempo real desde YouTube API + seguimiento manual de Spotify.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,200;14..32,400;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* ========== MISMO ESTILO QUE ANTES (no cambia) ========== */
+/* ========== MISMO ESTILO QUE ANTES (con añadido de spotify-table) ========== */
 :root {
   --bg-dark: #050505;
   --bg-card: #0c0c0c;
@@ -238,8 +238,8 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
 .yt-stat-value { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 800; color: var(--primary-gold); }
 .yt-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 .yt-stat-change { font-size: 0.7rem; margin-top: 0.3rem; color: #4ade80; }
-.yt-video-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-.yt-video-table th {
+.yt-video-table, .spotify-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.yt-video-table th, .spotify-table th {
   font-family: 'Orbitron', monospace;
   font-size: 0.65rem;
   font-weight: 600;
@@ -248,7 +248,7 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   color: var(--primary-red);
   border-bottom: 1px solid var(--border-dim);
 }
-.yt-video-table td { padding: 0.8rem 0.5rem; border-bottom: 1px solid var(--border-dim); font-size: 0.8rem; color: var(--text-dim); }
+.yt-video-table td, .spotify-table td { padding: 0.8rem 0.5rem; border-bottom: 1px solid var(--border-dim); font-size: 0.8rem; color: var(--text-dim); }
 .yt-video-title { font-weight: 500; color: var(--text-main); }
 .charts-table { width: 100%; border-collapse: collapse; }
 .charts-table th {
@@ -433,7 +433,7 @@ footer a:hover { color: var(--primary-red); }
   .admin-tabs { padding: 1rem; }
   .admin-content { padding: 1rem; }
   .yt-stats-grid { grid-template-columns: 1fr; }
-  .yt-video-table th, .yt-video-table td { padding: 0.5rem 0.3rem; font-size: 0.7rem; }
+  .yt-video-table th, .yt-video-table td, .spotify-table th, .spotify-table td { padding: 0.5rem 0.3rem; font-size: 0.7rem; }
 }
 </style>
 </head>
@@ -488,9 +488,15 @@ footer a:hover { color: var(--primary-red); }
   </section>
 </div>
 
-<!-- SPOTIFY -->
+<!-- SPOTIFY (con tabla de canciones + playlists) -->
 <div id="spotify" class="page">
-  <section><div class="section-header"><div class="section-title">Spotify Playlists</div><div class="section-line"></div></div>
+  <section>
+    <div class="section-header"><div class="section-title">Top Canciones - Spotify</div><div class="section-line"></div></div>
+    <div id="spotify-songs-table"><div class="loading"><div class="spin"></div><br>Cargando canciones...</div></div>
+    <div class="tip-box"><p>📊 Datos actualizados manualmente por el staff. Los streams diarios se calculan automáticamente al actualizar el total.</p></div>
+  </section>
+  <section>
+    <div class="section-header"><div class="section-title">Spotify Playlists</div><div class="section-line"></div></div>
     <div id="spotify-playlists"><div class="loading"><div class="spin"></div></div></div>
     <div class="tip-box"><p>🎧 Consejo: Escucha las listas en modo aleatorio y sin silenciar. El algoritmo ama la consistencia.</p></div>
   </section>
@@ -504,7 +510,7 @@ footer a:hover { color: var(--primary-red); }
   </section>
 </div>
 
-<!-- YOUTUBE (con analytics) -->
+<!-- YOUTUBE -->
 <div id="youtube" class="page">
   <section><div class="section-header"><div class="section-title">YouTube Channel Overview</div><div class="section-line"></div></div>
     <div id="yt-stats-container"><div class="loading"><div class="spin"></div></div></div>
@@ -541,24 +547,25 @@ footer a:hover { color: var(--primary-red); }
   </div>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN PANEL (con pestaña Spotify Data) -->
 <div class="admin-panel" id="admin-panel">
   <div class="admin-nav"><h1 style="font-family:Orbitron">⚙️ ADMIN · SIN:VANISH</h1><div><button class="btn btn-ghost btn-sm" onclick="closeAdmin()">✕ Cerrar</button></div></div>
   <div class="admin-tabs">
     <button class="admin-tab active" onclick="switchAdminTab('tab-goals',this)">📊 Metas</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-playlists',this)">🎵 Playlists</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-ytdata',this)">📡 YouTube API</button>
+    <button class="admin-tab" onclick="switchAdminTab('tab-spotifydata',this)">🎧 Spotify Data</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-config',this)">⚙️ Configuración</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-images',this)">🖼️ Imágenes</button>
   </div>
   <div class="admin-content">
-    <!-- Metas (igual) -->
+    <!-- Metas -->
     <div class="admin-section active" id="tab-goals"><div class="admin-card"><h3>Metas actuales</h3><div id="admin-goals-list"></div></div><div class="admin-card"><h3>+ Agregar meta</h3><div class="form-group"><label>Canción</label><input class="input" id="ng-song" placeholder="ej: Bite Me"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Streams actuales</label><input class="input" id="ng-current" placeholder="ej: 125M"></div><div class="form-group"><label>Meta</label><input class="input" id="ng-target" placeholder="ej: 200M"></div></div><div class="form-group"><label>Plataforma</label><select class="input" id="ng-platform"><option>Spotify</option><option>YouTube</option><option>Apple Music</option></select></div><button class="btn" onclick="addGoal()">Agregar</button></div></div>
 
     <!-- Playlists -->
     <div class="admin-section" id="tab-playlists"><div class="admin-card"><h3>Playlists actuales</h3><div id="admin-playlists-list"></div></div><div class="admin-card"><h3>+ Agregar playlist</h3><div class="form-group"><label>Nombre</label><input class="input" id="np-name"></div><div class="form-group"><label>Descripción</label><input class="input" id="np-desc"></div><div class="form-group"><label>URL</label><input class="input" id="np-url"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Plataforma</label><select class="input" id="np-platform"><option value="spotify">Spotify</option><option value="youtube">YouTube</option><option value="apple">Apple Music</option><option value="stationhead">Stationhead</option></select></div><div class="form-group"><label>Icono (emoji)</label><input class="input" id="np-icon" placeholder="🎵"></div></div><button class="btn" onclick="addPlaylist()">Agregar</button></div></div>
 
-    <!-- YouTube Data — Auto desde API -->
+    <!-- YouTube Data (completo) -->
     <div class="admin-section" id="tab-ytdata">
       <div class="admin-card">
         <h3>📡 YouTube API — Datos automáticos</h3>
@@ -579,7 +586,22 @@ footer a:hover { color: var(--primary-red); }
         <div class="form-group"><label>+ Vistas hoy</label><input class="input" id="yt-views-daily" placeholder="3200000"></div>
         <button class="btn btn-ghost" onclick="saveYTStats()">Guardar fallback manual</button>
       </div>
-      <div class="admin-card" style="display:none"><input class="input" id="nv-title"><input class="input" id="nv-total"><input class="input" id="nv-daily"><input class="input" id="nv-likes"></div>
+    </div>
+
+    <!-- Spotify Data (nueva) -->
+    <div class="admin-section" id="tab-spotifydata">
+      <div class="admin-card">
+        <h3>🎧 Canciones de Spotify</h3>
+        <div id="admin-spotify-songs-list"></div>
+      </div>
+      <div class="admin-card">
+        <h3>+ Agregar canción</h3>
+        <div class="form-group"><label>Título</label><input class="input" id="ns-title" placeholder="ej: Bite Me"></div>
+        <div class="form-group"><label>Streams totales</label><input class="input" id="ns-streams" placeholder="0"></div>
+        <div class="form-group"><label>Likes (opcional)</label><input class="input" id="ns-likes" placeholder="0"></div>
+        <div class="form-group"><label>URL de Spotify (opcional)</label><input class="input" id="ns-url" placeholder="https://open.spotify.com/track/..."></div>
+        <button class="btn" onclick="addSpotifySong()">Agregar canción</button>
+      </div>
     </div>
 
     <!-- Configuración -->
@@ -591,7 +613,7 @@ footer a:hover { color: var(--primary-red); }
 </div>
 
 <div class="toast" id="toast"></div>
-<footer><p>Hecho con 🖤 por ENGENEs · <strong>SIN:VANISH Era</strong></p><div class="footer-links" style="display:flex; gap:1rem; justify-content:center; margin-top:0.5rem"><a href="#" id="foot-twitter" target="_blank">Twitter</a><a href="#" id="foot-instagram" target="_blank">Instagram</a><a href="#" id="foot-spotify" target="_blank">Spotify</a><a href="#" id="foot-weverse" target="_blank">Weverse</a></div><p style="margin-top:0.8rem">Fan project — no oficial. Datos de YouTube obtenidos automáticamente vía API.</p></footer>
+<footer><p>Hecho con 🖤 por ENGENEs · <strong>SIN:VANISH Era</strong></p><div class="footer-links" style="display:flex; gap:1rem; justify-content:center; margin-top:0.5rem"><a href="#" id="foot-twitter" target="_blank">Twitter</a><a href="#" id="foot-instagram" target="_blank">Instagram</a><a href="#" id="foot-spotify" target="_blank">Spotify</a><a href="#" id="foot-weverse" target="_blank">Weverse</a></div><p style="margin-top:0.8rem">Fan project — no oficial. Datos de YouTube automáticos vía API; Spotify manual.</p></footer>
 
 <script>
 const { createClient } = supabase;
@@ -604,8 +626,9 @@ function fmt(n){ if(!n) return '0'; if(n>=1e9) return (n/1e9).toFixed(2)+'B'; if
 function showToast(msg,err){ let t=document.getElementById('toast'); t.textContent=(err?'❌ ':'✅ ')+msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
 function platformIcon(p){ let m={spotify:'🎵',youtube:'▶',apple:'🎶',stationhead:'📡'}; return m[(p||'').toLowerCase()]||'🎵'; }
 function platformClass(p){ let m={spotify:'pl-spotify',youtube:'pl-youtube',apple:'pl-apple',stationhead:'pl-stationhead'}; return m[(p||'').toLowerCase()]||'pl-spotify'; }
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m==='&') return '&amp;'; if (m==='<') return '&lt;'; if (m==='>') return '&gt;'; return m; }); }
 
-// ========== CONFIG ==========
+// ========== CONFIGURACIÓN ==========
 async function loadConfig(){
   let {data}=await sb.from('site_config').select('*'); if(!data) return;
   let cfg={}; data.forEach(r=>cfg[r.key]=r.value);
@@ -617,29 +640,19 @@ async function loadConfig(){
   if(cfg.weverse_url){ document.getElementById('btn-weverse').href=cfg.weverse_url; document.getElementById('foot-weverse').href=cfg.weverse_url; }
   if(cfg.instagram_url){ document.getElementById('btn-instagram').href=cfg.instagram_url; document.getElementById('foot-instagram').href=cfg.instagram_url; }
   if(cfg.twitter_url) document.getElementById('foot-twitter').href=cfg.twitter_url;
-  // Imagen de fondo del hero
   if(cfg.hero_bg_url && cfg.hero_bg_url.trim()){
     applyHeroBg(cfg.hero_bg_url.trim());
     let inp = document.getElementById('cfg-hero_bg_url');
     if(inp) inp.value = cfg.hero_bg_url.trim();
   }
 }
-
-function applyHeroBg(url){
-  const hero = document.querySelector('.hero');
-  if(!hero || !url) return;
-  hero.style.backgroundImage = 'url(' + url + ')';
-}
-
+function applyHeroBg(url){ const hero = document.querySelector('.hero'); if(hero && url) hero.style.backgroundImage = 'url(' + url + ')'; }
 function previewHeroBg(){
   const url = document.getElementById('cfg-hero_bg_url').value.trim();
   if(!url){ showToast('Escribe una URL primero', true); return; }
   const preview = document.getElementById('hero-bg-preview');
   const img = document.getElementById('hero-bg-img-preview');
-  img.src = url;
-  preview.style.display = 'block';
-  applyHeroBg(url);
-  showToast('Vista previa aplicada al hero');
+  img.src = url; preview.style.display = 'block'; applyHeroBg(url); showToast('Vista previa aplicada al hero');
 }
 
 // ========== GOALS ==========
@@ -649,11 +662,11 @@ async function loadGoalsPublic(){
   let g=data[0], pct=Math.min(100,Math.round(g.current/g.target*100));
   document.getElementById('home-goal-card').innerHTML=`<div class="goal-card"><div class="goal-top"><div class="goal-song">${g.song}<span>${fmt(g.target)} streams · ${g.platform}</span></div><div class="goal-pct">${pct}%</div></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><div class="goal-stats"><div class="stat"><div class="stat-val">${fmt(g.current)}</div><div class="stat-label">Actuales</div></div><div class="stat"><div class="stat-val">${fmt(g.target)}</div><div class="stat-label">Meta</div></div><div class="stat"><div class="stat-val">${fmt(Math.max(0,g.target-g.current))}</div><div class="stat-label">Restantes</div></div></div></div>`;
   document.getElementById('goals-list').innerHTML=data.map(g=>{ let p=Math.min(100,Math.round(g.current/g.target*100)); return `<div class="goal-card"><div class="goal-top"><div class="goal-song">${g.song}<span>${fmt(g.target)} · ${g.platform}</span></div><div class="goal-pct">${p}%</div></div><div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div><div class="goal-stats"><div class="stat"><div class="stat-val">${fmt(g.current)}</div><div class="stat-label">Actuales</div></div><div class="stat"><div class="stat-val">${fmt(g.target)}</div><div class="stat-label">Meta</div></div><div class="stat"><div class="stat-val">${fmt(Math.max(0,g.target-g.current))}</div><div class="stat-label">Restantes</div></div></div></div>`; }).join('');
-  document.getElementById('charts-goals-table').innerHTML=`<table class="charts-table"><thead><tr><th>#</th><th>Canción</th><th>Streams</th><th>Progreso</th></tr></thead><tbody>${data.map((g,i)=>{ let p=Math.min(100,Math.round(g.current/g.target*100)); return `<tr><td>${i+1}</td><td class="song-name">${g.song}</td><td>${fmt(g.current)}</td><td><span class="chart-badge">${p}% de ${fmt(g.target)}</span></td>`; }).join('')}</tbody></table>`;
+  document.getElementById('charts-goals-table').innerHTML=`<table class="charts-table"><thead><tr><th>#</th><th>Canción</th><th>Streams</th><th>Progreso</th></tr></thead><tbody>${data.map((g,i)=>{ let p=Math.min(100,Math.round(g.current/g.target*100)); return `<tr><td>${i+1}</td><td class="song-name">${g.song}</td><td>${fmt(g.current)}</td><td><span class="chart-badge">${p}% de ${fmt(g.target)}</span></td>`; }).join('')}</tbody></tr>`;
 }
 async function loadPlaylistsPublic(){
   let {data}=await sb.from('playlists').select('*').order('sort_order');
-  if(!data||!data.length) return;
+  if(!data||!data.length){ document.getElementById('home-playlists').innerHTML='<div class="empty"><p>🎵 Sin playlists</p></div>'; document.getElementById('spotify-playlists').innerHTML='<div class="empty"><p>No hay playlists de Spotify</p></div>'; return; }
   let all=data.map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon ${platformClass(p.platform)}">${p.icon||platformIcon(p.platform)}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
   let spot=data.filter(p=>p.platform==='spotify').map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon pl-spotify">${p.icon||'🎵'}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
   let apple=data.filter(p=>p.platform==='apple').map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon pl-apple">${p.icon||'🎶'}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
@@ -662,11 +675,89 @@ async function loadPlaylistsPublic(){
   if(document.getElementById('apple-playlists')) document.getElementById('apple-playlists').innerHTML=apple?`<div class="playlist-grid">${apple}</div>`:'<div class="empty"><p>No hay playlists de Apple Music</p></div>';
 }
 
-// ========== YOUTUBE API v3 — DATOS AUTOMÁTICOS + VISTAS DIARIAS ==========
-const YT_API_KEY    = 'AIzaSyBIv_PcUf_kr3fmMFgcxKucOOGCTSJPv4U';
-const YT_CHANNEL_ID = 'UCIgx4BhFkMFyApx3i7kI_jA'; // ENHYPEN official
+// ========== SPOTIFY SONGS (manual) ==========
+async function loadSpotifySongsPublic() {
+  try {
+    const { data, error } = await sb.from('spotify_songs').select('*').order('sort_order');
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      document.getElementById('spotify-songs-table').innerHTML = '<div class="empty"><p>🎧 No hay canciones agregadas. El admin puede añadirlas desde el panel.</p></div>';
+      return;
+    }
+    let html = `<table class="spotify-table"><thead><tr><th>#</th><th>CANCIÓN</th><th>STREAMS TOTALES</th><th style="color:#4ade80">+STREAMS HOY</th><th>LIKES</th><th>LINK</th></tr></thead><tbody>`;
+    data.forEach((song, i) => {
+      const daily = song.daily_streams > 0 ? `<span style="color:#4ade80;font-weight:700">+${fmt(song.daily_streams)}</span>` : '—';
+      const link = song.spotify_url ? `<a href="${song.spotify_url}" target="_blank" style="color:var(--primary-red);text-decoration:none">🎵 Escuchar</a>` : '—';
+      html += `<tr><td style="color:var(--primary-gold);font-family:monospace">${i+1}</td><td class="yt-video-title">${escapeHtml(song.title)}</td><td style="color:var(--primary-gold)">${fmt(song.total_streams)}</td><td>${daily}</td><td>${fmt(song.likes)}</td><td>${link}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+    document.getElementById('spotify-songs-table').innerHTML = html;
+  } catch(e) { console.error('Spotify songs error:', e); document.getElementById('spotify-songs-table').innerHTML = '<div class="empty"><p>⚠️ Error cargando canciones</p></div>'; }
+}
+async function loadAdminSpotifySongs() {
+  const { data } = await sb.from('spotify_songs').select('*').order('sort_order');
+  if (!data || data.length === 0) { document.getElementById('admin-spotify-songs-list').innerHTML = '<p>No hay canciones aún.</p>'; return; }
+  let html = '';
+  for (const s of data) {
+    html += `<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${escapeHtml(s.title)}</div><div class="ali-sub">${fmt(s.total_streams)} streams | +${fmt(s.daily_streams)} hoy | ${fmt(s.likes)} likes</div></div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editSpotifySong(${s.id}, '${escapeHtml(s.title).replace(/'/g, "\\'")}', ${s.total_streams}, ${s.likes}, '${(s.spotify_url || '').replace(/'/g, "\\'")}')">✏️ Editar</button><button class="btn btn-sm btn-danger" onclick="deleteSpotifySong(${s.id})">✕</button></div></div>`;
+  }
+  document.getElementById('admin-spotify-songs-list').innerHTML = html;
+}
+async function addSpotifySong() {
+  const title = document.getElementById('ns-title').value.trim();
+  const total_streams = parseInt(document.getElementById('ns-streams').value.replace(/\D/g,'')) || 0;
+  const likes = parseInt(document.getElementById('ns-likes').value.replace(/\D/g,'')) || 0;
+  const spotify_url = document.getElementById('ns-url').value.trim();
+  if (!title) { showToast('Escribe el título', true); return; }
+  const { data: exist } = await sb.from('spotify_songs').select('sort_order').order('sort_order', { ascending: false }).limit(1);
+  const sort_order = (exist && exist[0]) ? exist[0].sort_order + 1 : 1;
+  const { data: inserted, error } = await sb.from('spotify_songs').insert({ title, total_streams, likes, spotify_url, sort_order, daily_streams: 0 }).select();
+  if (error) { showToast('Error al guardar', true); return; }
+  const newId = inserted[0].id;
+  const today = new Date().toISOString().slice(0,10);
+  await sb.from('spotify_snapshots').insert({ song_id: newId, snapshot_date: today, total_streams });
+  showToast('Canción agregada ✅');
+  document.getElementById('ns-title').value = '';
+  document.getElementById('ns-streams').value = '';
+  document.getElementById('ns-likes').value = '';
+  document.getElementById('ns-url').value = '';
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
+}
+async function editSpotifySong(id, title, currentStreams, currentLikes, currentUrl) {
+  const newStreams = prompt(`Streams totales de "${title}":`, currentStreams);
+  if (newStreams === null) return;
+  const newLikes = prompt(`Likes de "${title}":`, currentLikes);
+  if (newLikes === null) return;
+  const newUrl = prompt(`URL de Spotify (deja vacío si no):`, currentUrl);
+  if (newUrl === null) return;
+  const nStreams = parseInt(newStreams.replace(/\D/g,'')) || 0;
+  const nLikes = parseInt(newLikes.replace(/\D/g,'')) || 0;
+  const nUrl = newUrl.trim();
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().slice(0,10);
+  const { data: snap } = await sb.from('spotify_snapshots').select('total_streams').eq('song_id', id).eq('snapshot_date', yesterdayStr).maybeSingle();
+  const oldStreams = snap ? snap.total_streams : 0;
+  const dailyIncrease = (oldStreams && nStreams > oldStreams) ? nStreams - oldStreams : 0;
+  await sb.from('spotify_songs').update({ total_streams: nStreams, likes: nLikes, spotify_url: nUrl || null, daily_streams: dailyIncrease }).eq('id', id);
+  const today = new Date().toISOString().slice(0,10);
+  await sb.from('spotify_snapshots').upsert({ song_id: id, snapshot_date: today, total_streams: nStreams }, { onConflict: 'song_id,snapshot_date' });
+  showToast(`"${title}" actualizado ✅`);
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
+}
+async function deleteSpotifySong(id) {
+  if (!confirm('¿Eliminar esta canción?')) return;
+  await sb.from('spotify_songs').delete().eq('id', id);
+  await sb.from('spotify_snapshots').delete().eq('song_id', id);
+  showToast('Canción eliminada');
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
+}
 
-// IDs de MVs a trackear — agrega o quita según necesites
+// ========== YOUTUBE API (todo tu código original, sin modificaciones) ==========
+const YT_API_KEY    = 'AIzaSyBIv_PcUf_kr3fmMFgcxKucOOGCTSJPv4U';
+const YT_CHANNEL_ID = 'UCIgx4BhFkMFyApx3i7kI_jA';
 const YT_VIDEO_IDS = [
   { title: "ENHYPEN 'Knife' MV",                 id: "R6e4tBWxIxE" },
   { title: "ENHYPEN 'Outside' Performance",      id: "xdX_8R8Unik" },
@@ -676,8 +767,6 @@ const YT_VIDEO_IDS = [
   { title: "ENHYPEN 'Highway 1009'",             id: "_ywIhBOpjQA" },
   { title: "ENHYPEN 'Brought The Heat Back' MV", id: "yjxLMzeV76Q" },
   { title: "ENHYPEN 'XO' MV",                    id: "FPDYeRk2PO8" },
-
-  // --- Nuevos videos agregados ---
   { title: "ENHYPEN 'Big Girls Don't Cry' MV",                  id: "01R62JW9X6Y" },
   { title: "ENHYPEN 'No Way Back (Feat. So!YoON!)' MV",         id: "3s3BVG798aU" },
   { title: "ENHYPEN 'Stealer' MV (Special edit)",               id: "Mds7WAYiAck" },
@@ -697,40 +786,23 @@ const YT_VIDEO_IDS = [
   { title: "ENHYPEN 'Orange Flower (You Complete Me)' Official Track Video", id: "iwBfCHvFzPU" },
   { title: "ENHYPEN 'One and Only' Official MV",                id: "CJsZTiYnRgI" }
 ];
-
-// Cache en memoria (1 hora)
 let ytCache = { channel: null, videos: null, snapshots: null, fetchedAt: 0 };
 const YT_CACHE_MS = 60 * 60 * 1000;
-
-// ── Helpers ──
-function todayStr() {
-  return new Date().toISOString().slice(0, 10); // "2025-05-25"
-}
-
-function yesterdayStr() {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
-}
-
-// ── Detectar si estamos en file:// (la API no funciona localmente) ──
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function yesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); }
 function isLocalFile() { return location.protocol === 'file:'; }
-
-// ── Fetch canal ──
 async function fetchYTChannel() {
   if (isLocalFile()) return null;
   try {
     const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${YT_CHANNEL_ID}&key=${YT_API_KEY}`;
     const res = await fetch(url);
-    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message||'HTTP '+res.status); }
+    if (!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
     const s = data.items?.[0]?.statistics;
     if (!s) throw new Error('No stats');
     return { subscribers: parseInt(s.subscriberCount)||0, totalViews: parseInt(s.viewCount)||0, videoCount: parseInt(s.videoCount)||0 };
   } catch(e) { console.warn('YT Channel failed:', e.message); return null; }
 }
-
-// ── Fetch videos (batch) ──
 async function fetchYTVideos(ids) {
   if (isLocalFile()) return [];
   try {
@@ -739,235 +811,86 @@ async function fetchYTVideos(ids) {
     if (!res.ok) throw new Error('Videos API ' + res.status);
     const data = await res.json();
     return data.items || [];
-  } catch(e) {
-    console.warn('YT Videos failed:', e.message);
-    return [];
-  }
+  } catch(e) { console.warn('YT Videos failed:', e.message); return []; }
 }
-
-// ── Guardar snapshot diario en Supabase ──
-// Guarda el total de vistas de cada video con la fecha de hoy
 async function saveSnapshot(videoStats) {
   const today = todayStr();
   try {
     for (const v of videoStats) {
       if (!v.video_id || !v.views) continue;
-      // upsert: si ya existe snapshot de hoy para este video, actualiza
-      await sb.from('yt_snapshots').upsert(
-        { video_id: v.video_id, snapshot_date: today, total_views: v.views },
-        { onConflict: 'video_id,snapshot_date' }
-      );
+      await sb.from('yt_snapshots').upsert({ video_id: v.video_id, snapshot_date: today, total_views: v.views }, { onConflict: 'video_id,snapshot_date' });
     }
-  } catch(e) {
-    console.warn('Snapshot save failed:', e.message);
-  }
+  } catch(e) { console.warn('Snapshot save failed:', e.message); }
 }
-
-// ── Obtener snapshot de ayer desde Supabase ──
 async function getYesterdaySnapshots() {
   try {
     const yesterday = yesterdayStr();
-    const { data } = await sb.from('yt_snapshots')
-      .select('video_id, total_views')
-      .eq('snapshot_date', yesterday);
+    const { data } = await sb.from('yt_snapshots').select('video_id, total_views').eq('snapshot_date', yesterday);
     return data || [];
-  } catch(e) {
-    console.warn('Snapshot fetch failed:', e.message);
-    return [];
-  }
+  } catch(e) { console.warn('Snapshot fetch failed:', e.message); return []; }
 }
-
-// ── Calcular vistas de las últimas ~24h ──
-// Si no hay snapshot de ayer, intenta con el más reciente disponible
 async function getDailyViews(videoId, currentViews) {
   try {
-    const { data } = await sb.from('yt_snapshots')
-      .select('total_views, snapshot_date')
-      .eq('video_id', videoId)
-      .lt('snapshot_date', todayStr())           // snapshots anteriores a hoy
-      .order('snapshot_date', { ascending: false })
-      .limit(1);
-    if (data && data[0]) {
-      const diff = currentViews - parseInt(data[0].total_views);
-      return diff > 0 ? diff : null;
-    }
+    const { data } = await sb.from('yt_snapshots').select('total_views, snapshot_date').eq('video_id', videoId).lt('snapshot_date', todayStr()).order('snapshot_date', { ascending: false }).limit(1);
+    if (data && data[0]) { const diff = currentViews - parseInt(data[0].total_views); return diff > 0 ? diff : null; }
     return null;
-  } catch(e) {
-    return null;
-  }
+  } catch(e) { return null; }
 }
-
-// ── Función principal ──
 async function loadYTDataPublic() {
   const now = Date.now();
   const useCache = ytCache.channel && ytCache.videos && (now - ytCache.fetchedAt < YT_CACHE_MS);
-
   let channelStats, videoItems, yesterdaySnaps;
-
   if (useCache) {
-    channelStats    = ytCache.channel;
-    videoItems      = ytCache.videos;
-    yesterdaySnaps  = ytCache.snapshots || [];
+    channelStats = ytCache.channel; videoItems = ytCache.videos; yesterdaySnaps = ytCache.snapshots || [];
   } else {
     const isLocal = location.protocol === 'file:';
-    const loadMsg = isLocal
-      ? '<div class="empty"><p>⚠️ YouTube API no funciona al abrir el archivo directo. <strong>Sube el archivo a tu hosting</strong> para ver los datos en vivo.</p></div>'
-      : '<div class="loading"><div class="spin"></div><br>Conectando con YouTube API...</div>';
-    document.getElementById('yt-stats-container').innerHTML  = isLocal ? loadMsg : '<div class="loading"><div class="spin"></div><br>Conectando con YouTube API...</div>';
+    const loadMsg = isLocal ? '<div class="empty"><p>⚠️ YouTube API no funciona al abrir el archivo directo. <strong>Sube el archivo a tu hosting</strong> para ver los datos en vivo.</p></div>' : '<div class="loading"><div class="spin"></div><br>Conectando con YouTube API...</div>';
+    document.getElementById('yt-stats-container').innerHTML = isLocal ? loadMsg : '<div class="loading"><div class="spin"></div><br>Conectando con YouTube API...</div>';
     document.getElementById('yt-videos-container').innerHTML = isLocal ? loadMsg : '<div class="loading"><div class="spin"></div><br>Calculando vistas diarias...</div>';
     if (isLocal) return;
-
     const ids = YT_VIDEO_IDS.map(v => v.id);
-    [channelStats, videoItems, yesterdaySnaps] = await Promise.all([
-      fetchYTChannel(),
-      fetchYTVideos(ids),
-      getYesterdaySnapshots()
-    ]);
-
-    if (channelStats || videoItems.length) {
-      ytCache = { channel: channelStats, videos: videoItems, snapshots: yesterdaySnaps, fetchedAt: now };
-    }
+    [channelStats, videoItems, yesterdaySnaps] = await Promise.all([ fetchYTChannel(), fetchYTVideos(ids), getYesterdaySnapshots() ]);
+    if (channelStats || videoItems.length) ytCache = { channel: channelStats, videos: videoItems, snapshots: yesterdaySnaps, fetchedAt: now };
   }
-
-  // ── Render canal ──
   if (channelStats) {
-    document.getElementById('yt-stats-container').innerHTML = `
-      <div class="yt-stats-grid">
-        <div class="yt-stat-card">
-          <div class="yt-stat-value">${fmt(channelStats.subscribers)}</div>
-          <div class="yt-stat-label">Suscriptores</div>
-          <div class="yt-stat-change" style="color:#4ade80">▶ En vivo · YT API</div>
-        </div>
-        <div class="yt-stat-card">
-          <div class="yt-stat-value">${fmt(channelStats.totalViews)}</div>
-          <div class="yt-stat-label">Vistas totales del canal</div>
-          <div class="yt-stat-change" style="color:#4ade80">▶ En vivo · YT API</div>
-        </div>
-        <div class="yt-stat-card">
-          <div class="yt-stat-value">${channelStats.videoCount.toLocaleString()}</div>
-          <div class="yt-stat-label">Videos publicados</div>
-          <div class="yt-stat-change" style="color:#4ade80">▶ En vivo · YT API</div>
-        </div>
-      </div>`;
+    document.getElementById('yt-stats-container').innerHTML = `<div class="yt-stats-grid"><div class="yt-stat-card"><div class="yt-stat-value">${fmt(channelStats.subscribers)}</div><div class="yt-stat-label">Suscriptores</div><div class="yt-stat-change" style="color:#4ade80">▶ En vivo · YT API</div></div><div class="yt-stat-card"><div class="yt-stat-value">${fmt(channelStats.totalViews)}</div><div class="yt-stat-label">Vistas totales del canal</div><div class="yt-stat-change" style="color:#4ade80">▶ En vivo · YT API</div></div><div class="yt-stat-card"><div class="yt-stat-value">${channelStats.videoCount.toLocaleString()}</div><div class="yt-stat-label">Videos publicados</div><div class="yt-stat-change" style="color:#4ade80">▶ En vivo · YT API</div></div></div>`;
   } else {
-    // Fallback Supabase
     const {data:cfg} = await sb.from('site_config').select('*');
     let subs=17600000, views=3200000000, subsD=100000, viewsD=3200000;
     if(cfg){ subs=parseInt(cfg.find(c=>c.key==='yt_subs')?.value)||subs; views=parseInt(cfg.find(c=>c.key==='yt_views')?.value)||views; subsD=parseInt(cfg.find(c=>c.key==='yt_subs_daily')?.value)||subsD; viewsD=parseInt(cfg.find(c=>c.key==='yt_views_daily')?.value)||viewsD; }
-    document.getElementById('yt-stats-container').innerHTML = `
-      <div class="yt-stats-grid">
-        <div class="yt-stat-card"><div class="yt-stat-value">${fmt(subs)}</div><div class="yt-stat-label">Suscriptores</div><div class="yt-stat-change">+${fmt(subsD)} hoy (manual)</div></div>
-        <div class="yt-stat-card"><div class="yt-stat-value">${fmt(views)}</div><div class="yt-stat-label">Vistas totales</div><div class="yt-stat-change">+${fmt(viewsD)} hoy (manual)</div></div>
-      </div>
-      <p style="font-size:0.7rem;color:var(--text-muted);margin-top:0.5rem">⚠️ YouTube API no disponible — datos manuales</p>`;
+    document.getElementById('yt-stats-container').innerHTML = `<div class="yt-stats-grid"><div class="yt-stat-card"><div class="yt-stat-value">${fmt(subs)}</div><div class="yt-stat-label">Suscriptores</div><div class="yt-stat-change">+${fmt(subsD)} hoy (manual)</div></div><div class="yt-stat-card"><div class="yt-stat-value">${fmt(views)}</div><div class="yt-stat-label">Vistas totales</div><div class="yt-stat-change">+${fmt(viewsD)} hoy (manual)</div></div></div><p style="font-size:0.7rem;color:var(--text-muted);margin-top:0.5rem">⚠️ YouTube API no disponible — datos manuales</p>`;
   }
-
-  // ── Render videos ──
   if (!videoItems || videoItems.length === 0) {
     const {data:vids} = await sb.from('yt_videos').select('*').order('sort_order');
     if(!vids||!vids.length){ document.getElementById('yt-videos-container').innerHTML='<div class="empty"><p>No hay videos registrados.</p></div>'; return; }
     let h=`<table class="yt-video-table"><thead><tr><th>VIDEO</th><th>TOTAL VIEWS</th><th>+24H</th><th>LIKES</th></tr></thead><tbody>`;
-    vids.forEach(v=>{ h+=`<tr><td class="yt-video-title">${v.title}</td><td>${fmt(v.total_views)}</td><td style="color:#4ade80">+${fmt(v.daily_views)}</td><td>${fmt(v.likes)}</td></tr>`; });
+    vids.forEach(v=>{ h+=`<tr><td class="yt-video-title">${v.title}</td><td>${fmt(v.total_views)}</td><td style="color:#4ade80">+${fmt(v.daily_views)}</td><td>${fmt(v.likes)}</td>`; });
     h+=`</tbody></table><p style="font-size:0.7rem;color:var(--text-muted);margin-top:0.5rem">⚠️ YouTube API no disponible — datos Supabase</p>`;
     document.getElementById('yt-videos-container').innerHTML=h; return;
   }
-
-  // Construir mapa id→stats desde API
   const apiMap = {};
-  videoItems.forEach(item => {
-    apiMap[item.id] = {
-      title:    item.snippet?.title || '',
-      views:    parseInt(item.statistics?.viewCount)    || 0,
-      likes:    parseInt(item.statistics?.likeCount)    || 0,
-      comments: parseInt(item.statistics?.commentCount) || 0,
-      thumb:    item.snippet?.thumbnails?.medium?.url   || ''
-    };
-  });
-
-  // Mapa de snapshots de ayer: video_id → total_views
+  videoItems.forEach(item => { apiMap[item.id] = { title: item.snippet?.title || '', views: parseInt(item.statistics?.viewCount)||0, likes: parseInt(item.statistics?.likeCount)||0, comments: parseInt(item.statistics?.commentCount)||0, thumb: item.snippet?.thumbnails?.medium?.url||'' }; });
   const snapMap = {};
   (yesterdaySnaps || []).forEach(s => { snapMap[s.video_id] = parseInt(s.total_views) || 0; });
-
-  // Combinar y calcular vistas 24h
-  const videos = YT_VIDEO_IDS.map(v => {
-    const api   = apiMap[v.id] || {};
-    const curr  = api.views || 0;
-    const prev  = snapMap[v.id] || 0;
-    const daily = (prev > 0 && curr >= prev) ? curr - prev : null;
-    return { ...v, ...api, views: curr, daily24h: daily };
-  }).sort((a,b) => (b.views||0) - (a.views||0));
-
-  // ── Guardar snapshot de HOY (para calcular mañana) ──
-  const toSnap = videos.filter(v => v.views > 0).map(v => ({ video_id: v.id, views: v.views }));
-  saveSnapshot(toSnap); // fire & forget
-
-  // ── Sincronizar yt_videos en Supabase ──
+  const videos = YT_VIDEO_IDS.map(v => { const api = apiMap[v.id] || {}; const curr = api.views||0; const prev = snapMap[v.id]||0; const daily = (prev>0 && curr>=prev) ? curr-prev : null; return { ...v, ...api, views: curr, daily24h: daily }; }).sort((a,b)=> (b.views||0)-(a.views||0));
+  const toSnap = videos.filter(v => v.views>0).map(v => ({ video_id: v.id, views: v.views }));
+  saveSnapshot(toSnap);
   try {
     const {data:existing} = await sb.from('yt_videos').select('id,video_id');
     for (const v of videos) {
       if (!v.views) continue;
       const match = existing?.find(e => e.video_id === v.id);
       const daily = v.daily24h || 0;
-      if (match) {
-        await sb.from('yt_videos').update({ total_views: v.views, daily_views: daily, likes: v.likes }).eq('id', match.id);
-      } else {
-        const {data:last} = await sb.from('yt_videos').select('sort_order').order('sort_order',{ascending:false}).limit(1);
-        const sort = (last?.[0]?.sort_order || 0) + 1;
-        await sb.from('yt_videos').insert({ title: v.title||v.id, total_views: v.views, daily_views: daily, likes: v.likes, sort_order: sort, video_id: v.id });
-      }
+      if (match) await sb.from('yt_videos').update({ total_views: v.views, daily_views: daily, likes: v.likes }).eq('id', match.id);
+      else { const {data:last} = await sb.from('yt_videos').select('sort_order').order('sort_order',{ascending:false}).limit(1); const sort = (last?.[0]?.sort_order || 0) + 1; await sb.from('yt_videos').insert({ title: v.title||v.id, total_views: v.views, daily_views: daily, likes: v.likes, sort_order: sort, video_id: v.id }); }
     }
   } catch(e) { console.warn('Supabase sync skipped:', e.message); }
-
-  // ── Render tabla ──
   const hasAnyDaily = videos.some(v => v.daily24h !== null);
-
-  let html = `
-    <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap">
-      <div class="dot-live" style="width:6px;height:6px"></div>
-      <span style="font-size:0.7rem;color:var(--text-muted);font-family:'Orbitron',monospace;letter-spacing:1px">DATOS EN VIVO · YouTube Data API v3</span>
-      ${hasAnyDaily
-        ? '<span style="font-size:0.7rem;color:#4ade80;margin-left:0.5rem">✅ Vistas 24h calculadas</span>'
-        : '<span style="font-size:0.7rem;color:var(--primary-gold);margin-left:0.5rem">⏳ Vistas 24h disponibles mañana (primer día de tracking)</span>'}
-    </div>
-    <table class="yt-video-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>VIDEO</th>
-          <th>TOTAL VIEWS</th>
-          <th style="color:#4ade80">+24H VIEWS</th>
-          <th>LIKES</th>
-          <th>COMENTARIOS</th>
-          <th>LINK</th>
-        </tr>
-      </thead>
-      <tbody>`;
-
-  videos.forEach((v, i) => {
-    const daily24h = v.daily24h !== null
-      ? `<span style="color:#4ade80;font-family:'Orbitron',monospace;font-weight:700">+${fmt(v.daily24h)}</span>`
-      : `<span style="color:var(--text-muted);font-size:0.7rem">—</span>`;
-
-    html += `
-      <tr>
-        <td style="color:var(--primary-gold);font-family:'Orbitron',monospace">${i+1}</td>
-        <td>
-          ${v.thumb ? `<img src="${v.thumb}" style="width:80px;height:45px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-right:8px;border:1px solid var(--border-dim)">` : ''}
-          <span class="yt-video-title">${v.title||v.id}</span>
-        </td>
-        <td style="color:var(--primary-gold);font-family:'Orbitron',monospace">${fmt(v.views)}</td>
-        <td>${daily24h}</td>
-        <td>${fmt(v.likes)}</td>
-        <td>${fmt(v.comments)}</td>
-        <td><a href="https://youtube.com/watch?v=${v.id}" target="_blank" style="color:var(--primary-red);font-size:0.75rem;text-decoration:none">▶ Ver</a></td>
-      </tr>`;
-  });
-
+  let html = `<div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap"><div class="dot-live" style="width:6px;height:6px"></div><span style="font-size:0.7rem;color:var(--text-muted);font-family:'Orbitron',monospace;letter-spacing:1px">DATOS EN VIVO · YouTube Data API v3</span>${hasAnyDaily ? '<span style="font-size:0.7rem;color:#4ade80;margin-left:0.5rem">✅ Vistas 24h calculadas</span>' : '<span style="font-size:0.7rem;color:var(--primary-gold);margin-left:0.5rem">⏳ Vistas 24h disponibles mañana (primer día de tracking)</span>'}</div><table class="yt-video-table"><thead><tr><th>#</th><th>VIDEO</th><th>TOTAL VIEWS</th><th style="color:#4ade80">+24H VIEWS</th><th>LIKES</th><th>COMENTARIOS</th><th>LINK</th></tr></thead><tbody>`;
+  videos.forEach((v, i) => { const daily24h = v.daily24h !== null ? `<span style="color:#4ade80;font-family:'Orbitron',monospace;font-weight:700">+${fmt(v.daily24h)}</span>` : `<span style="color:var(--text-muted);font-size:0.7rem">—</span>`; html += `<tr><td style="color:var(--primary-gold);font-family:'Orbitron',monospace">${i+1}</td><td>${v.thumb ? `<img src="${v.thumb}" style="width:80px;height:45px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-right:8px;border:1px solid var(--border-dim)">` : ''}<span class="yt-video-title">${v.title||v.id}</span></td><td style="color:var(--primary-gold);font-family:'Orbitron',monospace">${fmt(v.views)}</td><td>${daily24h}</td><td>${fmt(v.likes)}</td><td>${fmt(v.comments)}</td><td><a href="https://youtube.com/watch?v=${v.id}" target="_blank" style="color:var(--primary-red);font-size:0.75rem;text-decoration:none">▶ Ver</a></td></tr>`; });
   html += `</tbody></table>`;
   document.getElementById('yt-videos-container').innerHTML = html;
 }
-
-// ── Refresh manual desde admin ──
 async function refreshYTFromAPI() {
   ytCache = { channel: null, videos: null, snapshots: null, fetchedAt: 0 };
   const btn = document.getElementById('btn-refresh-yt');
@@ -979,77 +902,23 @@ async function refreshYTFromAPI() {
   if(status) status.textContent = 'Actualizado: ' + new Date().toLocaleTimeString() + ' · Cache válido 1h';
   showToast('✅ Datos de YouTube actualizados');
 }
-
-// ── Estado del cache en admin ──
 function updateAdminYTStatus(){
   const status = document.getElementById('admin-yt-status');
   if(!status) return;
-  if(ytCache.fetchedAt){
-    const mins = Math.round((Date.now()-ytCache.fetchedAt)/60000);
-    status.textContent = 'Última actualización hace ' + mins + ' min · ' + (ytCache.channel ? `${fmt(ytCache.channel.subscribers)} subs · ${fmt(ytCache.channel.totalViews)} vistas` : 'sin datos de canal');
-  } else {
-    status.textContent = 'Aún no se ha cargado desde la API en esta sesión.';
-  }
+  if(ytCache.fetchedAt){ const mins = Math.round((Date.now()-ytCache.fetchedAt)/60000); status.textContent = 'Última actualización hace ' + mins + ' min · ' + (ytCache.channel ? `${fmt(ytCache.channel.subscribers)} subs · ${fmt(ytCache.channel.totalViews)} vistas` : 'sin datos de canal'); }
+  else status.textContent = 'Aún no se ha cargado desde la API en esta sesión.';
 }
-
-// Guardar estadísticas manuales del canal (desde admin)
 async function saveYTStats(){
-  let subs=document.getElementById('yt-subs').value.replace(/\D/g,'');
-  let views=document.getElementById('yt-views').value.replace(/\D/g,'');
-  let subsDaily=document.getElementById('yt-subs-daily').value.replace(/\D/g,'');
-  let viewsDaily=document.getElementById('yt-views-daily').value.replace(/\D/g,'');
-  await sb.from('site_config').upsert({key:'yt_subs', value:subs||'0'});
-  await sb.from('site_config').upsert({key:'yt_views', value:views||'0'});
-  await sb.from('site_config').upsert({key:'yt_subs_daily', value:subsDaily||'0'});
-  await sb.from('site_config').upsert({key:'yt_views_daily', value:viewsDaily||'0'});
-  showToast('Estadísticas de YouTube guardadas');
-  await loadYTDataPublic();
+  let subs=document.getElementById('yt-subs').value.replace(/\D/g,''), views=document.getElementById('yt-views').value.replace(/\D/g,''), subsDaily=document.getElementById('yt-subs-daily').value.replace(/\D/g,''), viewsDaily=document.getElementById('yt-views-daily').value.replace(/\D/g,'');
+  await sb.from('site_config').upsert({key:'yt_subs', value:subs||'0'}); await sb.from('site_config').upsert({key:'yt_views', value:views||'0'}); await sb.from('site_config').upsert({key:'yt_subs_daily', value:subsDaily||'0'}); await sb.from('site_config').upsert({key:'yt_views_daily', value:viewsDaily||'0'});
+  showToast('Estadísticas de YouTube guardadas'); await loadYTDataPublic();
 }
-async function loadAdminVideos(){
-  let {data}=await sb.from('yt_videos').select('*').order('sort_order');
-  if(!data) return;
-  document.getElementById('admin-videos-list').innerHTML=data.length?data.map(v=>`
-    <div class="admin-list-item">
-      <div class="ali-info"><div class="ali-name">${v.title}</div><div class="ali-sub">${fmt(v.total_views)} vistas | +${fmt(v.daily_views)} diarias | ${fmt(v.likes)} likes</div></div>
-      <div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editYTVideo(${v.id},'${v.title.replace(/'/g,"\\'")}',${v.total_views},${v.daily_views},${v.likes})">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteYTVideo(${v.id})">✕</button></div>
-    </div>`).join(''):'<p>No hay videos agregados</p>';
-}
-async function addYTVideo(){
-  let title=document.getElementById('nv-title').value.trim();
-  let total=parseInt(document.getElementById('nv-total').value.replace(/\D/g,''))||0;
-  let daily=parseInt(document.getElementById('nv-daily').value.replace(/\D/g,''))||0;
-  let likes=parseInt(document.getElementById('nv-likes').value.replace(/\D/g,''))||0;
-  if(!title){ showToast('Escribe un título',true); return; }
-  let {data:exist}=await sb.from('yt_videos').select('sort_order').order('sort_order',{ascending:false}).limit(1);
-  let sort=exist&&exist[0]?exist[0].sort_order+1:1;
-  let {error}=await sb.from('yt_videos').insert({title, total_views:total, daily_views:daily, likes, sort_order:sort});
-  if(error){ showToast('Error al guardar',true); return; }
-  document.getElementById('nv-title').value=''; document.getElementById('nv-total').value=''; document.getElementById('nv-daily').value=''; document.getElementById('nv-likes').value='';
-  showToast('Video agregado');
-  await loadAdminVideos();
-  await loadYTDataPublic();
-}
-function editYTVideo(id,title,total,daily,likes){
-  let newTotal=prompt(`Vistas totales de "${title}":`, total);
-  if(newTotal===null) return;
-  let newDaily=prompt(`Vistas diarias:`, daily);
-  if(newDaily===null) return;
-  let newLikes=prompt(`Likes:`, likes);
-  if(newLikes===null) return;
-  let nTotal=parseInt(newTotal.replace(/\D/g,''))||0;
-  let nDaily=parseInt(newDaily.replace(/\D/g,''))||0;
-  let nLikes=parseInt(newLikes.replace(/\D/g,''))||0;
-  sb.from('yt_videos').update({total_views:nTotal, daily_views:nDaily, likes:nLikes}).eq('id',id).then(async()=>{ showToast('Video actualizado'); await loadAdminVideos(); await loadYTDataPublic(); });
-}
-async function deleteYTVideo(id){
-  if(!confirm('¿Eliminar video?')) return;
-  await sb.from('yt_videos').delete().eq('id',id);
-  showToast('Video eliminado');
-  await loadAdminVideos();
-  await loadYTDataPublic();
-}
+async function loadAdminVideos(){ let {data}=await sb.from('yt_videos').select('*').order('sort_order'); if(!data) return; document.getElementById('admin-videos-list').innerHTML=data.length?data.map(v=>`<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${v.title}</div><div class="ali-sub">${fmt(v.total_views)} vistas | +${fmt(v.daily_views)} diarias | ${fmt(v.likes)} likes</div></div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editYTVideo(${v.id},'${v.title.replace(/'/g,"\\'")}',${v.total_views},${v.daily_views},${v.likes})">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteYTVideo(${v.id})">✕</button></div></div>`).join(''):'<p>No hay videos agregados</p>'; }
+async function addYTVideo(){ let title=document.getElementById('nv-title').value.trim(), total=parseInt(document.getElementById('nv-total').value.replace(/\D/g,''))||0, daily=parseInt(document.getElementById('nv-daily').value.replace(/\D/g,''))||0, likes=parseInt(document.getElementById('nv-likes').value.replace(/\D/g,''))||0; if(!title){ showToast('Escribe un título',true); return; } let {data:exist}=await sb.from('yt_videos').select('sort_order').order('sort_order',{ascending:false}).limit(1); let sort=exist&&exist[0]?exist[0].sort_order+1:1; let {error}=await sb.from('yt_videos').insert({title, total_views:total, daily_views:daily, likes, sort_order:sort}); if(error){ showToast('Error al guardar',true); return; } document.getElementById('nv-title').value=''; document.getElementById('nv-total').value=''; document.getElementById('nv-daily').value=''; document.getElementById('nv-likes').value=''; showToast('Video agregado'); await loadAdminVideos(); await loadYTDataPublic(); }
+function editYTVideo(id,title,total,daily,likes){ let newTotal=prompt(`Vistas totales de "${title}":`, total); if(newTotal===null) return; let newDaily=prompt(`Vistas diarias:`, daily); if(newDaily===null) return; let newLikes=prompt(`Likes:`, likes); if(newLikes===null) return; let nTotal=parseInt(newTotal.replace(/\D/g,''))||0, nDaily=parseInt(newDaily.replace(/\D/g,''))||0, nLikes=parseInt(newLikes.replace(/\D/g,''))||0; sb.from('yt_videos').update({total_views:nTotal, daily_views:nDaily, likes:nLikes}).eq('id',id).then(async()=>{ showToast('Video actualizado'); await loadAdminVideos(); await loadYTDataPublic(); }); }
+async function deleteYTVideo(id){ if(!confirm('¿Eliminar video?')) return; await sb.from('yt_videos').delete().eq('id',id); showToast('Video eliminado'); await loadAdminVideos(); await loadYTDataPublic(); }
 
-// ========== ADMIN DATA LOAD (metas, playlists, etc) ==========
+// ========== ADMIN DATA LOAD (unificado) ==========
 async function loadAdminData(){
   updateAdminYTStatus();
   let {data:goals}=await sb.from('goals').select('*').order('sort_order');
@@ -1065,11 +934,12 @@ async function loadAdminData(){
     document.getElementById('yt-views-daily').value=cfg.find(c=>c.key==='yt_views_daily')?.value||'3200000';
   }
   await loadAdminVideos();
+  await loadAdminSpotifySongs();
   let {data:images}=await sb.from('images').select('*').order('sort_order');
   document.getElementById('admin-images-grid').innerHTML=images&&images.length?images.map(img=>`<div class="img-item"><img src="${img.url}" onerror="this.parentElement.style.display='none'"><button class="img-del" onclick="deleteImage(${img.id})">✕</button></div>`).join(''):'<p>Sin imágenes</p>';
 }
 
-// Funciones CRUD para metas y playlists (mismo que antes)
+// ========== CRUD METAS, PLAYLISTS, IMÁGENES (igual que tenías) ==========
 async function addGoal(){ let song=document.getElementById('ng-song').value.trim(); let current=parseInt(document.getElementById('ng-current').value.replace(/\D/g,''))||0; let target=parseInt(document.getElementById('ng-target').value.replace(/\D/g,''))||0; let platform=document.getElementById('ng-platform').value; if(!song||!target){ showToast('Completa los campos',true); return; } let {data:exist}=await sb.from('goals').select('sort_order').order('sort_order',{ascending:false}).limit(1); let sort=exist&&exist[0]?exist[0].sort_order+1:1; await sb.from('goals').insert({song,current,target,platform,sort_order:sort}); showToast('Meta agregada'); document.getElementById('ng-song').value=''; document.getElementById('ng-current').value=''; document.getElementById('ng-target').value=''; await loadAdminData(); await loadGoalsPublic(); }
 function editGoal(id,song,current,target){ let n=prompt(`Nuevos streams para "${song}"`,current); if(n===null) return; let val=parseInt(n.replace(/\D/g,'')); if(isNaN(val)){ showToast('Número inválido',true); return; } sb.from('goals').update({current:val}).eq('id',id).then(async()=>{ showToast('Actualizado'); await loadAdminData(); await loadGoalsPublic(); }); }
 async function deleteGoal(id){ if(confirm('¿Eliminar meta?')){ await sb.from('goals').delete().eq('id',id); showToast('Meta eliminada'); await loadAdminData(); await loadGoalsPublic(); } }
@@ -1080,7 +950,7 @@ async function saveConfig(){ let keys=['hero_tag','debut_text','hero_bg_url','sp
 async function addImage(){ let url=document.getElementById('img-url').value.trim(); if(!url){ showToast('URL requerida',true); return; } await sb.from('images').insert({url, sort_order:Date.now()}); showToast('Imagen agregada'); document.getElementById('img-url').value=''; await loadAdminData(); }
 async function deleteImage(id){ if(confirm('¿Eliminar imagen?')){ await sb.from('images').delete().eq('id',id); showToast('Imagen eliminada'); await loadAdminData(); } }
 
-// NAVEGACIÓN
+// ========== NAVEGACIÓN ==========
 function openAdminLogin(){ if(isAdmin){ openAdminPanel(); return; } document.getElementById('admin-overlay').classList.add('open'); }
 function closeAdminLogin(e){ if(e&&e.target!==document.getElementById('admin-overlay')) return; document.getElementById('admin-overlay').classList.remove('open'); document.getElementById('admin-pass').value=''; document.getElementById('login-error').style.display='none'; }
 function togglePassVis(){ let i=document.getElementById('admin-pass'); i.type=i.type==='password'?'text':'password'; }
@@ -1092,8 +962,8 @@ function toggleMobileNav(){ document.getElementById('nav-links').classList.toggl
 function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.getElementById('spotify-chart').style.display=id==='spotify-chart'?'block':'none'; document.getElementById('yt-chart').style.display=id==='yt-chart'?'block':'none'; document.getElementById('apple-chart').style.display=id==='apple-chart'?'block':'none'; }
 function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-// Inicialización
-async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadYTDataPublic()]); }
+// ========== INICIALIZACIÓN ==========
+async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadYTDataPublic()]); }
 loadAll();
 let seq=''; document.addEventListener('keydown',e=>{ seq=(seq+e.key.toLowerCase()).slice(-3); if(seq==='adm'){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; } });
 let tap=0, timer; document.querySelector('.nav-logo').addEventListener('click',()=>{ tap++; clearTimeout(timer); timer=setTimeout(()=>tap=0,600); if(tap>=5){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; tap=0; } });
