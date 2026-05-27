@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ENHYPEN | SIN:VANISH Streaming Hub</title>
-<meta name="description" content="Fan streaming tracker para ENHYPEN - Era SIN:VANISH.">
+<meta name="description" content="Fan streaming tracker para ENHYPEN - Era SIN:VANISH. Datos en tiempo real desde YouTube API.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,200;14..32,400;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+/* ========== MISMO ESTILO QUE ANTES (no cambia) ========== */
 :root {
   --bg-dark: #050505;
   --bg-card: #0c0c0c;
@@ -36,8 +37,6 @@ body {
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: #0a0a0a; }
 ::-webkit-scrollbar-thumb { background: var(--primary-red); border-radius: 4px; }
-
-/* NAV */
 nav {
   display: flex;
   align-items: center;
@@ -80,24 +79,24 @@ nav {
 .admin-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
 .admin-dot.on { background: var(--primary-red); box-shadow: 0 0 8px var(--primary-red); }
 .nav-mobile-btn { display: none; background: none; border: none; color: var(--text-dim); font-size: 1.4rem; cursor: pointer; }
-
-/* HERO CON IMAGEN DE FONDO DINÁMICA */
 .hero {
   position: relative;
-  padding: 8rem 2rem 8rem;
+  padding: 5rem 2rem 4rem;
   text-align: center;
   overflow: hidden;
   background-size: cover;
-  background-position: center 30%;
+  background-position: center top;
   background-repeat: no-repeat;
-  isolation: isolate;
-  background-color: #0a0a0a;
+  transition: background-image 0.4s ease;
 }
 .hero::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background:
+    linear-gradient(to bottom, rgba(5,5,5,0.45) 0%, rgba(5,5,5,0.72) 100%),
+    radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.18), transparent 70%);
+  pointer-events: none;
   z-index: 0;
 }
 .hero > * { position: relative; z-index: 1; }
@@ -111,7 +110,7 @@ nav {
   padding: 0.3rem 1.2rem;
   border-radius: 30px;
   letter-spacing: 2px;
-  background: rgba(220,38,38,0.2);
+  background: rgba(220,38,38,0.1);
   backdrop-filter: blur(4px);
   margin-bottom: 1.5rem;
 }
@@ -120,15 +119,14 @@ nav {
   font-family: 'Orbitron', monospace;
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1.2;
+  line-height: 1;
   background: linear-gradient(135deg, #fff, var(--primary-gold), var(--primary-red));
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   text-shadow: 0 0 15px rgba(220,38,38,0.3);
-  margin-bottom: 0.5rem;
 }
-.hero-sub { margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
+.hero-sub { margin-top: 1rem; font-size: 0.85rem; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
 .hero-debut {
   display: inline-flex;
   align-items: center;
@@ -173,9 +171,12 @@ nav {
   backdrop-filter: blur(4px);
   transition: all 0.25s;
 }
-.stream-btn:hover { border-color: var(--primary-red); color: var(--primary-red); background: rgba(220,38,38,0.1); transform: translateY(-2px); }
-
-/* SECTIONS */
+.stream-btn:hover {
+  border-color: var(--primary-red);
+  color: var(--primary-red);
+  background: rgba(220,38,38,0.1);
+  transform: translateY(-2px);
+}
 section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
 .section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.8rem; }
 .section-title {
@@ -191,8 +192,6 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   border-left: 2px solid var(--primary-red);
 }
 .section-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-dim), transparent); }
-
-/* GOAL CARDS */
 .goal-card {
   background: rgba(10,10,10,0.8);
   backdrop-filter: blur(8px);
@@ -213,8 +212,6 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
 .stat { text-align: center; background: #0a0a0a; border-radius: 16px; padding: 0.8rem 0.5rem; border: 1px solid var(--border-dim); }
 .stat-val { font-family: 'Orbitron', monospace; font-size: 0.9rem; font-weight: 700; color: var(--primary-gold); }
 .stat-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.2rem; }
-
-/* PLAYLISTS */
 .playlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
 .playlist-card {
   background: rgba(12,12,12,0.9);
@@ -233,30 +230,26 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
 .pl-spotify { background: rgba(30,215,96,0.15); border: 1px solid #1db95433; }
 .pl-youtube { background: rgba(255,0,0,0.15); border: 1px solid #ff000033; }
 .pl-apple { background: rgba(255,45,85,0.15); border: 1px solid #ff2d5533; }
-.pl-stationhead { background: rgba(220,38,38,0.15); border: 1px solid var(--primary-red); }
 .playlist-info { flex: 1; min-width: 0; }
 .playlist-name { font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
 .playlist-desc { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; }
-
-/* GALERÍA PÚBLICA */
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.2rem;
-  margin-top: 1rem;
+.yt-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.yt-stat-card { background: var(--bg-elevated); border: 1px solid var(--border-dim); border-radius: 24px; padding: 1.2rem; text-align: center; }
+.yt-stat-value { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 800; color: var(--primary-gold); }
+.yt-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.yt-stat-change { font-size: 0.7rem; margin-top: 0.3rem; color: #4ade80; }
+.yt-video-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.yt-video-table th {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.8rem 0.5rem;
+  color: var(--primary-red);
+  border-bottom: 1px solid var(--border-dim);
 }
-.gallery-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border-dim);
-  border-radius: 16px;
-  overflow: hidden;
-  transition: transform 0.2s, border-color 0.2s;
-}
-.gallery-item:hover { transform: translateY(-4px); border-color: var(--primary-red); }
-.gallery-item img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
-.gallery-item .caption { padding: 0.6rem; font-size: 0.7rem; text-align: center; color: var(--text-dim); background: rgba(0,0,0,0.5); }
-
-/* CHARTS TABLE */
+.yt-video-table td { padding: 0.8rem 0.5rem; border-bottom: 1px solid var(--border-dim); font-size: 0.8rem; color: var(--text-dim); }
+.yt-video-title { font-weight: 500; color: var(--text-main); }
 .charts-table { width: 100%; border-collapse: collapse; }
 .charts-table th {
   font-family: 'Orbitron', monospace;
@@ -281,8 +274,6 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   font-size: 0.7rem;
   font-family: monospace;
 }
-
-/* TABS */
 .tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-dim); margin-bottom: 1.5rem; }
 .tab {
   background: transparent;
@@ -298,8 +289,6 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
 }
 .tab.active { color: var(--primary-red); border-bottom: 2px solid var(--primary-red); text-shadow: 0 0 4px rgba(220,38,38,0.4); }
 .tab:hover:not(.active) { color: var(--text-dim); }
-
-/* BUTTONS */
 .btn {
   background: var(--gradient-red);
   border: none;
@@ -319,8 +308,6 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
 .btn-danger { background: transparent; border: 1px solid var(--border-dim); color: var(--text-muted); }
 .btn-danger:hover { border-color: var(--primary-red); color: var(--primary-red); }
 .btn-sm { padding: 0.3rem 0.8rem; font-size: 0.7rem; }
-
-/* INPUTS */
 .input, select.input {
   background: #0a0a0a;
   border: 1px solid var(--border-dim);
@@ -336,16 +323,12 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
 .input:focus, select.input:focus { border-color: var(--primary-red); box-shadow: 0 0 8px rgba(220,38,38,0.2); }
 .tip-box { background: rgba(0,0,0,0.6); border-left: 3px solid var(--primary-red); border-radius: 12px; padding: 1rem 1.2rem; margin-top: 1.5rem; }
 .tip-box p { font-size: 0.8rem; color: var(--text-dim); }
-
-/* PAGES */
 .page { display: none; }
 .page.active { display: block; }
 .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
 .loading .spin { display: inline-block; width: 30px; height: 30px; border: 2px solid var(--border-dim); border-top-color: var(--primary-red); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .empty { text-align: center; padding: 3rem; color: var(--text-muted); }
-
-/* ADMIN PANEL */
 .admin-overlay {
   display: none;
   position: fixed;
@@ -444,12 +427,13 @@ footer a:hover { color: var(--primary-red); }
   }
   .nav-links.open { display: flex; }
   .nav-mobile-btn { display: block; }
-  .hero { padding: 4rem 1rem; }
+  .hero { padding: 2.5rem 1rem; }
   section { padding: 1.5rem 1rem; }
   .goal-stats { grid-template-columns: 1fr 1fr; }
   .admin-tabs { padding: 1rem; }
   .admin-content { padding: 1rem; }
-  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .yt-stats-grid { grid-template-columns: 1fr; }
+  .yt-video-table th, .yt-video-table td { padding: 0.5rem 0.3rem; font-size: 0.7rem; }
 }
 </style>
 </head>
@@ -464,7 +448,6 @@ footer a:hover { color: var(--primary-red); }
     <a onclick="showPage('youtube',this)">YouTube</a>
     <a onclick="showPage('charts',this)">Charts</a>
     <a onclick="showPage('goals',this)">Goals</a>
-    <a onclick="showPage('gallery',this)">Galería</a>
   </div>
   <div class="nav-right">
     <div class="admin-indicator" id="admin-indicator" style="display:none">
@@ -478,10 +461,10 @@ footer a:hover { color: var(--primary-red); }
 
 <!-- HOME -->
 <div id="home" class="page active">
-  <div class="hero" id="hero-section" style="background-image: url('');">
+  <div class="hero">
     <div class="hero-tag" id="hero-tag">SIN:VANISH // THEY FELL FOR THE FORBIDDEN</div>
     <h1>ENHYPEN<br><span style="font-size: 0.5em; display: block;">SIN & VANISH</span></h1>
-    <p class="hero-sub">STREAMING HUB | FAN SUPPORT</p>
+    <p class="hero-sub">Streaming hub | Apoya la era oscura</p>
     <div class="hero-debut">
       <div class="dot-live"></div>
       <span id="debut-text">Awaken need to love · Faced the storm</span>
@@ -521,11 +504,13 @@ footer a:hover { color: var(--primary-red); }
   </section>
 </div>
 
-<!-- YOUTUBE (playlists) -->
+<!-- YOUTUBE (con analytics) -->
 <div id="youtube" class="page">
-  <section><div class="section-header"><div class="section-title">YouTube Playlists</div><div class="section-line"></div></div>
-    <div id="youtube-playlists"><div class="loading"><div class="spin"></div></div></div>
-    <div class="tip-box"><p>📺 Apoya los MVs oficiales de ENHYPEN. Cada vista cuenta para los récords.</p></div>
+  <section><div class="section-header"><div class="section-title">YouTube Channel Overview</div><div class="section-line"></div></div>
+    <div id="yt-stats-container"><div class="loading"><div class="spin"></div></div></div>
+    <div class="section-header" style="margin-top:2rem"><div class="section-title">Music Video Chart</div><div class="section-line"></div></div>
+    <div id="yt-videos-container"><div class="loading"><div class="spin"></div></div></div>
+    <div class="tip-box"><p>📊 Datos actualizados automáticamente desde YouTube API cada hora. ¡Apoya los videos recientes!</p></div>
   </section>
 </div>
 
@@ -534,7 +519,7 @@ footer a:hover { color: var(--primary-red); }
   <section><div class="section-header"><div class="section-title">Charts & estadísticas</div><div class="section-line"></div></div>
     <div class="tabs"><button class="tab active" onclick="switchChartTab('spotify-chart',this)">Spotify</button><button class="tab" onclick="switchChartTab('yt-chart',this)">YouTube</button><button class="tab" onclick="switchChartTab('apple-chart',this)">Apple Music</button></div>
     <div id="spotify-chart"><div id="charts-goals-table"><div class="loading"><div class="spin"></div></div></div></div>
-    <div id="yt-chart" style="display:none"><div class="empty"><p>📺 Las métricas de YouTube se muestran en la pestaña YouTube</p></div></div>
+    <div id="yt-chart" style="display:none"><div class="empty"><p>📺 YouTube stats disponibles en la pestaña YouTube</p></div></div>
     <div id="apple-chart" style="display:none"><div class="empty"><p>🎶 Próximamente</p></div></div>
   </section>
 </div>
@@ -543,13 +528,6 @@ footer a:hover { color: var(--primary-red); }
 <div id="goals" class="page">
   <section><div class="section-header"><div class="section-title">Tracker de metas</div><div class="section-line"></div></div>
     <div id="goals-list"><div class="loading"><div class="spin"></div></div></div>
-  </section>
-</div>
-
-<!-- GALERÍA -->
-<div id="gallery" class="page">
-  <section><div class="section-header"><div class="section-title">Galería de imágenes</div><div class="section-line"></div></div>
-    <div id="public-gallery" class="gallery-grid"><div class="loading"><div class="spin"></div><br>Cargando imágenes...</div></div>
   </section>
 </div>
 
@@ -569,60 +547,51 @@ footer a:hover { color: var(--primary-red); }
   <div class="admin-tabs">
     <button class="admin-tab active" onclick="switchAdminTab('tab-goals',this)">📊 Metas</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-playlists',this)">🎵 Playlists</button>
+    <button class="admin-tab" onclick="switchAdminTab('tab-ytdata',this)">📡 YouTube API</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-config',this)">⚙️ Configuración</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-images',this)">🖼️ Imágenes</button>
   </div>
   <div class="admin-content">
-    <!-- METAS -->
-    <div class="admin-section active" id="tab-goals">
-      <div class="admin-card"><h3>Metas actuales</h3><div id="admin-goals-list"></div></div>
-      <div class="admin-card"><h3>+ Agregar meta</h3><div class="form-group"><label>Canción</label><input class="input" id="ng-song" placeholder="ej: Bite Me"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Streams actuales</label><input class="input" id="ng-current" placeholder="ej: 125M"></div><div class="form-group"><label>Meta</label><input class="input" id="ng-target" placeholder="ej: 200M"></div></div><div class="form-group"><label>Plataforma</label><select class="input" id="ng-platform"><option>Spotify</option><option>YouTube</option><option>Apple Music</option></select></div><button class="btn" onclick="addGoal()">Agregar</button></div>
+    <!-- Metas (igual) -->
+    <div class="admin-section active" id="tab-goals"><div class="admin-card"><h3>Metas actuales</h3><div id="admin-goals-list"></div></div><div class="admin-card"><h3>+ Agregar meta</h3><div class="form-group"><label>Canción</label><input class="input" id="ng-song" placeholder="ej: Bite Me"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Streams actuales</label><input class="input" id="ng-current" placeholder="ej: 125M"></div><div class="form-group"><label>Meta</label><input class="input" id="ng-target" placeholder="ej: 200M"></div></div><div class="form-group"><label>Plataforma</label><select class="input" id="ng-platform"><option>Spotify</option><option>YouTube</option><option>Apple Music</option></select></div><button class="btn" onclick="addGoal()">Agregar</button></div></div>
+
+    <!-- Playlists -->
+    <div class="admin-section" id="tab-playlists"><div class="admin-card"><h3>Playlists actuales</h3><div id="admin-playlists-list"></div></div><div class="admin-card"><h3>+ Agregar playlist</h3><div class="form-group"><label>Nombre</label><input class="input" id="np-name"></div><div class="form-group"><label>Descripción</label><input class="input" id="np-desc"></div><div class="form-group"><label>URL</label><input class="input" id="np-url"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Plataforma</label><select class="input" id="np-platform"><option value="spotify">Spotify</option><option value="youtube">YouTube</option><option value="apple">Apple Music</option><option value="stationhead">Stationhead</option></select></div><div class="form-group"><label>Icono (emoji)</label><input class="input" id="np-icon" placeholder="🎵"></div></div><button class="btn" onclick="addPlaylist()">Agregar</button></div></div>
+
+    <!-- YouTube Data — Auto desde API -->
+    <div class="admin-section" id="tab-ytdata">
+      <div class="admin-card">
+        <h3>📡 YouTube API — Datos automáticos</h3>
+        <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem">Los datos se obtienen directo de YouTube API v3. No necesitas escribir nada manualmente.</p>
+        <button class="btn" onclick="refreshYTFromAPI()" id="btn-refresh-yt">🔄 Actualizar ahora desde YouTube</button>
+        <div id="admin-yt-status" style="margin-top:1rem;font-size:0.75rem;color:var(--text-muted)">Cache: esperando primera carga...</div>
+      </div>
+      <div class="admin-card">
+        <h3>🎬 Videos en seguimiento</h3>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:1rem">Edita los IDs en el array <code>YT_VIDEO_IDS</code> dentro del código para agregar/quitar videos.</p>
+        <div id="admin-videos-list"></div>
+      </div>
+      <div class="admin-card">
+        <h3>🆘 Fallback manual (si la API falla)</h3>
+        <div class="form-group"><label>Suscriptores</label><input class="input" id="yt-subs" placeholder="17600000"></div>
+        <div class="form-group"><label>Vistas totales del canal</label><input class="input" id="yt-views" placeholder="3200000000"></div>
+        <div class="form-group"><label>+ Suscriptores hoy</label><input class="input" id="yt-subs-daily" placeholder="100000"></div>
+        <div class="form-group"><label>+ Vistas hoy</label><input class="input" id="yt-views-daily" placeholder="3200000"></div>
+        <button class="btn btn-ghost" onclick="saveYTStats()">Guardar fallback manual</button>
+      </div>
+      <div class="admin-card" style="display:none"><input class="input" id="nv-title"><input class="input" id="nv-total"><input class="input" id="nv-daily"><input class="input" id="nv-likes"></div>
     </div>
 
-    <!-- PLAYLISTS -->
-    <div class="admin-section" id="tab-playlists">
-      <div class="admin-card"><h3>Playlists actuales</h3><div id="admin-playlists-list"></div></div>
-      <div class="admin-card"><h3>+ Agregar playlist</h3><div class="form-group"><label>Nombre</label><input class="input" id="np-name"></div><div class="form-group"><label>Descripción</label><input class="input" id="np-desc"></div><div class="form-group"><label>URL</label><input class="input" id="np-url"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Plataforma</label><select class="input" id="np-platform"><option value="spotify">Spotify</option><option value="youtube">YouTube</option><option value="apple">Apple Music</option><option value="stationhead">Stationhead</option></select></div><div class="form-group"><label>Icono (emoji)</label><input class="input" id="np-icon" placeholder="🎵"></div></div><button class="btn" onclick="addPlaylist()">Agregar</button></div>
-    </div>
+    <!-- Configuración -->
+    <div class="admin-section" id="tab-config"><div class="admin-card"><h3>Textos del hero</h3><div class="form-group"><label>Tag</label><input class="input" id="cfg-hero_tag" placeholder="SIN:VANISH // ..."></div><div class="form-group"><label>Texto debut</label><input class="input" id="cfg-debut_text" placeholder="Awaken need to love"></div><div class="form-group"><label>🖼️ Imagen de fondo del hero (URL)</label><input class="input" id="cfg-hero_bg_url" placeholder="https://...jpg"><p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem">Pega la URL directa de la imagen. Recomendado: 1920x1080px o más. Puedes subir a <a href="https://imgbb.com" target="_blank" style="color:var(--primary-red)">imgbb.com</a> gratis.</p></div><div id="hero-bg-preview" style="display:none;margin-top:0.8rem;border-radius:12px;overflow:hidden;border:1px solid var(--border-dim);max-height:160px"><img id="hero-bg-img-preview" style="width:100%;height:160px;object-fit:cover;object-position:top" src="" alt="preview"></div><button class="btn btn-ghost btn-sm" style="margin-top:0.6rem" onclick="previewHeroBg()">👁️ Previsualizar</button></div><div class="admin-card"><h3>Links sociales</h3><div class="form-group"><label>🎵 Spotify URL</label><input class="input" id="cfg-spotify_url"></div><div class="form-group"><label>▶ YouTube</label><input class="input" id="cfg-youtube_url"></div><div class="form-group"><label>🎶 Apple Music</label><input class="input" id="cfg-applemusic_url"></div><div class="form-group"><label>💬 Weverse</label><input class="input" id="cfg-weverse_url"></div><div class="form-group"><label>📸 Instagram</label><input class="input" id="cfg-instagram_url"></div><div class="form-group"><label>🐦 Twitter/X</label><input class="input" id="cfg-twitter_url"></div><button class="btn" onclick="saveConfig()">Guardar configuración</button></div></div>
 
-    <!-- CONFIGURACIÓN (incluye hero_bg_url) -->
-    <div class="admin-section" id="tab-config">
-      <div class="admin-card"><h3>Textos del hero</h3>
-        <div class="form-group"><label>Tag</label><input class="input" id="cfg-hero_tag" placeholder="SIN:VANISH // ..."></div>
-        <div class="form-group"><label>Texto debut</label><input class="input" id="cfg-debut_text" placeholder="Awaken need to love"></div>
-        <div class="form-group"><label>URL imagen de fondo (hero)</label><input class="input" id="cfg-hero_bg_url" placeholder="https://... (dejar vacío para fondo negro)"></div>
-      </div>
-      <div class="admin-card"><h3>Links sociales</h3>
-        <div class="form-group"><label>🎵 Spotify URL</label><input class="input" id="cfg-spotify_url"></div>
-        <div class="form-group"><label>▶ YouTube</label><input class="input" id="cfg-youtube_url"></div>
-        <div class="form-group"><label>🎶 Apple Music</label><input class="input" id="cfg-applemusic_url"></div>
-        <div class="form-group"><label>💬 Weverse</label><input class="input" id="cfg-weverse_url"></div>
-        <div class="form-group"><label>📸 Instagram</label><input class="input" id="cfg-instagram_url"></div>
-        <div class="form-group"><label>🐦 Twitter/X</label><input class="input" id="cfg-twitter_url"></div>
-        <button class="btn" onclick="saveConfig()">Guardar configuración</button>
-      </div>
-    </div>
-
-    <!-- IMÁGENES (para la galería) -->
-    <div class="admin-section" id="tab-images">
-      <div class="admin-card"><h3>Imágenes de la era (aparecerán en la Galería)</h3><div id="admin-images-grid" class="img-grid"></div>
-        <div class="form-group" style="margin-top:1rem"><label>URL de imagen</label><div style="display:flex; gap:0.5rem"><input class="input" id="img-url" placeholder="https://... (link directo a imagen)"><button class="btn" onclick="addImage()">Agregar</button></div><p class="tip-box" style="margin-top:0.5rem; padding:0.5rem">💡 Puedes poner cualquier URL de imagen (de Twitter, Weverse, etc.)</p></div>
-      </div>
-    </div>
+    <!-- Imágenes -->
+    <div class="admin-section" id="tab-images"><div class="admin-card"><h3>Imágenes de la era</h3><div id="admin-images-grid" class="img-grid"></div><div class="form-group" style="margin-top:1rem"><label>URL de imagen</label><div style="display:flex; gap:0.5rem"><input class="input" id="img-url" placeholder="https://..."><button class="btn" onclick="addImage()">Agregar</button></div></div></div></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-<footer>
-  <p>Hecho con 🖤 por ENGENEs · <strong>SIN:VANISH Era</strong></p>
-  <div class="footer-links" style="display:flex; gap:1rem; justify-content:center; margin-top:0.5rem">
-    <a href="#" id="foot-twitter" target="_blank">Twitter</a>
-    <a href="#" id="foot-instagram" target="_blank">Instagram</a>
-    <a href="#" id="foot-spotify" target="_blank">Spotify</a>
-    <a href="#" id="foot-weverse" target="_blank">Weverse</a>
-  </div>
-  <p style="margin-top:0.8rem">Fan project — no oficial. Apoya a ENHYPEN.</p>
-</footer>
+<footer><p>Hecho con 🖤 por ENGENEs · <strong>SIN:VANISH Era</strong></p><div class="footer-links" style="display:flex; gap:1rem; justify-content:center; margin-top:0.5rem"><a href="#" id="foot-twitter" target="_blank">Twitter</a><a href="#" id="foot-instagram" target="_blank">Instagram</a><a href="#" id="foot-spotify" target="_blank">Spotify</a><a href="#" id="foot-weverse" target="_blank">Weverse</a></div><p style="margin-top:0.8rem">Fan project — no oficial. Datos de YouTube obtenidos automáticamente vía API.</p></footer>
 
 <script>
 const { createClient } = supabase;
@@ -630,32 +599,50 @@ const sb = createClient('https://kwduielzkoxlbwycuxdc.supabase.co', 'sb_publisha
 const ADMIN_PASS = '@Evan152026';
 let isAdmin = false;
 
+// Helper functions
 function fmt(n){ if(!n) return '0'; if(n>=1e9) return (n/1e9).toFixed(2)+'B'; if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(0)+'K'; return n.toLocaleString(); }
 function showToast(msg,err){ let t=document.getElementById('toast'); t.textContent=(err?'❌ ':'✅ ')+msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
 function platformIcon(p){ let m={spotify:'🎵',youtube:'▶',apple:'🎶',stationhead:'📡'}; return m[(p||'').toLowerCase()]||'🎵'; }
 function platformClass(p){ let m={spotify:'pl-spotify',youtube:'pl-youtube',apple:'pl-apple',stationhead:'pl-stationhead'}; return m[(p||'').toLowerCase()]||'pl-spotify'; }
 
-// CONFIGURACIÓN
+// ========== CONFIG ==========
 async function loadConfig(){
   let {data}=await sb.from('site_config').select('*'); if(!data) return;
   let cfg={}; data.forEach(r=>cfg[r.key]=r.value);
   if(cfg.hero_tag) document.getElementById('hero-tag').innerText=cfg.hero_tag;
   if(cfg.debut_text) document.getElementById('debut-text').innerText=cfg.debut_text;
-  const heroBg = cfg.hero_bg_url;
-  if(heroBg && heroBg.trim() !== ''){
-    document.getElementById('hero-section').style.backgroundImage = `url('${heroBg}')`;
-  } else {
-    document.getElementById('hero-section').style.backgroundImage = 'none';
-  }
   if(cfg.spotify_url){ document.getElementById('btn-spotify').href=cfg.spotify_url; document.getElementById('foot-spotify').href=cfg.spotify_url; }
   if(cfg.applemusic_url) document.getElementById('btn-applemusic').href=cfg.applemusic_url;
   if(cfg.youtube_url) document.getElementById('btn-youtube').href=cfg.youtube_url;
   if(cfg.weverse_url){ document.getElementById('btn-weverse').href=cfg.weverse_url; document.getElementById('foot-weverse').href=cfg.weverse_url; }
   if(cfg.instagram_url){ document.getElementById('btn-instagram').href=cfg.instagram_url; document.getElementById('foot-instagram').href=cfg.instagram_url; }
   if(cfg.twitter_url) document.getElementById('foot-twitter').href=cfg.twitter_url;
+  // Imagen de fondo del hero
+  if(cfg.hero_bg_url && cfg.hero_bg_url.trim()){
+    applyHeroBg(cfg.hero_bg_url.trim());
+    let inp = document.getElementById('cfg-hero_bg_url');
+    if(inp) inp.value = cfg.hero_bg_url.trim();
+  }
 }
 
-// GOALS
+function applyHeroBg(url){
+  const hero = document.querySelector('.hero');
+  if(!hero || !url) return;
+  hero.style.backgroundImage = 'url(' + url + ')';
+}
+
+function previewHeroBg(){
+  const url = document.getElementById('cfg-hero_bg_url').value.trim();
+  if(!url){ showToast('Escribe una URL primero', true); return; }
+  const preview = document.getElementById('hero-bg-preview');
+  const img = document.getElementById('hero-bg-img-preview');
+  img.src = url;
+  preview.style.display = 'block';
+  applyHeroBg(url);
+  showToast('Vista previa aplicada al hero');
+}
+
+// ========== GOALS ==========
 async function loadGoalsPublic(){
   let {data}=await sb.from('goals').select('*').order('sort_order');
   if(!data||!data.length){ document.getElementById('home-goal-card').innerHTML='<div class="empty"><p>🎯 Sin metas activas</p></div>'; document.getElementById('goals-list').innerHTML='<div class="empty"><p>Añade metas desde el panel admin</p></div>'; document.getElementById('charts-goals-table').innerHTML='<div class="empty"><p>Sin datos</p></div>'; return; }
@@ -664,37 +651,385 @@ async function loadGoalsPublic(){
   document.getElementById('goals-list').innerHTML=data.map(g=>{ let p=Math.min(100,Math.round(g.current/g.target*100)); return `<div class="goal-card"><div class="goal-top"><div class="goal-song">${g.song}<span>${fmt(g.target)} · ${g.platform}</span></div><div class="goal-pct">${p}%</div></div><div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div><div class="goal-stats"><div class="stat"><div class="stat-val">${fmt(g.current)}</div><div class="stat-label">Actuales</div></div><div class="stat"><div class="stat-val">${fmt(g.target)}</div><div class="stat-label">Meta</div></div><div class="stat"><div class="stat-val">${fmt(Math.max(0,g.target-g.current))}</div><div class="stat-label">Restantes</div></div></div></div>`; }).join('');
   document.getElementById('charts-goals-table').innerHTML=`<table class="charts-table"><thead><tr><th>#</th><th>Canción</th><th>Streams</th><th>Progreso</th></tr></thead><tbody>${data.map((g,i)=>{ let p=Math.min(100,Math.round(g.current/g.target*100)); return `<tr><td>${i+1}</td><td class="song-name">${g.song}</td><td>${fmt(g.current)}</td><td><span class="chart-badge">${p}% de ${fmt(g.target)}</span></td>`; }).join('')}</tbody></table>`;
 }
-
-// PLAYLISTS
 async function loadPlaylistsPublic(){
   let {data}=await sb.from('playlists').select('*').order('sort_order');
   if(!data||!data.length) return;
   let all=data.map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon ${platformClass(p.platform)}">${p.icon||platformIcon(p.platform)}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
   let spot=data.filter(p=>p.platform==='spotify').map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon pl-spotify">${p.icon||'🎵'}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
-  let yt=data.filter(p=>p.platform==='youtube').map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon pl-youtube">${p.icon||'▶'}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
   let apple=data.filter(p=>p.platform==='apple').map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon pl-apple">${p.icon||'🎶'}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
   document.getElementById('home-playlists').innerHTML=`<div class="playlist-grid">${all}</div>`;
   document.getElementById('spotify-playlists').innerHTML=spot?`<div class="playlist-grid">${spot}</div>`:'<div class="empty"><p>No hay playlists de Spotify</p></div>';
-  document.getElementById('youtube-playlists').innerHTML=yt?`<div class="playlist-grid">${yt}</div>`:'<div class="empty"><p>No hay playlists de YouTube aún</p></div>';
   if(document.getElementById('apple-playlists')) document.getElementById('apple-playlists').innerHTML=apple?`<div class="playlist-grid">${apple}</div>`:'<div class="empty"><p>No hay playlists de Apple Music</p></div>';
 }
 
-// GALERÍA PÚBLICA
-async function loadPublicGallery(){
-  let {data}=await sb.from('images').select('*').order('sort_order');
-  if(!data || data.length===0){
-    document.getElementById('public-gallery').innerHTML='<div class="empty"><p>🖼️ No hay imágenes aún. El admin puede agregarlas desde el panel.</p></div>';
-    return;
-  }
-  let html='';
-  data.forEach(img=>{
-    html+=`<div class="gallery-item"><img src="${img.url}" alt="${img.caption || 'ENHYPEN'}" loading="lazy" onerror="this.parentElement.style.display='none'"><div class="caption">${img.caption || ''}</div></div>`;
-  });
-  document.getElementById('public-gallery').innerHTML=html;
+// ========== YOUTUBE API v3 — DATOS AUTOMÁTICOS + VISTAS DIARIAS ==========
+const YT_API_KEY    = 'AIzaSyBIv_PcUf_kr3fmMFgcxKucOOGCTSJPv4U';
+const YT_CHANNEL_ID = 'UCIgx4BhFkMFyApx3i7kI_jA'; // ENHYPEN official
+
+// IDs de MVs a trackear — agrega o quita según necesites
+const YT_VIDEO_IDS = [
+  { title: "ENHYPEN 'Knife' MV",                 id: "R6e4tBWxIxE" },
+  { title: "ENHYPEN 'Outside' Performance",       id: "xdX_8R8Unik" },
+  { title: "ENHYPEN 'Outside' MV",               id: "uHG-2mCfyT4" },
+  { title: "ENHYPEN 'Bad Desire' MV",            id: "a2Zqdo9RbNs" },
+  { title: "ENHYPEN 'No Doubt' MV",              id: "rDolt3jJRsM" },
+  { title: "ENHYPEN 'Highway 1009'",             id: "_ywIhBOpjQA" },
+  { title: "ENHYPEN 'Brought The Heat Back' MV", id: "yjxLMzeV76Q" },
+  { title: "ENHYPEN 'XO' MV",                   id: "FPDYeRk2PO8" }
+];
+
+// Cache en memoria (1 hora)
+let ytCache = { channel: null, videos: null, snapshots: null, fetchedAt: 0 };
+const YT_CACHE_MS = 60 * 60 * 1000;
+
+// ── Helpers ──
+function todayStr() {
+  return new Date().toISOString().slice(0, 10); // "2025-05-25"
 }
 
-// ADMIN DATA LOAD
+function yesterdayStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+// ── Fetch canal (subs, vistas totales, nº videos) ──
+async function fetchYTChannel() {
+  try {
+    const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${YT_CHANNEL_ID}&key=${YT_API_KEY}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Channel API ' + res.status);
+    const data = await res.json();
+    const s = data.items?.[0]?.statistics;
+    if (!s) throw new Error('No stats');
+    return {
+      subscribers: parseInt(s.subscriberCount) || 0,
+      totalViews:  parseInt(s.viewCount)        || 0,
+      videoCount:  parseInt(s.videoCount)       || 0
+    };
+  } catch(e) {
+    console.warn('YT Channel failed:', e.message);
+    return null;
+  }
+}
+
+// ── Fetch estadísticas de videos (batch) ──
+async function fetchYTVideos(ids) {
+  try {
+    const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${ids.join(',')}&key=${YT_API_KEY}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Videos API ' + res.status);
+    const data = await res.json();
+    return data.items || [];
+  } catch(e) {
+    console.warn('YT Videos failed:', e.message);
+    return [];
+  }
+}
+
+// ── Guardar snapshot diario en Supabase ──
+// Guarda el total de vistas de cada video con la fecha de hoy
+async function saveSnapshot(videoStats) {
+  const today = todayStr();
+  try {
+    for (const v of videoStats) {
+      if (!v.video_id || !v.views) continue;
+      // upsert: si ya existe snapshot de hoy para este video, actualiza
+      await sb.from('yt_snapshots').upsert(
+        { video_id: v.video_id, snapshot_date: today, total_views: v.views },
+        { onConflict: 'video_id,snapshot_date' }
+      );
+    }
+  } catch(e) {
+    console.warn('Snapshot save failed:', e.message);
+  }
+}
+
+// ── Obtener snapshot de ayer desde Supabase ──
+async function getYesterdaySnapshots() {
+  try {
+    const yesterday = yesterdayStr();
+    const { data } = await sb.from('yt_snapshots')
+      .select('video_id, total_views')
+      .eq('snapshot_date', yesterday);
+    return data || [];
+  } catch(e) {
+    console.warn('Snapshot fetch failed:', e.message);
+    return [];
+  }
+}
+
+// ── Calcular vistas de las últimas ~24h ──
+// Si no hay snapshot de ayer, intenta con el más reciente disponible
+async function getDailyViews(videoId, currentViews) {
+  try {
+    const { data } = await sb.from('yt_snapshots')
+      .select('total_views, snapshot_date')
+      .eq('video_id', videoId)
+      .lt('snapshot_date', todayStr())           // snapshots anteriores a hoy
+      .order('snapshot_date', { ascending: false })
+      .limit(1);
+    if (data && data[0]) {
+      const diff = currentViews - parseInt(data[0].total_views);
+      return diff > 0 ? diff : null;
+    }
+    return null;
+  } catch(e) {
+    return null;
+  }
+}
+
+// ── Función principal ──
+async function loadYTDataPublic() {
+  const now = Date.now();
+  const useCache = ytCache.channel && ytCache.videos && (now - ytCache.fetchedAt < YT_CACHE_MS);
+
+  let channelStats, videoItems, yesterdaySnaps;
+
+  if (useCache) {
+    channelStats    = ytCache.channel;
+    videoItems      = ytCache.videos;
+    yesterdaySnaps  = ytCache.snapshots || [];
+  } else {
+    document.getElementById('yt-stats-container').innerHTML  = '<div class="loading"><div class="spin"></div><br>Conectando con YouTube API...</div>';
+    document.getElementById('yt-videos-container').innerHTML = '<div class="loading"><div class="spin"></div><br>Calculando vistas diarias...</div>';
+
+    const ids = YT_VIDEO_IDS.map(v => v.id);
+    [channelStats, videoItems, yesterdaySnaps] = await Promise.all([
+      fetchYTChannel(),
+      fetchYTVideos(ids),
+      getYesterdaySnapshots()
+    ]);
+
+    if (channelStats || videoItems.length) {
+      ytCache = { channel: channelStats, videos: videoItems, snapshots: yesterdaySnaps, fetchedAt: now };
+    }
+  }
+
+  // ── Render canal ──
+  if (channelStats) {
+    document.getElementById('yt-stats-container').innerHTML = `
+      <div class="yt-stats-grid">
+        <div class="yt-stat-card">
+          <div class="yt-stat-value">${fmt(channelStats.subscribers)}</div>
+          <div class="yt-stat-label">Suscriptores</div>
+          <div class="yt-stat-change" style="color:#4ade80">▶ En vivo · YT API</div>
+        </div>
+        <div class="yt-stat-card">
+          <div class="yt-stat-value">${fmt(channelStats.totalViews)}</div>
+          <div class="yt-stat-label">Vistas totales del canal</div>
+          <div class="yt-stat-change" style="color:#4ade80">▶ En vivo · YT API</div>
+        </div>
+        <div class="yt-stat-card">
+          <div class="yt-stat-value">${channelStats.videoCount.toLocaleString()}</div>
+          <div class="yt-stat-label">Videos publicados</div>
+          <div class="yt-stat-change" style="color:#4ade80">▶ En vivo · YT API</div>
+        </div>
+      </div>`;
+  } else {
+    // Fallback Supabase
+    const {data:cfg} = await sb.from('site_config').select('*');
+    let subs=17600000, views=3200000000, subsD=100000, viewsD=3200000;
+    if(cfg){ subs=parseInt(cfg.find(c=>c.key==='yt_subs')?.value)||subs; views=parseInt(cfg.find(c=>c.key==='yt_views')?.value)||views; subsD=parseInt(cfg.find(c=>c.key==='yt_subs_daily')?.value)||subsD; viewsD=parseInt(cfg.find(c=>c.key==='yt_views_daily')?.value)||viewsD; }
+    document.getElementById('yt-stats-container').innerHTML = `
+      <div class="yt-stats-grid">
+        <div class="yt-stat-card"><div class="yt-stat-value">${fmt(subs)}</div><div class="yt-stat-label">Suscriptores</div><div class="yt-stat-change">+${fmt(subsD)} hoy (manual)</div></div>
+        <div class="yt-stat-card"><div class="yt-stat-value">${fmt(views)}</div><div class="yt-stat-label">Vistas totales</div><div class="yt-stat-change">+${fmt(viewsD)} hoy (manual)</div></div>
+      </div>
+      <p style="font-size:0.7rem;color:var(--text-muted);margin-top:0.5rem">⚠️ YouTube API no disponible — datos manuales</p>`;
+  }
+
+  // ── Render videos ──
+  if (!videoItems || videoItems.length === 0) {
+    const {data:vids} = await sb.from('yt_videos').select('*').order('sort_order');
+    if(!vids||!vids.length){ document.getElementById('yt-videos-container').innerHTML='<div class="empty"><p>No hay videos registrados.</p></div>'; return; }
+    let h=`<table class="yt-video-table"><thead><tr><th>VIDEO</th><th>TOTAL VIEWS</th><th>+24H</th><th>LIKES</th></tr></thead><tbody>`;
+    vids.forEach(v=>{ h+=`<tr><td class="yt-video-title">${v.title}</td><td>${fmt(v.total_views)}</td><td style="color:#4ade80">+${fmt(v.daily_views)}</td><td>${fmt(v.likes)}</td></tr>`; });
+    h+=`</tbody></table><p style="font-size:0.7rem;color:var(--text-muted);margin-top:0.5rem">⚠️ YouTube API no disponible — datos Supabase</p>`;
+    document.getElementById('yt-videos-container').innerHTML=h; return;
+  }
+
+  // Construir mapa id→stats desde API
+  const apiMap = {};
+  videoItems.forEach(item => {
+    apiMap[item.id] = {
+      title:    item.snippet?.title || '',
+      views:    parseInt(item.statistics?.viewCount)    || 0,
+      likes:    parseInt(item.statistics?.likeCount)    || 0,
+      comments: parseInt(item.statistics?.commentCount) || 0,
+      thumb:    item.snippet?.thumbnails?.medium?.url   || ''
+    };
+  });
+
+  // Mapa de snapshots de ayer: video_id → total_views
+  const snapMap = {};
+  (yesterdaySnaps || []).forEach(s => { snapMap[s.video_id] = parseInt(s.total_views) || 0; });
+
+  // Combinar y calcular vistas 24h
+  const videos = YT_VIDEO_IDS.map(v => {
+    const api   = apiMap[v.id] || {};
+    const curr  = api.views || 0;
+    const prev  = snapMap[v.id] || 0;
+    const daily = (prev > 0 && curr >= prev) ? curr - prev : null;
+    return { ...v, ...api, views: curr, daily24h: daily };
+  }).sort((a,b) => (b.views||0) - (a.views||0));
+
+  // ── Guardar snapshot de HOY (para calcular mañana) ──
+  const toSnap = videos.filter(v => v.views > 0).map(v => ({ video_id: v.id, views: v.views }));
+  saveSnapshot(toSnap); // fire & forget
+
+  // ── Sincronizar yt_videos en Supabase ──
+  try {
+    const {data:existing} = await sb.from('yt_videos').select('id,video_id');
+    for (const v of videos) {
+      if (!v.views) continue;
+      const match = existing?.find(e => e.video_id === v.id);
+      const daily = v.daily24h || 0;
+      if (match) {
+        await sb.from('yt_videos').update({ total_views: v.views, daily_views: daily, likes: v.likes }).eq('id', match.id);
+      } else {
+        const {data:last} = await sb.from('yt_videos').select('sort_order').order('sort_order',{ascending:false}).limit(1);
+        const sort = (last?.[0]?.sort_order || 0) + 1;
+        await sb.from('yt_videos').insert({ title: v.title||v.id, total_views: v.views, daily_views: daily, likes: v.likes, sort_order: sort, video_id: v.id });
+      }
+    }
+  } catch(e) { console.warn('Supabase sync skipped:', e.message); }
+
+  // ── Render tabla ──
+  const hasAnyDaily = videos.some(v => v.daily24h !== null);
+
+  let html = `
+    <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap">
+      <div class="dot-live" style="width:6px;height:6px"></div>
+      <span style="font-size:0.7rem;color:var(--text-muted);font-family:'Orbitron',monospace;letter-spacing:1px">DATOS EN VIVO · YouTube Data API v3</span>
+      ${hasAnyDaily
+        ? '<span style="font-size:0.7rem;color:#4ade80;margin-left:0.5rem">✅ Vistas 24h calculadas</span>'
+        : '<span style="font-size:0.7rem;color:var(--primary-gold);margin-left:0.5rem">⏳ Vistas 24h disponibles mañana (primer día de tracking)</span>'}
+    </div>
+    <table class="yt-video-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>VIDEO</th>
+          <th>TOTAL VIEWS</th>
+          <th style="color:#4ade80">+24H VIEWS</th>
+          <th>LIKES</th>
+          <th>COMENTARIOS</th>
+          <th>LINK</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  videos.forEach((v, i) => {
+    const daily24h = v.daily24h !== null
+      ? `<span style="color:#4ade80;font-family:'Orbitron',monospace;font-weight:700">+${fmt(v.daily24h)}</span>`
+      : `<span style="color:var(--text-muted);font-size:0.7rem">—</span>`;
+
+    html += `
+      <tr>
+        <td style="color:var(--primary-gold);font-family:'Orbitron',monospace">${i+1}</td>
+        <td>
+          ${v.thumb ? `<img src="${v.thumb}" style="width:80px;height:45px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-right:8px;border:1px solid var(--border-dim)">` : ''}
+          <span class="yt-video-title">${v.title||v.id}</span>
+        </td>
+        <td style="color:var(--primary-gold);font-family:'Orbitron',monospace">${fmt(v.views)}</td>
+        <td>${daily24h}</td>
+        <td>${fmt(v.likes)}</td>
+        <td>${fmt(v.comments)}</td>
+        <td><a href="https://youtube.com/watch?v=${v.id}" target="_blank" style="color:var(--primary-red);font-size:0.75rem;text-decoration:none">▶ Ver</a></td>
+      </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  document.getElementById('yt-videos-container').innerHTML = html;
+}
+
+// ── Refresh manual desde admin ──
+async function refreshYTFromAPI() {
+  ytCache = { channel: null, videos: null, snapshots: null, fetchedAt: 0 };
+  const btn = document.getElementById('btn-refresh-yt');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Actualizando...'; }
+  showToast('Conectando con YouTube API...');
+  await loadYTDataPublic();
+  if(btn){ btn.disabled=false; btn.textContent='🔄 Actualizar ahora desde YouTube'; }
+  const status = document.getElementById('admin-yt-status');
+  if(status) status.textContent = 'Actualizado: ' + new Date().toLocaleTimeString() + ' · Cache válido 1h';
+  showToast('✅ Datos de YouTube actualizados');
+}
+
+// ── Estado del cache en admin ──
+function updateAdminYTStatus(){admin cuando se abre
+function updateAdminYTStatus(){
+  const status = document.getElementById('admin-yt-status');
+  if(!status) return;
+  if(ytCache.fetchedAt){
+    const mins = Math.round((Date.now()-ytCache.fetchedAt)/60000);
+    status.textContent = 'Última actualización hace ' + mins + ' min · ' + (ytCache.channel ? `${fmt(ytCache.channel.subscribers)} subs · ${fmt(ytCache.channel.totalViews)} vistas` : 'sin datos de canal');
+  } else {
+    status.textContent = 'Aún no se ha cargado desde la API en esta sesión.';
+  }
+}
+
+// Guardar estadísticas manuales del canal (desde admin)
+async function saveYTStats(){
+  let subs=document.getElementById('yt-subs').value.replace(/\D/g,'');
+  let views=document.getElementById('yt-views').value.replace(/\D/g,'');
+  let subsDaily=document.getElementById('yt-subs-daily').value.replace(/\D/g,'');
+  let viewsDaily=document.getElementById('yt-views-daily').value.replace(/\D/g,'');
+  await sb.from('site_config').upsert({key:'yt_subs', value:subs||'0'});
+  await sb.from('site_config').upsert({key:'yt_views', value:views||'0'});
+  await sb.from('site_config').upsert({key:'yt_subs_daily', value:subsDaily||'0'});
+  await sb.from('site_config').upsert({key:'yt_views_daily', value:viewsDaily||'0'});
+  showToast('Estadísticas de YouTube guardadas');
+  await loadYTDataPublic();
+}
+async function loadAdminVideos(){
+  let {data}=await sb.from('yt_videos').select('*').order('sort_order');
+  if(!data) return;
+  document.getElementById('admin-videos-list').innerHTML=data.length?data.map(v=>`
+    <div class="admin-list-item">
+      <div class="ali-info"><div class="ali-name">${v.title}</div><div class="ali-sub">${fmt(v.total_views)} vistas | +${fmt(v.daily_views)} diarias | ${fmt(v.likes)} likes</div></div>
+      <div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editYTVideo(${v.id},'${v.title.replace(/'/g,"\\'")}',${v.total_views},${v.daily_views},${v.likes})">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteYTVideo(${v.id})">✕</button></div>
+    </div>`).join(''):'<p>No hay videos agregados</p>';
+}
+async function addYTVideo(){
+  let title=document.getElementById('nv-title').value.trim();
+  let total=parseInt(document.getElementById('nv-total').value.replace(/\D/g,''))||0;
+  let daily=parseInt(document.getElementById('nv-daily').value.replace(/\D/g,''))||0;
+  let likes=parseInt(document.getElementById('nv-likes').value.replace(/\D/g,''))||0;
+  if(!title){ showToast('Escribe un título',true); return; }
+  let {data:exist}=await sb.from('yt_videos').select('sort_order').order('sort_order',{ascending:false}).limit(1);
+  let sort=exist&&exist[0]?exist[0].sort_order+1:1;
+  let {error}=await sb.from('yt_videos').insert({title, total_views:total, daily_views:daily, likes, sort_order:sort});
+  if(error){ showToast('Error al guardar',true); return; }
+  document.getElementById('nv-title').value=''; document.getElementById('nv-total').value=''; document.getElementById('nv-daily').value=''; document.getElementById('nv-likes').value='';
+  showToast('Video agregado');
+  await loadAdminVideos();
+  await loadYTDataPublic();
+}
+function editYTVideo(id,title,total,daily,likes){
+  let newTotal=prompt(`Vistas totales de "${title}":`, total);
+  if(newTotal===null) return;
+  let newDaily=prompt(`Vistas diarias:`, daily);
+  if(newDaily===null) return;
+  let newLikes=prompt(`Likes:`, likes);
+  if(newLikes===null) return;
+  let nTotal=parseInt(newTotal.replace(/\D/g,''))||0;
+  let nDaily=parseInt(newDaily.replace(/\D/g,''))||0;
+  let nLikes=parseInt(newLikes.replace(/\D/g,''))||0;
+  sb.from('yt_videos').update({total_views:nTotal, daily_views:nDaily, likes:nLikes}).eq('id',id).then(async()=>{ showToast('Video actualizado'); await loadAdminVideos(); await loadYTDataPublic(); });
+}
+async function deleteYTVideo(id){
+  if(!confirm('¿Eliminar video?')) return;
+  await sb.from('yt_videos').delete().eq('id',id);
+  showToast('Video eliminado');
+  await loadAdminVideos();
+  await loadYTDataPublic();
+}
+
+// ========== ADMIN DATA LOAD (metas, playlists, etc) ==========
 async function loadAdminData(){
+  updateAdminYTStatus();
   let {data:goals}=await sb.from('goals').select('*').order('sort_order');
   document.getElementById('admin-goals-list').innerHTML=goals&&goals.length?goals.map(g=>`<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${g.song}</div><div class="ali-sub">${fmt(g.current)} / ${fmt(g.target)} · ${g.platform}</div></div><div class="pct-badge">${Math.min(100,Math.round(g.current/g.target*100))}%</div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editGoal(${g.id},'${g.song.replace(/'/g,"\\'")}',${g.current},${g.target})">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteGoal(${g.id})">✕</button></div></div>`).join(''):'<p>Sin metas</p>';
   let {data:playlists}=await sb.from('playlists').select('*').order('sort_order');
@@ -702,27 +1037,26 @@ async function loadAdminData(){
   let {data:cfg}=await sb.from('site_config').select('*');
   if(cfg){
     cfg.forEach(r=>{ let el=document.getElementById('cfg-'+r.key); if(el) el.value=r.value||''; });
+    document.getElementById('yt-subs').value=cfg.find(c=>c.key==='yt_subs')?.value||'17600000';
+    document.getElementById('yt-views').value=cfg.find(c=>c.key==='yt_views')?.value||'3200000000';
+    document.getElementById('yt-subs-daily').value=cfg.find(c=>c.key==='yt_subs_daily')?.value||'100000';
+    document.getElementById('yt-views-daily').value=cfg.find(c=>c.key==='yt_views_daily')?.value||'3200000';
   }
+  await loadAdminVideos();
   let {data:images}=await sb.from('images').select('*').order('sort_order');
   document.getElementById('admin-images-grid').innerHTML=images&&images.length?images.map(img=>`<div class="img-item"><img src="${img.url}" onerror="this.parentElement.style.display='none'"><button class="img-del" onclick="deleteImage(${img.id})">✕</button></div>`).join(''):'<p>Sin imágenes</p>';
 }
 
-// CRUD METAS
+// Funciones CRUD para metas y playlists (mismo que antes)
 async function addGoal(){ let song=document.getElementById('ng-song').value.trim(); let current=parseInt(document.getElementById('ng-current').value.replace(/\D/g,''))||0; let target=parseInt(document.getElementById('ng-target').value.replace(/\D/g,''))||0; let platform=document.getElementById('ng-platform').value; if(!song||!target){ showToast('Completa los campos',true); return; } let {data:exist}=await sb.from('goals').select('sort_order').order('sort_order',{ascending:false}).limit(1); let sort=exist&&exist[0]?exist[0].sort_order+1:1; await sb.from('goals').insert({song,current,target,platform,sort_order:sort}); showToast('Meta agregada'); document.getElementById('ng-song').value=''; document.getElementById('ng-current').value=''; document.getElementById('ng-target').value=''; await loadAdminData(); await loadGoalsPublic(); }
 function editGoal(id,song,current,target){ let n=prompt(`Nuevos streams para "${song}"`,current); if(n===null) return; let val=parseInt(n.replace(/\D/g,'')); if(isNaN(val)){ showToast('Número inválido',true); return; } sb.from('goals').update({current:val}).eq('id',id).then(async()=>{ showToast('Actualizado'); await loadAdminData(); await loadGoalsPublic(); }); }
 async function deleteGoal(id){ if(confirm('¿Eliminar meta?')){ await sb.from('goals').delete().eq('id',id); showToast('Meta eliminada'); await loadAdminData(); await loadGoalsPublic(); } }
-
-// CRUD PLAYLISTS
 async function addPlaylist(){ let name=document.getElementById('np-name').value.trim(); let description=document.getElementById('np-desc').value.trim(); let url=document.getElementById('np-url').value.trim(); let platform=document.getElementById('np-platform').value; let icon=document.getElementById('np-icon').value.trim()||platformIcon(platform); if(!name){ showToast('Nombre requerido',true); return; } let {data:exist}=await sb.from('playlists').select('sort_order').order('sort_order',{ascending:false}).limit(1); let sort=exist&&exist[0]?exist[0].sort_order+1:1; await sb.from('playlists').insert({name,description,url,platform,icon,sort_order:sort}); showToast('Playlist agregada'); document.getElementById('np-name').value=''; document.getElementById('np-desc').value=''; document.getElementById('np-url').value=''; document.getElementById('np-icon').value=''; await loadAdminData(); await loadPlaylistsPublic(); }
 function editPlaylist(id,name,desc,url,platform){ let newUrl=prompt(`Editar URL de "${name}"`,url); if(newUrl===null) return; sb.from('playlists').update({url:newUrl}).eq('id',id).then(async()=>{ showToast('Playlist actualizada'); await loadAdminData(); await loadPlaylistsPublic(); }); }
 async function deletePlaylist(id){ if(confirm('¿Eliminar playlist?')){ await sb.from('playlists').delete().eq('id',id); showToast('Playlist eliminada'); await loadAdminData(); await loadPlaylistsPublic(); } }
-
-// CONFIGURACIÓN GENERAL (incluye hero_bg_url)
 async function saveConfig(){ let keys=['hero_tag','debut_text','hero_bg_url','spotify_url','youtube_url','applemusic_url','weverse_url','instagram_url','twitter_url']; for(let k of keys){ let el=document.getElementById('cfg-'+k); if(el) await sb.from('site_config').upsert({key:k,value:el.value.trim()}); } showToast('Configuración guardada'); await loadConfig(); }
-
-// IMÁGENES (admin y pública)
-async function addImage(){ let url=document.getElementById('img-url').value.trim(); let caption=''; // opcional, podrías añadir un input para caption si quieres if(!url){ showToast('URL requerida',true); return; } await sb.from('images').insert({url, caption, sort_order:Date.now()}); showToast('Imagen agregada'); document.getElementById('img-url').value=''; await loadAdminData(); await loadPublicGallery(); }
-async function deleteImage(id){ if(confirm('¿Eliminar imagen?')){ await sb.from('images').delete().eq('id',id); showToast('Imagen eliminada'); await loadAdminData(); await loadPublicGallery(); } }
+async function addImage(){ let url=document.getElementById('img-url').value.trim(); if(!url){ showToast('URL requerida',true); return; } await sb.from('images').insert({url, sort_order:Date.now()}); showToast('Imagen agregada'); document.getElementById('img-url').value=''; await loadAdminData(); }
+async function deleteImage(id){ if(confirm('¿Eliminar imagen?')){ await sb.from('images').delete().eq('id',id); showToast('Imagen eliminada'); await loadAdminData(); } }
 
 // NAVEGACIÓN
 function openAdminLogin(){ if(isAdmin){ openAdminPanel(); return; } document.getElementById('admin-overlay').classList.add('open'); }
@@ -736,8 +1070,8 @@ function toggleMobileNav(){ document.getElementById('nav-links').classList.toggl
 function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.getElementById('spotify-chart').style.display=id==='spotify-chart'?'block':'none'; document.getElementById('yt-chart').style.display=id==='yt-chart'?'block':'none'; document.getElementById('apple-chart').style.display=id==='apple-chart'?'block':'none'; }
 function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-// INICIALIZACIÓN
-async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadPublicGallery()]); }
+// Inicialización
+async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadYTDataPublic()]); }
 loadAll();
 let seq=''; document.addEventListener('keydown',e=>{ seq=(seq+e.key.toLowerCase()).slice(-3); if(seq==='adm'){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; } });
 let tap=0, timer; document.querySelector('.nav-logo').addEventListener('click',()=>{ tap++; clearTimeout(timer); timer=setTimeout(()=>tap=0,600); if(tap>=5){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; tap=0; } });
