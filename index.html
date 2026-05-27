@@ -693,28 +693,26 @@ function yesterdayStr() {
   return d.toISOString().slice(0, 10);
 }
 
-// ── Fetch canal (subs, vistas totales, nº videos) ──
+// ── Detectar si estamos en file:// (la API no funciona localmente) ──
+function isLocalFile() { return location.protocol === 'file:'; }
+
+// ── Fetch canal ──
 async function fetchYTChannel() {
+  if (isLocalFile()) return null;
   try {
     const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${YT_CHANNEL_ID}&key=${YT_API_KEY}`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error('Channel API ' + res.status);
+    if (!res.ok) { const e = await res.json().catch(()=>({}))); throw new Error(e?.error?.message||'HTTP '+res.status); }
     const data = await res.json();
     const s = data.items?.[0]?.statistics;
     if (!s) throw new Error('No stats');
-    return {
-      subscribers: parseInt(s.subscriberCount) || 0,
-      totalViews:  parseInt(s.viewCount)        || 0,
-      videoCount:  parseInt(s.videoCount)       || 0
-    };
-  } catch(e) {
-    console.warn('YT Channel failed:', e.message);
-    return null;
-  }
+    return { subscribers: parseInt(s.subscriberCount)||0, totalViews: parseInt(s.viewCount)||0, videoCount: parseInt(s.videoCount)||0 };
+  } catch(e) { console.warn('YT Channel failed:', e.message); return null; }
 }
 
-// ── Fetch estadísticas de videos (batch) ──
+// ── Fetch videos (batch) ──
 async function fetchYTVideos(ids) {
+  if (isLocalFile()) return [];
   try {
     const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${ids.join(',')}&key=${YT_API_KEY}`;
     const res = await fetch(url);
@@ -791,8 +789,13 @@ async function loadYTDataPublic() {
     videoItems      = ytCache.videos;
     yesterdaySnaps  = ytCache.snapshots || [];
   } else {
-    document.getElementById('yt-stats-container').innerHTML  = '<div class="loading"><div class="spin"></div><br>Conectando con YouTube API...</div>';
-    document.getElementById('yt-videos-container').innerHTML = '<div class="loading"><div class="spin"></div><br>Calculando vistas diarias...</div>';
+    const isLocal = location.protocol === 'file:';
+    const loadMsg = isLocal
+      ? '<div class="empty"><p>⚠️ YouTube API no funciona al abrir el archivo directo. <strong>Sube el archivo a tu hosting</strong> para ver los datos en vivo.</p></div>'
+      : '<div class="loading"><div class="spin"></div><br>Conectando con YouTube API...</div>';
+    document.getElementById('yt-stats-container').innerHTML  = isLocal ? loadMsg : '<div class="loading"><div class="spin"></div><br>Conectando con YouTube API...</div>';
+    document.getElementById('yt-videos-container').innerHTML = isLocal ? loadMsg : '<div class="loading"><div class="spin"></div><br>Calculando vistas diarias...</div>';
+    if (isLocal) return;
 
     const ids = YT_VIDEO_IDS.map(v => v.id);
     [channelStats, videoItems, yesterdaySnaps] = await Promise.all([
@@ -958,7 +961,6 @@ async function refreshYTFromAPI() {
 }
 
 // ── Estado del cache en admin ──
-function updateAdminYTStatus(){admin cuando se abre
 function updateAdminYTStatus(){
   const status = document.getElementById('admin-yt-status');
   if(!status) return;
