@@ -4,12 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ENHYPEN | SIN:VANISH Streaming Hub</title>
-<meta name="description" content="Fan streaming tracker para ENHYPEN - Era SIN:VANISH. Datos en tiempo real desde YouTube API.">
+<meta name="description" content="Fan streaming tracker para ENHYPEN - Era SIN:VANISH.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,200;14..32,400;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* ========== MISMO ESTILO QUE ANTES (no cambia) ========== */
 :root {
   --bg-dark: #050505;
   --bg-card: #0c0c0c;
@@ -25,7 +24,11 @@
   --shadow-red: 0 0 12px rgba(220, 38, 38, 0.3);
   --gradient-red: linear-gradient(135deg, #dc2626, #7f1d1d);
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 body {
   background: var(--bg-dark);
   color: var(--text-main);
@@ -37,6 +40,8 @@ body {
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: #0a0a0a; }
 ::-webkit-scrollbar-thumb { background: var(--primary-red); border-radius: 4px; }
+
+/* NAV */
 nav {
   display: flex;
   align-items: center;
@@ -58,8 +63,14 @@ nav {
   color: var(--primary-gold);
   text-shadow: 0 0 5px rgba(234, 179, 8, 0.5);
 }
-.nav-logo span { color: var(--primary-red); font-weight: 800; }
-.nav-links { display: flex; gap: 2rem; }
+.nav-logo span {
+  color: var(--primary-red);
+  font-weight: 800;
+}
+.nav-links {
+  display: flex;
+  gap: 2rem;
+}
 .nav-links a {
   color: var(--text-dim);
   text-decoration: none;
@@ -74,23 +85,61 @@ nav {
   color: var(--primary-red);
   text-shadow: 0 0 4px var(--primary-red);
 }
-.nav-right { display: flex; align-items: center; gap: 1rem; }
-.admin-indicator { display: flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; color: var(--text-muted); }
-.admin-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
-.admin-dot.on { background: var(--primary-red); box-shadow: 0 0 8px var(--primary-red); }
-.nav-mobile-btn { display: none; background: none; border: none; color: var(--text-dim); font-size: 1.4rem; cursor: pointer; }
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.admin-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.admin-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.admin-dot.on {
+  background: var(--primary-red);
+  box-shadow: 0 0 8px var(--primary-red);
+}
+.nav-mobile-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+/* HERO CON IMAGEN DE FONDO */
 .hero {
   position: relative;
-  padding: 5rem 2rem 4rem;
+  padding: 8rem 2rem 8rem;
   text-align: center;
   overflow: hidden;
+  /* Aquí debes poner la URL de tu imagen (solo la foto, sin textos) */
+  background-image: url('tu-imagen.jpg');
+  background-size: cover;
+  background-position: center 30%;
+  background-repeat: no-repeat;
+  isolation: isolate;
 }
+/* Overlay oscuro para que el texto sea legible */
 .hero::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.1), transparent 70%);
-  pointer-events: none;
+  background: rgba(0,0,0,0.55);
+  z-index: 0;
+}
+.hero > * {
+  position: relative;
+  z-index: 1;
 }
 .hero-tag {
   display: inline-block;
@@ -102,7 +151,7 @@ nav {
   padding: 0.3rem 1.2rem;
   border-radius: 30px;
   letter-spacing: 2px;
-  background: rgba(220,38,38,0.1);
+  background: rgba(220,38,38,0.2);
   backdrop-filter: blur(4px);
   margin-bottom: 1.5rem;
 }
@@ -111,14 +160,21 @@ nav {
   font-family: 'Orbitron', monospace;
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1;
+  line-height: 1.2;
   background: linear-gradient(135deg, #fff, var(--primary-gold), var(--primary-red));
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   text-shadow: 0 0 15px rgba(220,38,38,0.3);
+  margin-bottom: 0.5rem;
 }
-.hero-sub { margin-top: 1rem; font-size: 0.85rem; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
+.hero-sub {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
 .hero-debut {
   display: inline-flex;
   align-items: center;
@@ -169,8 +225,19 @@ nav {
   background: rgba(220,38,38,0.1);
   transform: translateY(-2px);
 }
-section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
-.section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.8rem; }
+
+/* SECTIONS */
+section {
+  padding: 2rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+}
 .section-title {
   font-family: 'Orbitron', monospace;
   font-size: 0.7rem;
@@ -183,7 +250,13 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   border-radius: 20px;
   border-left: 2px solid var(--primary-red);
 }
-.section-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-dim), transparent); }
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-dim), transparent);
+}
+
+/* GOAL CARDS */
 .goal-card {
   background: rgba(10,10,10,0.8);
   backdrop-filter: blur(8px);
@@ -193,18 +266,83 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   margin-bottom: 1.5rem;
   transition: all 0.2s;
 }
-.goal-card:hover { border-color: var(--border-glow); box-shadow: var(--shadow-red); }
-.goal-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
-.goal-song { font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
-.goal-song span { display: block; font-size: 0.7rem; font-weight: 400; color: var(--text-muted); margin-top: 0.2rem; }
-.goal-pct { font-family: 'Orbitron', monospace; font-size: 2rem; font-weight: 800; color: var(--primary-gold); text-shadow: 0 0 6px rgba(234,179,8,0.4); }
-.progress-bar { width: 100%; height: 6px; background: #1f1f1f; border-radius: 10px; overflow: hidden; margin-bottom: 1.2rem; }
-.progress-fill { height: 100%; background: var(--gradient-red); border-radius: 10px; transition: width 0.7s cubic-bezier(0.2,0.9,0.4,1.1); }
-.goal-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-.stat { text-align: center; background: #0a0a0a; border-radius: 16px; padding: 0.8rem 0.5rem; border: 1px solid var(--border-dim); }
-.stat-val { font-family: 'Orbitron', monospace; font-size: 0.9rem; font-weight: 700; color: var(--primary-gold); }
-.stat-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.2rem; }
-.playlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+.goal-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-red);
+}
+.goal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.goal-song {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.goal-song span {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+.goal-pct {
+  font-family: 'Orbitron', monospace;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-gold);
+  text-shadow: 0 0 6px rgba(234,179,8,0.4);
+}
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #1f1f1f;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1.2rem;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--gradient-red);
+  border-radius: 10px;
+  transition: width 0.7s cubic-bezier(0.2,0.9,0.4,1.1);
+}
+.goal-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.stat {
+  text-align: center;
+  background: #0a0a0a;
+  border-radius: 16px;
+  padding: 0.8rem 0.5rem;
+  border: 1px solid var(--border-dim);
+}
+.stat-val {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary-gold);
+}
+.stat-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 0.2rem;
+}
+
+/* PLAYLISTS */
+.playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
 .playlist-card {
   background: rgba(12,12,12,0.9);
   backdrop-filter: blur(4px);
@@ -217,32 +355,44 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   text-decoration: none;
   transition: 0.2s;
 }
-.playlist-card:hover { border-color: var(--primary-red); transform: translateY(-3px); background: rgba(220,38,38,0.05); }
-.playlist-icon { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+.playlist-card:hover {
+  border-color: var(--primary-red);
+  transform: translateY(-3px);
+  background: rgba(220,38,38,0.05);
+}
+.playlist-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
 .pl-spotify { background: rgba(30,215,96,0.15); border: 1px solid #1db95433; }
 .pl-youtube { background: rgba(255,0,0,0.15); border: 1px solid #ff000033; }
 .pl-apple { background: rgba(255,45,85,0.15); border: 1px solid #ff2d5533; }
-.playlist-info { flex: 1; min-width: 0; }
-.playlist-name { font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
-.playlist-desc { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; }
-.yt-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-.yt-stat-card { background: var(--bg-elevated); border: 1px solid var(--border-dim); border-radius: 24px; padding: 1.2rem; text-align: center; }
-.yt-stat-value { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 800; color: var(--primary-gold); }
-.yt-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-.yt-stat-change { font-size: 0.7rem; margin-top: 0.3rem; color: #4ade80; }
-.yt-video-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-.yt-video-table th {
-  font-family: 'Orbitron', monospace;
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-align: left;
-  padding: 0.8rem 0.5rem;
-  color: var(--primary-red);
-  border-bottom: 1px solid var(--border-dim);
+.playlist-info {
+  flex: 1;
+  min-width: 0;
 }
-.yt-video-table td { padding: 0.8rem 0.5rem; border-bottom: 1px solid var(--border-dim); font-size: 0.8rem; color: var(--text-dim); }
-.yt-video-title { font-weight: 500; color: var(--text-main); }
-.charts-table { width: 100%; border-collapse: collapse; }
+.playlist-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.playlist-desc {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+/* TABLES */
+.charts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
 .charts-table th {
   font-family: 'Orbitron', monospace;
   font-size: 0.65rem;
@@ -253,9 +403,20 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   padding: 0 1rem 0.8rem;
   text-align: left;
 }
-.charts-table td { padding: 0.8rem 1rem; border-top: 1px solid var(--border-dim); font-size: 0.85rem; color: var(--text-dim); }
-.charts-table td:first-child { font-family: 'Orbitron', monospace; color: var(--primary-gold); }
-.song-name { color: var(--text-main); font-weight: 500; }
+.charts-table td {
+  padding: 0.8rem 1rem;
+  border-top: 1px solid var(--border-dim);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.charts-table td:first-child {
+  font-family: 'Orbitron', monospace;
+  color: var(--primary-gold);
+}
+.song-name {
+  color: var(--text-main);
+  font-weight: 500;
+}
 .chart-badge {
   display: inline-block;
   background: rgba(220,38,38,0.2);
@@ -266,7 +427,14 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   font-size: 0.7rem;
   font-family: monospace;
 }
-.tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-dim); margin-bottom: 1.5rem; }
+
+/* TABS */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-dim);
+  margin-bottom: 1.5rem;
+}
 .tab {
   background: transparent;
   border: none;
@@ -279,8 +447,16 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   font-family: 'Orbitron', monospace;
   letter-spacing: 1px;
 }
-.tab.active { color: var(--primary-red); border-bottom: 2px solid var(--primary-red); text-shadow: 0 0 4px rgba(220,38,38,0.4); }
-.tab:hover:not(.active) { color: var(--text-dim); }
+.tab.active {
+  color: var(--primary-red);
+  border-bottom: 2px solid var(--primary-red);
+  text-shadow: 0 0 4px rgba(220,38,38,0.4);
+}
+.tab:hover:not(.active) {
+  color: var(--text-dim);
+}
+
+/* BUTTONS */
 .btn {
   background: var(--gradient-red);
   border: none;
@@ -294,12 +470,36 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   transition: 0.2s;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
-.btn:hover { filter: brightness(1.1); transform: scale(0.98); }
-.btn-ghost { background: transparent; border: 1px solid var(--border-dim); color: var(--text-dim); box-shadow: none; }
-.btn-ghost:hover { border-color: var(--primary-red); color: var(--primary-red); background: rgba(220,38,38,0.1); }
-.btn-danger { background: transparent; border: 1px solid var(--border-dim); color: var(--text-muted); }
-.btn-danger:hover { border-color: var(--primary-red); color: var(--primary-red); }
-.btn-sm { padding: 0.3rem 0.8rem; font-size: 0.7rem; }
+.btn:hover {
+  filter: brightness(1.1);
+  transform: scale(0.98);
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  color: var(--text-dim);
+  box-shadow: none;
+}
+.btn-ghost:hover {
+  border-color: var(--primary-red);
+  color: var(--primary-red);
+  background: rgba(220,38,38,0.1);
+}
+.btn-danger {
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  color: var(--text-muted);
+}
+.btn-danger:hover {
+  border-color: var(--primary-red);
+  color: var(--primary-red);
+}
+.btn-sm {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.7rem;
+}
+
+/* INPUTS */
 .input, select.input {
   background: #0a0a0a;
   border: 1px solid var(--border-dim);
@@ -312,15 +512,47 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   transition: 0.2s;
   width: 100%;
 }
-.input:focus, select.input:focus { border-color: var(--primary-red); box-shadow: 0 0 8px rgba(220,38,38,0.2); }
-.tip-box { background: rgba(0,0,0,0.6); border-left: 3px solid var(--primary-red); border-radius: 12px; padding: 1rem 1.2rem; margin-top: 1.5rem; }
-.tip-box p { font-size: 0.8rem; color: var(--text-dim); }
+.input:focus, select.input:focus {
+  border-color: var(--primary-red);
+  box-shadow: 0 0 8px rgba(220,38,38,0.2);
+}
+.tip-box {
+  background: rgba(0,0,0,0.6);
+  border-left: 3px solid var(--primary-red);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  margin-top: 1.5rem;
+}
+.tip-box p {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* PAGES */
 .page { display: none; }
 .page.active { display: block; }
-.loading { text-align: center; padding: 3rem; color: var(--text-muted); }
-.loading .spin { display: inline-block; width: 30px; height: 30px; border: 2px solid var(--border-dim); border-top-color: var(--primary-red); border-radius: 50%; animation: spin 0.7s linear infinite; }
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+}
+.loading .spin {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--border-dim);
+  border-top-color: var(--primary-red);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
 @keyframes spin { to { transform: rotate(360deg); } }
-.empty { text-align: center; padding: 3rem; color: var(--text-muted); }
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+}
+
+/* ADMIN MODAL / PANEL (estilo oscuro) */
 .admin-overlay {
   display: none;
   position: fixed;
@@ -339,7 +571,10 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   width: min(480px, 90vw);
   padding: 2rem;
 }
-.admin-modal h2 { color: var(--primary-red); font-family: 'Orbitron', monospace; }
+.admin-modal h2 {
+  color: var(--primary-red);
+  font-family: 'Orbitron', monospace;
+}
 .admin-panel {
   display: none;
   position: fixed;
@@ -359,7 +594,12 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   position: sticky;
   top: 0;
 }
-.admin-tabs { display: flex; gap: 0.5rem; padding: 1.5rem 2rem 0; flex-wrap: wrap; }
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1.5rem 2rem 0;
+  flex-wrap: wrap;
+}
 .admin-tab {
   background: transparent;
   border: 1px solid var(--border-dim);
@@ -369,16 +609,55 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   cursor: pointer;
   font-size: 0.8rem;
 }
-.admin-tab.active { background: var(--primary-red); color: black; border-color: var(--primary-red); }
+.admin-tab.active {
+  background: var(--primary-red);
+  color: black;
+  border-color: var(--primary-red);
+}
 .admin-content { padding: 1.5rem 2rem; }
 .admin-section { display: none; }
 .admin-section.active { display: block; }
-.admin-card { background: #0c0c0c; border: 1px solid var(--border-dim); border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; }
-.admin-list-item { background: #111; border-radius: 16px; padding: 0.8rem 1rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 0.6rem; }
-.img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.8rem; }
-.img-item { position: relative; aspect-ratio: 1; background: #0a0a0a; border-radius: 12px; overflow: hidden; }
+.admin-card {
+  background: #0c0c0c;
+  border: 1px solid var(--border-dim);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.admin-list-item {
+  background: #111;
+  border-radius: 16px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+.img-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.8rem;
+}
+.img-item {
+  position: relative;
+  aspect-ratio: 1;
+  background: #0a0a0a;
+  border-radius: 12px;
+  overflow: hidden;
+}
 .img-item img { width: 100%; height: 100%; object-fit: cover; }
-.img-del { position: absolute; top: 4px; right: 4px; background: black; border: none; color: white; border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 0.7rem; }
+.img-del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: black;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  padding: 2px 6px;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
 .toast {
   position: fixed;
   bottom: 2rem;
@@ -394,7 +673,10 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   z-index: 999;
   white-space: nowrap;
 }
-.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
 footer {
   border-top: 1px solid var(--border-dim);
   padding: 2rem;
@@ -402,7 +684,10 @@ footer {
   font-size: 0.7rem;
   color: var(--text-muted);
 }
-footer a { color: var(--text-muted); text-decoration: none; }
+footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
 footer a:hover { color: var(--primary-red); }
 @media (max-width: 700px) {
   nav { padding: 0.8rem 1.2rem; }
@@ -419,13 +704,11 @@ footer a:hover { color: var(--primary-red); }
   }
   .nav-links.open { display: flex; }
   .nav-mobile-btn { display: block; }
-  .hero { padding: 2.5rem 1rem; }
+  .hero { padding: 4rem 1rem; }
   section { padding: 1.5rem 1rem; }
   .goal-stats { grid-template-columns: 1fr 1fr; }
   .admin-tabs { padding: 1rem; }
   .admin-content { padding: 1rem; }
-  .yt-stats-grid { grid-template-columns: 1fr; }
-  .yt-video-table th, .yt-video-table td { padding: 0.5rem 0.3rem; font-size: 0.7rem; }
 }
 </style>
 </head>
@@ -451,12 +734,12 @@ footer a:hover { color: var(--primary-red); }
   </div>
 </nav>
 
-<!-- HOME -->
+<!-- HOME con imagen de fondo y texto superpuesto -->
 <div id="home" class="page active">
   <div class="hero">
     <div class="hero-tag" id="hero-tag">SIN:VANISH // THEY FELL FOR THE FORBIDDEN</div>
     <h1>ENHYPEN<br><span style="font-size: 0.5em; display: block;">SIN & VANISH</span></h1>
-    <p class="hero-sub">Streaming hub | Apoya la era oscura</p>
+    <p class="hero-sub">STREAMING HUB | FAN SUPPORT</p>
     <div class="hero-debut">
       <div class="dot-live"></div>
       <span id="debut-text">Awaken need to love · Faced the storm</span>
@@ -496,13 +779,11 @@ footer a:hover { color: var(--primary-red); }
   </section>
 </div>
 
-<!-- YOUTUBE (con analytics) -->
+<!-- YOUTUBE (sin automatización, solo playlists manuales) -->
 <div id="youtube" class="page">
-  <section><div class="section-header"><div class="section-title">YouTube Channel Overview</div><div class="section-line"></div></div>
-    <div id="yt-stats-container"><div class="loading"><div class="spin"></div></div></div>
-    <div class="section-header" style="margin-top:2rem"><div class="section-title">Music Video Chart</div><div class="section-line"></div></div>
-    <div id="yt-videos-container"><div class="loading"><div class="spin"></div></div></div>
-    <div class="tip-box"><p>📊 Datos actualizados automáticamente desde YouTube API cada hora. ¡Apoya los videos recientes!</p></div>
+  <section><div class="section-header"><div class="section-title">YouTube Playlists</div><div class="section-line"></div></div>
+    <div id="youtube-playlists"><div class="loading"><div class="spin"></div></div></div>
+    <div class="tip-box"><p>📺 Apoya los MVs oficiales de ENHYPEN. Cada vista cuenta para los récords.</p></div>
   </section>
 </div>
 
@@ -511,7 +792,7 @@ footer a:hover { color: var(--primary-red); }
   <section><div class="section-header"><div class="section-title">Charts & estadísticas</div><div class="section-line"></div></div>
     <div class="tabs"><button class="tab active" onclick="switchChartTab('spotify-chart',this)">Spotify</button><button class="tab" onclick="switchChartTab('yt-chart',this)">YouTube</button><button class="tab" onclick="switchChartTab('apple-chart',this)">Apple Music</button></div>
     <div id="spotify-chart"><div id="charts-goals-table"><div class="loading"><div class="spin"></div></div></div></div>
-    <div id="yt-chart" style="display:none"><div class="empty"><p>📺 YouTube stats disponibles en la pestaña YouTube</p></div></div>
+    <div id="yt-chart" style="display:none"><div class="empty"><p>📺 Las métricas de YouTube se muestran en la pestaña YouTube</p></div></div>
     <div id="apple-chart" style="display:none"><div class="empty"><p>🎶 Próximamente</p></div></div>
   </section>
 </div>
@@ -533,41 +814,21 @@ footer a:hover { color: var(--primary-red); }
   </div>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN PANEL (sin YouTube automation, solo playlists, metas, etc.) -->
 <div class="admin-panel" id="admin-panel">
   <div class="admin-nav"><h1 style="font-family:Orbitron">⚙️ ADMIN · SIN:VANISH</h1><div><button class="btn btn-ghost btn-sm" onclick="closeAdmin()">✕ Cerrar</button></div></div>
   <div class="admin-tabs">
     <button class="admin-tab active" onclick="switchAdminTab('tab-goals',this)">📊 Metas</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-playlists',this)">🎵 Playlists</button>
-    <button class="admin-tab" onclick="switchAdminTab('tab-ytdata',this)">📺 YouTube Data</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-config',this)">⚙️ Configuración</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-images',this)">🖼️ Imágenes</button>
   </div>
   <div class="admin-content">
-    <!-- Metas (igual) -->
+    <!-- Metas -->
     <div class="admin-section active" id="tab-goals"><div class="admin-card"><h3>Metas actuales</h3><div id="admin-goals-list"></div></div><div class="admin-card"><h3>+ Agregar meta</h3><div class="form-group"><label>Canción</label><input class="input" id="ng-song" placeholder="ej: Bite Me"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Streams actuales</label><input class="input" id="ng-current" placeholder="ej: 125M"></div><div class="form-group"><label>Meta</label><input class="input" id="ng-target" placeholder="ej: 200M"></div></div><div class="form-group"><label>Plataforma</label><select class="input" id="ng-platform"><option>Spotify</option><option>YouTube</option><option>Apple Music</option></select></div><button class="btn" onclick="addGoal()">Agregar</button></div></div>
 
     <!-- Playlists -->
     <div class="admin-section" id="tab-playlists"><div class="admin-card"><h3>Playlists actuales</h3><div id="admin-playlists-list"></div></div><div class="admin-card"><h3>+ Agregar playlist</h3><div class="form-group"><label>Nombre</label><input class="input" id="np-name"></div><div class="form-group"><label>Descripción</label><input class="input" id="np-desc"></div><div class="form-group"><label>URL</label><input class="input" id="np-url"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Plataforma</label><select class="input" id="np-platform"><option value="spotify">Spotify</option><option value="youtube">YouTube</option><option value="apple">Apple Music</option><option value="stationhead">Stationhead</option></select></div><div class="form-group"><label>Icono (emoji)</label><input class="input" id="np-icon" placeholder="🎵"></div></div><button class="btn" onclick="addPlaylist()">Agregar</button></div></div>
-
-    <!-- YouTube Data (con los videos de ENHYPEN) -->
-    <div class="admin-section" id="tab-ytdata">
-      <div class="admin-card"><h3>📊 Estadísticas del canal</h3>
-        <div class="form-group"><label>Suscriptores (número)</label><input class="input" id="yt-subs" placeholder="17600000"></div>
-        <div class="form-group"><label>Vistas totales del canal</label><input class="input" id="yt-views" placeholder="3200000000"></div>
-        <div class="form-group"><label>+ Suscriptores hoy</label><input class="input" id="yt-subs-daily" placeholder="100000"></div>
-        <div class="form-group"><label>+ Vistas hoy</label><input class="input" id="yt-views-daily" placeholder="3200000"></div>
-        <button class="btn" onclick="saveYTStats()">Guardar estadísticas</button>
-      </div>
-      <div class="admin-card"><h3>🎬 Videos destacados (Tabla)</h3>
-        <div id="admin-videos-list"></div>
-        <div style="margin-top:1rem; border-top:1px solid var(--border-dim); padding-top:1rem"><h4>Agregar nuevo video</h4>
-          <div class="form-group"><label>Título del video</label><input class="input" id="nv-title" placeholder="ej: ENHYPEN 'Knife' MV"></div>
-          <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.7rem"><div class="form-group"><label>Vistas totales</label><input class="input" id="nv-total" placeholder="0"></div><div class="form-group"><label>Vistas diarias</label><input class="input" id="nv-daily" placeholder="0"></div><div class="form-group"><label>Likes</label><input class="input" id="nv-likes" placeholder="0"></div></div>
-          <button class="btn" onclick="addYTVideo()">Agregar video</button>
-        </div>
-      </div>
-    </div>
 
     <!-- Configuración -->
     <div class="admin-section" id="tab-config"><div class="admin-card"><h3>Textos del hero</h3><div class="form-group"><label>Tag</label><input class="input" id="cfg-hero_tag" placeholder="SIN:VANISH // ..."></div><div class="form-group"><label>Texto debut</label><input class="input" id="cfg-debut_text" placeholder="Awaken need to love"></div></div><div class="admin-card"><h3>Links sociales</h3><div class="form-group"><label>🎵 Spotify URL</label><input class="input" id="cfg-spotify_url"></div><div class="form-group"><label>▶ YouTube</label><input class="input" id="cfg-youtube_url"></div><div class="form-group"><label>🎶 Apple Music</label><input class="input" id="cfg-applemusic_url"></div><div class="form-group"><label>💬 Weverse</label><input class="input" id="cfg-weverse_url"></div><div class="form-group"><label>📸 Instagram</label><input class="input" id="cfg-instagram_url"></div><div class="form-group"><label>🐦 Twitter/X</label><input class="input" id="cfg-twitter_url"></div><button class="btn" onclick="saveConfig()">Guardar configuración</button></div></div>
@@ -578,7 +839,16 @@ footer a:hover { color: var(--primary-red); }
 </div>
 
 <div class="toast" id="toast"></div>
-<footer><p>Hecho con 🖤 por ENGENEs · <strong>SIN:VANISH Era</strong></p><div class="footer-links" style="display:flex; gap:1rem; justify-content:center; margin-top:0.5rem"><a href="#" id="foot-twitter" target="_blank">Twitter</a><a href="#" id="foot-instagram" target="_blank">Instagram</a><a href="#" id="foot-spotify" target="_blank">Spotify</a><a href="#" id="foot-weverse" target="_blank">Weverse</a></div><p style="margin-top:0.8rem">Fan project — no oficial. Datos de YouTube obtenidos automáticamente vía API.</p></footer>
+<footer>
+  <p>Hecho con 🖤 por ENGENEs · <strong>SIN:VANISH Era</strong></p>
+  <div class="footer-links" style="display:flex; gap:1rem; justify-content:center; margin-top:0.5rem">
+    <a href="#" id="foot-twitter" target="_blank">Twitter</a>
+    <a href="#" id="foot-instagram" target="_blank">Instagram</a>
+    <a href="#" id="foot-spotify" target="_blank">Spotify</a>
+    <a href="#" id="foot-weverse" target="_blank">Weverse</a>
+  </div>
+  <p style="margin-top:0.8rem">Fan project — no oficial. Apoya a ENHYPEN.</p>
+</footer>
 
 <script>
 const { createClient } = supabase;
@@ -615,134 +885,22 @@ async function loadGoalsPublic(){
   document.getElementById('goals-list').innerHTML=data.map(g=>{ let p=Math.min(100,Math.round(g.current/g.target*100)); return `<div class="goal-card"><div class="goal-top"><div class="goal-song">${g.song}<span>${fmt(g.target)} · ${g.platform}</span></div><div class="goal-pct">${p}%</div></div><div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div><div class="goal-stats"><div class="stat"><div class="stat-val">${fmt(g.current)}</div><div class="stat-label">Actuales</div></div><div class="stat"><div class="stat-val">${fmt(g.target)}</div><div class="stat-label">Meta</div></div><div class="stat"><div class="stat-val">${fmt(Math.max(0,g.target-g.current))}</div><div class="stat-label">Restantes</div></div></div></div>`; }).join('');
   document.getElementById('charts-goals-table').innerHTML=`<table class="charts-table"><thead><tr><th>#</th><th>Canción</th><th>Streams</th><th>Progreso</th></tr></thead><tbody>${data.map((g,i)=>{ let p=Math.min(100,Math.round(g.current/g.target*100)); return `<tr><td>${i+1}</td><td class="song-name">${g.song}</td><td>${fmt(g.current)}</td><td><span class="chart-badge">${p}% de ${fmt(g.target)}</span></td>`; }).join('')}</tbody></table>`;
 }
+
+// ========== PLAYLISTS (manuales, sin automatización de YouTube) ==========
 async function loadPlaylistsPublic(){
   let {data}=await sb.from('playlists').select('*').order('sort_order');
   if(!data||!data.length) return;
   let all=data.map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon ${platformClass(p.platform)}">${p.icon||platformIcon(p.platform)}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
   let spot=data.filter(p=>p.platform==='spotify').map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon pl-spotify">${p.icon||'🎵'}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
+  let yt=data.filter(p=>p.platform==='youtube').map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon pl-youtube">${p.icon||'▶'}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
   let apple=data.filter(p=>p.platform==='apple').map(p=>`<a href="${p.url||'#'}" target="_blank" class="playlist-card"><div class="playlist-icon pl-apple">${p.icon||'🎶'}</div><div class="playlist-info"><div class="playlist-name">${p.name}</div><div class="playlist-desc">${p.description||''}</div></div></a>`).join('');
   document.getElementById('home-playlists').innerHTML=`<div class="playlist-grid">${all}</div>`;
   document.getElementById('spotify-playlists').innerHTML=spot?`<div class="playlist-grid">${spot}</div>`:'<div class="empty"><p>No hay playlists de Spotify</p></div>';
+  document.getElementById('youtube-playlists').innerHTML=yt?`<div class="playlist-grid">${yt}</div>`:'<div class="empty"><p>No hay playlists de YouTube aún</p></div>';
   if(document.getElementById('apple-playlists')) document.getElementById('apple-playlists').innerHTML=apple?`<div class="playlist-grid">${apple}</div>`:'<div class="empty"><p>No hay playlists de Apple Music</p></div>';
 }
 
-// ========== YOUTUBE DATA (con los IDs reales de los MVs) ==========
-// Lista de videos (título + ID de YouTube)
-const YT_VIDEOS_LIST = [
-  { title: "ENHYPEN 'Knife' MV", id: "R6e4tBWxIxE" },
-  { title: "ENHYPEN 'Outside' Performance", id: "xdX_8R8Unik" },
-  { title: "ENHYPEN 'Outside' MV", id: "uHG-2mCfyT4" },
-  { title: "ENHYPEN 'Bad Desire' MV", id: "a2Zqdo9RbNs" },
-  { title: "ENHYPEN 'No Doubt' MV", id: "rDolt3jJRsM" },
-  { title: "ENHYPEN 'Highway 1009'", id: "_ywIhBOpjQA" },
-  { title: "ENHYPEN 'Brought The Heat Back' MV", id: "yjxLMzeV76Q" },
-  { title: "ENHYPEN 'XO' MV", id: "FPDYeRk2PO8" }
-];
-
-// Cargar datos públicos (desde Supabase, pero si no hay, mostrar datos de ejemplo)
-async function loadYTDataPublic(){
-  // Canal: obtener de site_config o usar valores por defecto
-  let {data:cfg}=await sb.from('site_config').select('*');
-  let subs = 17600000, views = 3200000000, subsDaily = 100000, viewsDaily = 3200000;
-  if(cfg){
-    subs = parseInt(cfg.find(c=>c.key==='yt_subs')?.value) || subs;
-    views = parseInt(cfg.find(c=>c.key==='yt_views')?.value) || views;
-    subsDaily = parseInt(cfg.find(c=>c.key==='yt_subs_daily')?.value) || subsDaily;
-    viewsDaily = parseInt(cfg.find(c=>c.key==='yt_views_daily')?.value) || viewsDaily;
-  }
-  document.getElementById('yt-stats-container').innerHTML=`
-    <div class="yt-stats-grid">
-      <div class="yt-stat-card"><div class="yt-stat-value">${fmt(subs)}</div><div class="yt-stat-label">Suscriptores</div><div class="yt-stat-change">+${fmt(subsDaily)} hoy</div></div>
-      <div class="yt-stat-card"><div class="yt-stat-value">${fmt(views)}</div><div class="yt-stat-label">Vistas totales</div><div class="yt-stat-change">+${fmt(viewsDaily)} hoy</div></div>
-    </div>
-  `;
-  
-  // Cargar videos desde Supabase (tabla yt_videos) o inicializar con datos de ejemplo
-  let {data:videos}=await sb.from('yt_videos').select('*').order('sort_order');
-  if(!videos || videos.length === 0){
-    // Insertar los videos por primera vez
-    for(let i=0; i<YT_VIDEOS_LIST.length; i++){
-      await sb.from('yt_videos').insert({
-        title: YT_VIDEOS_LIST[i].title,
-        total_views: 0,
-        daily_views: 0,
-        likes: 0,
-        sort_order: i,
-        video_id: YT_VIDEOS_LIST[i].id  // guardamos el ID de YouTube
-      });
-    }
-    videos = await (await sb.from('yt_videos').select('*').order('sort_order')).data;
-  }
-  if(!videos || videos.length===0){
-    document.getElementById('yt-videos-container').innerHTML='<div class="empty"><p>No hay videos registrados.</p></div>';
-    return;
-  }
-  let html=`<table class="yt-video-table"><thead><tr><th>VIDEO</th><th>TOTAL VIEWS</th><th>DAILY VIEWS</th><th>LIKES</th></tr></thead><tbody>`;
-  for(let v of videos){
-    html+=`<tr><td class="yt-video-title">${v.title}</td><td>${fmt(v.total_views)}</td><td>+${fmt(v.daily_views)}</td><td>${fmt(v.likes)}</td></tr>`;
-  }
-  html+=`</tbody></table>`;
-  document.getElementById('yt-videos-container').innerHTML=html;
-}
-
-// Guardar estadísticas manuales del canal (desde admin)
-async function saveYTStats(){
-  let subs=document.getElementById('yt-subs').value.replace(/\D/g,'');
-  let views=document.getElementById('yt-views').value.replace(/\D/g,'');
-  let subsDaily=document.getElementById('yt-subs-daily').value.replace(/\D/g,'');
-  let viewsDaily=document.getElementById('yt-views-daily').value.replace(/\D/g,'');
-  await sb.from('site_config').upsert({key:'yt_subs', value:subs||'0'});
-  await sb.from('site_config').upsert({key:'yt_views', value:views||'0'});
-  await sb.from('site_config').upsert({key:'yt_subs_daily', value:subsDaily||'0'});
-  await sb.from('site_config').upsert({key:'yt_views_daily', value:viewsDaily||'0'});
-  showToast('Estadísticas de YouTube guardadas');
-  await loadYTDataPublic();
-}
-async function loadAdminVideos(){
-  let {data}=await sb.from('yt_videos').select('*').order('sort_order');
-  if(!data) return;
-  document.getElementById('admin-videos-list').innerHTML=data.length?data.map(v=>`
-    <div class="admin-list-item">
-      <div class="ali-info"><div class="ali-name">${v.title}</div><div class="ali-sub">${fmt(v.total_views)} vistas | +${fmt(v.daily_views)} diarias | ${fmt(v.likes)} likes</div></div>
-      <div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editYTVideo(${v.id},'${v.title.replace(/'/g,"\\'")}',${v.total_views},${v.daily_views},${v.likes})">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteYTVideo(${v.id})">✕</button></div>
-    </div>`).join(''):'<p>No hay videos agregados</p>';
-}
-async function addYTVideo(){
-  let title=document.getElementById('nv-title').value.trim();
-  let total=parseInt(document.getElementById('nv-total').value.replace(/\D/g,''))||0;
-  let daily=parseInt(document.getElementById('nv-daily').value.replace(/\D/g,''))||0;
-  let likes=parseInt(document.getElementById('nv-likes').value.replace(/\D/g,''))||0;
-  if(!title){ showToast('Escribe un título',true); return; }
-  let {data:exist}=await sb.from('yt_videos').select('sort_order').order('sort_order',{ascending:false}).limit(1);
-  let sort=exist&&exist[0]?exist[0].sort_order+1:1;
-  let {error}=await sb.from('yt_videos').insert({title, total_views:total, daily_views:daily, likes, sort_order:sort});
-  if(error){ showToast('Error al guardar',true); return; }
-  document.getElementById('nv-title').value=''; document.getElementById('nv-total').value=''; document.getElementById('nv-daily').value=''; document.getElementById('nv-likes').value='';
-  showToast('Video agregado');
-  await loadAdminVideos();
-  await loadYTDataPublic();
-}
-function editYTVideo(id,title,total,daily,likes){
-  let newTotal=prompt(`Vistas totales de "${title}":`, total);
-  if(newTotal===null) return;
-  let newDaily=prompt(`Vistas diarias:`, daily);
-  if(newDaily===null) return;
-  let newLikes=prompt(`Likes:`, likes);
-  if(newLikes===null) return;
-  let nTotal=parseInt(newTotal.replace(/\D/g,''))||0;
-  let nDaily=parseInt(newDaily.replace(/\D/g,''))||0;
-  let nLikes=parseInt(newLikes.replace(/\D/g,''))||0;
-  sb.from('yt_videos').update({total_views:nTotal, daily_views:nDaily, likes:nLikes}).eq('id',id).then(async()=>{ showToast('Video actualizado'); await loadAdminVideos(); await loadYTDataPublic(); });
-}
-async function deleteYTVideo(id){
-  if(!confirm('¿Eliminar video?')) return;
-  await sb.from('yt_videos').delete().eq('id',id);
-  showToast('Video eliminado');
-  await loadAdminVideos();
-  await loadYTDataPublic();
-}
-
-// ========== ADMIN DATA LOAD (metas, playlists, etc) ==========
+// ========== ADMIN DATA LOAD (metas, playlists, config, imágenes) ==========
 async function loadAdminData(){
   let {data:goals}=await sb.from('goals').select('*').order('sort_order');
   document.getElementById('admin-goals-list').innerHTML=goals&&goals.length?goals.map(g=>`<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${g.song}</div><div class="ali-sub">${fmt(g.current)} / ${fmt(g.target)} · ${g.platform}</div></div><div class="pct-badge">${Math.min(100,Math.round(g.current/g.target*100))}%</div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editGoal(${g.id},'${g.song.replace(/'/g,"\\'")}',${g.current},${g.target})">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteGoal(${g.id})">✕</button></div></div>`).join(''):'<p>Sin metas</p>';
@@ -751,28 +909,26 @@ async function loadAdminData(){
   let {data:cfg}=await sb.from('site_config').select('*');
   if(cfg){
     cfg.forEach(r=>{ let el=document.getElementById('cfg-'+r.key); if(el) el.value=r.value||''; });
-    document.getElementById('yt-subs').value=cfg.find(c=>c.key==='yt_subs')?.value||'17600000';
-    document.getElementById('yt-views').value=cfg.find(c=>c.key==='yt_views')?.value||'3200000000';
-    document.getElementById('yt-subs-daily').value=cfg.find(c=>c.key==='yt_subs_daily')?.value||'100000';
-    document.getElementById('yt-views-daily').value=cfg.find(c=>c.key==='yt_views_daily')?.value||'3200000';
   }
-  await loadAdminVideos();
   let {data:images}=await sb.from('images').select('*').order('sort_order');
   document.getElementById('admin-images-grid').innerHTML=images&&images.length?images.map(img=>`<div class="img-item"><img src="${img.url}" onerror="this.parentElement.style.display='none'"><button class="img-del" onclick="deleteImage(${img.id})">✕</button></div>`).join(''):'<p>Sin imágenes</p>';
 }
 
-// Funciones CRUD para metas y playlists (mismo que antes)
+// CRUD Metas
 async function addGoal(){ let song=document.getElementById('ng-song').value.trim(); let current=parseInt(document.getElementById('ng-current').value.replace(/\D/g,''))||0; let target=parseInt(document.getElementById('ng-target').value.replace(/\D/g,''))||0; let platform=document.getElementById('ng-platform').value; if(!song||!target){ showToast('Completa los campos',true); return; } let {data:exist}=await sb.from('goals').select('sort_order').order('sort_order',{ascending:false}).limit(1); let sort=exist&&exist[0]?exist[0].sort_order+1:1; await sb.from('goals').insert({song,current,target,platform,sort_order:sort}); showToast('Meta agregada'); document.getElementById('ng-song').value=''; document.getElementById('ng-current').value=''; document.getElementById('ng-target').value=''; await loadAdminData(); await loadGoalsPublic(); }
 function editGoal(id,song,current,target){ let n=prompt(`Nuevos streams para "${song}"`,current); if(n===null) return; let val=parseInt(n.replace(/\D/g,'')); if(isNaN(val)){ showToast('Número inválido',true); return; } sb.from('goals').update({current:val}).eq('id',id).then(async()=>{ showToast('Actualizado'); await loadAdminData(); await loadGoalsPublic(); }); }
 async function deleteGoal(id){ if(confirm('¿Eliminar meta?')){ await sb.from('goals').delete().eq('id',id); showToast('Meta eliminada'); await loadAdminData(); await loadGoalsPublic(); } }
+// CRUD Playlists
 async function addPlaylist(){ let name=document.getElementById('np-name').value.trim(); let description=document.getElementById('np-desc').value.trim(); let url=document.getElementById('np-url').value.trim(); let platform=document.getElementById('np-platform').value; let icon=document.getElementById('np-icon').value.trim()||platformIcon(platform); if(!name){ showToast('Nombre requerido',true); return; } let {data:exist}=await sb.from('playlists').select('sort_order').order('sort_order',{ascending:false}).limit(1); let sort=exist&&exist[0]?exist[0].sort_order+1:1; await sb.from('playlists').insert({name,description,url,platform,icon,sort_order:sort}); showToast('Playlist agregada'); document.getElementById('np-name').value=''; document.getElementById('np-desc').value=''; document.getElementById('np-url').value=''; document.getElementById('np-icon').value=''; await loadAdminData(); await loadPlaylistsPublic(); }
 function editPlaylist(id,name,desc,url,platform){ let newUrl=prompt(`Editar URL de "${name}"`,url); if(newUrl===null) return; sb.from('playlists').update({url:newUrl}).eq('id',id).then(async()=>{ showToast('Playlist actualizada'); await loadAdminData(); await loadPlaylistsPublic(); }); }
 async function deletePlaylist(id){ if(confirm('¿Eliminar playlist?')){ await sb.from('playlists').delete().eq('id',id); showToast('Playlist eliminada'); await loadAdminData(); await loadPlaylistsPublic(); } }
+// Configuración
 async function saveConfig(){ let keys=['hero_tag','debut_text','spotify_url','youtube_url','applemusic_url','weverse_url','instagram_url','twitter_url']; for(let k of keys){ let el=document.getElementById('cfg-'+k); if(el) await sb.from('site_config').upsert({key:k,value:el.value.trim()}); } showToast('Configuración guardada'); await loadConfig(); }
+// Imágenes
 async function addImage(){ let url=document.getElementById('img-url').value.trim(); if(!url){ showToast('URL requerida',true); return; } await sb.from('images').insert({url, sort_order:Date.now()}); showToast('Imagen agregada'); document.getElementById('img-url').value=''; await loadAdminData(); }
 async function deleteImage(id){ if(confirm('¿Eliminar imagen?')){ await sb.from('images').delete().eq('id',id); showToast('Imagen eliminada'); await loadAdminData(); } }
 
-// NAVEGACIÓN
+// Navegación
 function openAdminLogin(){ if(isAdmin){ openAdminPanel(); return; } document.getElementById('admin-overlay').classList.add('open'); }
 function closeAdminLogin(e){ if(e&&e.target!==document.getElementById('admin-overlay')) return; document.getElementById('admin-overlay').classList.remove('open'); document.getElementById('admin-pass').value=''; document.getElementById('login-error').style.display='none'; }
 function togglePassVis(){ let i=document.getElementById('admin-pass'); i.type=i.type==='password'?'text':'password'; }
@@ -785,7 +941,7 @@ function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').
 function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
 // Inicialización
-async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadYTDataPublic()]); }
+async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic()]); }
 loadAll();
 let seq=''; document.addEventListener('keydown',e=>{ seq=(seq+e.key.toLowerCase()).slice(-3); if(seq==='adm'){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; } });
 let tap=0, timer; document.querySelector('.nav-logo').addEventListener('click',()=>{ tap++; clearTimeout(timer); timer=setTimeout(()=>tap=0,600); if(tap>=5){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; tap=0; } });
