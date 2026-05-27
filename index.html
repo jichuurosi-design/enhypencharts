@@ -588,18 +588,44 @@ footer a:hover { color: var(--primary-red); }
       </div>
     </div>
 
-    <!-- Spotify Data (nueva) -->
+    <!-- Spotify Data -->
     <div class="admin-section" id="tab-spotifydata">
       <div class="admin-card">
-        <h3>🎧 Canciones de Spotify</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:1rem">
+          <h3 style="margin:0">⚡ Actualización Rápida</h3>
+          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Ver en Kworb</a>
+        </div>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1.2rem">Entra a Kworb, copia los streams de cada canción y pégalos aquí. Haz clic en <strong style="color:var(--text-main)">Guardar todo</strong> cuando termines.</p>
+        <div id="bulk-update-list"><div class="loading"><div class="spin"></div><br>Cargando canciones...</div></div>
+        <div style="margin-top:1rem;display:flex;gap:0.8rem;flex-wrap:wrap">
+          <button class="btn" onclick="saveBulkStreams()">💾 Guardar todo</button>
+          <button class="btn btn-ghost" onclick="loadBulkUpdateList()">🔄 Recargar lista</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <h3>🎧 Lista de canciones</h3>
         <div id="admin-spotify-songs-list"></div>
       </div>
       <div class="admin-card">
-        <h3>+ Agregar canción</h3>
-        <div class="form-group"><label>Título</label><input class="input" id="ns-title" placeholder="ej: Bite Me"></div>
-        <div class="form-group"><label>Streams totales</label><input class="input" id="ns-streams" placeholder="0"></div>
-        <div class="form-group"><label>URL de Spotify (opcional)</label><input class="input" id="ns-url" placeholder="https://open.spotify.com/track/..."></div>
-        <button class="btn" onclick="addSpotifySong()">Agregar canción</button>
+        <details>
+          <summary style="cursor:pointer;font-weight:600;color:var(--text-dim);font-size:0.85rem">+ Agregar canción manualmente</summary>
+          <div style="margin-top:1rem">
+            <div class="form-group"><label>Título</label><input class="input" id="ns-title" placeholder="ej: Bite Me"></div>
+            <div class="form-group"><label>Streams totales</label><input class="input" id="ns-streams" placeholder="0"></div>
+            <div class="form-group"><label>URL de Spotify (opcional)</label><input class="input" id="ns-url" placeholder="https://open.spotify.com/track/..."></div>
+            <button class="btn" style="margin-top:0.5rem" onclick="addSpotifySong()">Agregar canción</button>
+          </div>
+        </details>
+      </div>
+      <div class="admin-card">
+        <details>
+          <summary style="cursor:pointer;font-weight:600;color:var(--text-dim);font-size:0.85rem">📥 Precargar discografía completa de ENHYPEN</summary>
+          <div style="margin-top:1rem">
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Carga todas las canciones de ENHYPEN con streams en 0. Solo hazlo una vez. Si ya tienes canciones cargadas, se saltarán las duplicadas.</p>
+            <button class="btn" onclick="preloadDiscography()">📥 Cargar discografía</button>
+            <div id="preload-status" style="margin-top:0.8rem;font-size:0.78rem;color:var(--text-muted)"></div>
+          </div>
+        </details>
       </div>
     </div>
 
@@ -746,6 +772,169 @@ async function deleteSpotifySong(id) {
   await sb.from('spotify_songs').delete().eq('id', id);
   await sb.from('spotify_snapshots').delete().eq('song_id', id);
   showToast('Canción eliminada');
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
+}
+
+// ========== BULK UPDATE & DISCOGRAPHY ==========
+const ENHYPEN_DISCOGRAPHY = [
+  // SIN:VANISH (2026)
+  { title: "Knife", spotify_url: "https://open.spotify.com/track/0TKCUjfV3YGuY99MxCKM5w" },
+  { title: "사건의 발단", spotify_url: "https://open.spotify.com/track/4Sw8Gb9uCFHgRGZjSvNDKz" },
+  { title: "No Way Back (Feat. So!YoON!)", spotify_url: "https://open.spotify.com/track/6u7J7OH56kiN2A7Pfv5D0i" },
+  { title: "도망자들", spotify_url: "https://open.spotify.com/track/40xgp3gReYzOtWdtsuzAhl" },
+  { title: "목격자", spotify_url: "https://open.spotify.com/track/3nzJHcaEMXUUAP7A0YGbJ0" },
+  { title: "우리가 찾던 목소리", spotify_url: "https://open.spotify.com/track/4kUACOhtIz6muVF2wWgsdf" },
+  { title: "사건의 너머", spotify_url: "https://open.spotify.com/track/79GygScCfCwPTGj3bIggLN" },
+  // Desire: Unleash (2025)
+  { title: "Bad Desire (With or Without You)", spotify_url: "https://open.spotify.com/track/38pEX03GFZ0PfFDaOrpKOM" },
+  { title: "Outside", spotify_url: "https://open.spotify.com/track/0IXWLMBZeK33mOb044Sxu6" },
+  { title: "Too Close", spotify_url: "https://open.spotify.com/track/6gezrIScVLEnV1szuZxhvA" },
+  { title: "Flashover", spotify_url: "https://open.spotify.com/track/4uj7LoS14txqhRylMR4Fj1" },
+  { title: "Helium", spotify_url: "https://open.spotify.com/track/48jRAABr5TxjWHvoNWClGG" },
+  { title: "Loose (Korean Ver.)", spotify_url: "https://open.spotify.com/track/1hZqz3w2FFdQekLLLFEa0T" },
+  { title: "Bad Desire (With or Without You) (English Ver.)", spotify_url: "https://open.spotify.com/track/4N8IFzGERNBWoQyzYVYEoJ" },
+  { title: "Bad Desire (With or Without You) (Japanese Ver.)", spotify_url: "https://open.spotify.com/track/3LzbyEHyO4okbcSNx1jtce" },
+  // ROMANCE: UNTOLD (2024)
+  { title: "Bite Me", spotify_url: "https://open.spotify.com/track/7mpdNiaQvygj2rHoxkzMfa" },
+  { title: "No Doubt", spotify_url: "https://open.spotify.com/track/44hqFxUWsADWewEJELnncj" },
+  { title: "XO (Only If You Say Yes)", spotify_url: "https://open.spotify.com/track/6F09Gf0jqHdsWS2IYUKvaB" },
+  { title: "길 (道) (Road)", spotify_url: "https://open.spotify.com/track/2S4f1GOQjvZWrQ1g6VKaMK" },
+  { title: "Brought The Heat Back", spotify_url: "https://open.spotify.com/track/1gqvV5gDNcJlNMoHo5gJBX" },
+  { title: "Dreamer (English Ver.)", spotify_url: "https://open.spotify.com/track/0g5VJjCBLzMEF4LGrKe2eC" },
+  { title: "CRIMINAL LOVE", spotify_url: "https://open.spotify.com/track/6XmPQvSbS4LT84f79wKcyt" },
+  { title: "One In A Billion (Japanese Ver.)", spotify_url: "https://open.spotify.com/track/7MvYfssQOnBxMd0T5T8WgG" },
+  { title: "Fatal Trouble", spotify_url: "https://open.spotify.com/track/53sDnvNZNq2vvQmD9SxvWL" },
+  { title: "Lost Island", spotify_url: "https://open.spotify.com/track/53cWZA9OROeiYu1vHh4f4i" },
+  { title: "Sleep Tight", spotify_url: "https://open.spotify.com/track/55Uw5HbVMjQg4iFJdKuOUC" },
+  { title: "Big Girls Don't Cry", spotify_url: "https://open.spotify.com/track/0NsmpxrKw7ZWGKjnWVJtm5" },
+  // ORANGE BLOOD (2023)
+  { title: "Sweet Venom", spotify_url: "https://open.spotify.com/track/0YDJpkTxEYuTKz2tNDL0eW" },
+  { title: "Sweet Blood", spotify_url: "https://open.spotify.com/track/6L0WDVlJfxB88RCgAYH4C0" },
+  { title: "Chaconne", spotify_url: "https://open.spotify.com/track/6cVD7akJMxoMTYyP5kJHKr" },
+  { title: "Orange Flower (You Complete Me)", spotify_url: "https://open.spotify.com/track/3E6KyQ93bqlBfRZFRZCTwp" },
+  { title: "Mindless", spotify_url: "https://open.spotify.com/track/6SfQT7XnlvS3MmP7sLWB9y" },
+  // DARK BLOOD (2023)
+  { title: "BITE ME", spotify_url: "https://open.spotify.com/track/7mpdNiaQvygj2rHoxkzMfa" },
+  { title: "ParadoXXX Invasion", spotify_url: "https://open.spotify.com/track/0X1mR6gunFBMWqKR0k78QX" },
+  { title: "Ulterior Motive", spotify_url: "https://open.spotify.com/track/5r1rCb7oCXXGFDvQGP0IqU" },
+  { title: "DRAMA", spotify_url: "https://open.spotify.com/track/2JDKF1A7z0vXxWRZ4j4Dgi" },
+  { title: "I Don't Understand But I Luv U", spotify_url: "https://open.spotify.com/track/0kbYTNQb4Pb1rPbbaF0pT4" },
+  // MANIFESTO: DAY 1 (2022)
+  { title: "Future Perfect (Pass the MIC)", spotify_url: "https://open.spotify.com/track/4iJLPqZaalWbSdtsDOEMHG" },
+  { title: "Tamed-Dashed", spotify_url: "https://open.spotify.com/track/1uHvYJOAytUeYJAkDrpqnj" },
+  { title: "SHOUT OUT", spotify_url: "https://open.spotify.com/track/5Z2DNRAhs6r4VdINVkRhYY" },
+  { title: "Confidence", spotify_url: "https://open.spotify.com/track/6y4QXW4JRpJHBtlbvYFRoN" },
+  { title: "Foreshadow", spotify_url: "https://open.spotify.com/track/4EL81sOPVVPBCd0g8iRSAw" },
+  { title: "TFW (That Feeling When)", spotify_url: "https://open.spotify.com/track/3MOqkT1nKNBVkK5lIPfFZt" },
+  // DIMENSION: ANSWER (2022)
+  { title: "Blessed-Cursed", spotify_url: "https://open.spotify.com/track/3X6n6rHpS7BZv7Y3yEjbBa" },
+  { title: "Interlude: Question", spotify_url: "https://open.spotify.com/track/5PRJM4dY0y3EVWdq9MWYIW" },
+  { title: "Outro: Cross the Line", spotify_url: "https://open.spotify.com/track/1QCsKKXuomfQHFUGT6x4bJ" },
+  // DIMENSION: DILEMMA (2021)
+  { title: "Intro: Whiteout", spotify_url: "https://open.spotify.com/track/6FrLABvlZnl6HLfPBqUcJ3" },
+  { title: "Drunk-Dazed", spotify_url: "https://open.spotify.com/track/1wcr8DjnN59Awev8nnKpQ4" },
+  { title: "Fever", spotify_url: "https://open.spotify.com/track/7FfDVXuFy0RB86yEH0p9hP" },
+  { title: "Polaroid Love", spotify_url: "https://open.spotify.com/track/4IRAHnkMlMrAGDIMQ2wFnz" },
+  { title: "Not For Sale", spotify_url: "https://open.spotify.com/track/1HaB7yPBTZLkY0GVNXjl0x" },
+  { title: "Outro: Day 2", spotify_url: "https://open.spotify.com/track/7vMilU6oBZ67bQbAvs1d0T" },
+  { title: "Tamed-Dashed", spotify_url: "https://open.spotify.com/track/1uHvYJOAytUeYJAkDrpqnj" },
+  { title: "Flicker", spotify_url: "https://open.spotify.com/track/5DjFrXNqFBSQkCdUB9Tccd" },
+  { title: "Moonshadow", spotify_url: "https://open.spotify.com/track/6lf0S2mTJpMLYDTAmGp0mz" },
+  // BORDER: CARNIVAL (2021)
+  { title: "Drunk-Dazed", spotify_url: "https://open.spotify.com/track/1wcr8DjnN59Awev8nnKpQ4" },
+  { title: "Outro: The Wormhole", spotify_url: "https://open.spotify.com/track/5oL5lrqVLa8qJBWRmL3FfP" },
+  { title: "Not For Sale", spotify_url: "https://open.spotify.com/track/1HaB7yPBTZLkY0GVNXjl0x" },
+  { title: "Fever", spotify_url: "https://open.spotify.com/track/7FfDVXuFy0RB86yEH0p9hP" },
+  // BORDER: DAY ONE (2020)
+  { title: "Given-Taken", spotify_url: "https://open.spotify.com/track/1RxXIuGnfb9YvPZbUPFmGG" },
+  { title: "Let Me In (20 CUBE)", spotify_url: "https://open.spotify.com/track/1pUr3P0Mq3LxqMSTbMJBSS" },
+  { title: "Intro: Walk the Line", spotify_url: "https://open.spotify.com/track/3HO6kZc3VTklD1GzVPOLhN" },
+  { title: "믈 (Outro: Cross the Line)", spotify_url: "" },
+  { title: "Outro: Cross the Line", spotify_url: "" },
+  { title: "10 Months", spotify_url: "" },
+  { title: "PDF (HouseHold)", spotify_url: "" },
+  // Stealer & Highway (singles)
+  { title: "Stealer", spotify_url: "https://open.spotify.com/track/5EK13IYnr1NKdWDZhLDlBl" },
+  { title: "Highway 1009", spotify_url: "https://open.spotify.com/track/3HpJW5tQE2jxN3VQkL0ADa" },
+  { title: "Shine On Me", spotify_url: "https://open.spotify.com/track/0sz9rW8qpeRm5AAUYEIZWL" },
+  { title: "Echoes", spotify_url: "https://open.spotify.com/track/5psV1mOAaT9WuORcjaMgQv" },
+  { title: "Demons", spotify_url: "https://open.spotify.com/track/30oEeJE3bxNMODjscH9Scl" },
+  { title: "Sacrifice (Eat Me Up)", spotify_url: "https://open.spotify.com/track/4RhUxLekRV0YVtqSFlxfJI" },
+];
+
+async function preloadDiscography() {
+  const status = document.getElementById('preload-status');
+  status.textContent = '⏳ Cargando...';
+  const { data: existing } = await sb.from('spotify_songs').select('title');
+  const existingTitles = new Set((existing || []).map(s => s.title.toLowerCase()));
+  // Deduplicate discography by title
+  const seen = new Set();
+  const toInsert = ENHYPEN_DISCOGRAPHY.filter(s => {
+    const key = s.title.toLowerCase();
+    if (seen.has(key) || existingTitles.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  if (toInsert.length === 0) { status.textContent = '✅ Todas las canciones ya están cargadas.'; return; }
+  let { data: last } = await sb.from('spotify_songs').select('sort_order').order('sort_order', { ascending: false }).limit(1);
+  let sort = (last && last[0]) ? last[0].sort_order + 1 : 1;
+  let added = 0;
+  for (const song of toInsert) {
+    const { error } = await sb.from('spotify_songs').insert({ title: song.title, total_streams: 0, daily_streams: 0, spotify_url: song.spotify_url || null, sort_order: sort++ });
+    if (!error) added++;
+  }
+  status.textContent = `✅ ${added} canciones cargadas. ${toInsert.length - added} errores.`;
+  showToast(`Discografía cargada: ${added} canciones`);
+  await loadAdminSpotifySongs();
+  await loadBulkUpdateList();
+  await loadSpotifySongsPublic();
+}
+
+async function loadBulkUpdateList() {
+  const container = document.getElementById('bulk-update-list');
+  if (!container) return;
+  const { data } = await sb.from('spotify_songs').select('*').order('sort_order');
+  if (!data || data.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">No hay canciones. Primero precarga la discografía o agrega canciones manualmente.</p>';
+    return;
+  }
+  let html = '<div style="display:grid;gap:0.5rem">';
+  data.forEach(s => {
+    html += `<div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:0.8rem;background:#111;border-radius:12px;padding:0.6rem 1rem;border:1px solid var(--border-dim)">
+      <div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--text-main)">${escapeHtml(s.title)}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px">Actual: ${fmt(s.total_streams)} streams</div>
+      </div>
+      <input class="input" id="bulk-${s.id}" type="text" value="${s.total_streams || 0}" placeholder="streams" style="width:130px;text-align:right;font-family:'Orbitron',monospace;font-size:0.82rem" data-id="${s.id}">
+    </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+async function saveBulkStreams() {
+  const inputs = document.querySelectorAll('#bulk-update-list input[data-id]');
+  if (!inputs.length) { showToast('No hay canciones para guardar', true); return; }
+  showToast('Guardando...');
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const yStr = yesterday.toISOString().slice(0, 10);
+  let saved = 0, errors = 0;
+  for (const input of inputs) {
+    const id = parseInt(input.dataset.id);
+    const newStreams = parseInt(input.value.replace(/\D/g, '')) || 0;
+    // get yesterday snapshot for daily calc
+    const { data: snap } = await sb.from('spotify_snapshots').select('total_streams').eq('song_id', id).eq('snapshot_date', yStr).maybeSingle();
+    const oldStreams = snap ? snap.total_streams : 0;
+    const daily = (oldStreams && newStreams > oldStreams) ? newStreams - oldStreams : 0;
+    const { error } = await sb.from('spotify_songs').update({ total_streams: newStreams, daily_streams: daily }).eq('id', id);
+    if (!error) {
+      await sb.from('spotify_snapshots').upsert({ song_id: id, snapshot_date: today, total_streams: newStreams }, { onConflict: 'song_id,snapshot_date' });
+      saved++;
+    } else { errors++; }
+  }
+  showToast(errors ? `${saved} guardados, ${errors} errores` : `✅ ${saved} canciones actualizadas`);
   await loadAdminSpotifySongs();
   await loadSpotifySongsPublic();
 }
@@ -916,6 +1105,7 @@ async function deleteYTVideo(id){ if(!confirm('¿Eliminar video?')) return; awai
 // ========== ADMIN DATA LOAD (unificado) ==========
 async function loadAdminData(){
   updateAdminYTStatus();
+  await loadBulkUpdateList();
   let {data:goals}=await sb.from('goals').select('*').order('sort_order');
   document.getElementById('admin-goals-list').innerHTML=goals&&goals.length?goals.map(g=>`<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${g.song}</div><div class="ali-sub">${fmt(g.current)} / ${fmt(g.target)} · ${g.platform}</div></div><div class="pct-badge">${Math.min(100,Math.round(g.current/g.target*100))}%</div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editGoal(${g.id},'${g.song.replace(/'/g,"\\'")}',${g.current},${g.target})">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteGoal(${g.id})">✕</button></div></div>`).join(''):'<p>Sin metas</p>';
   let {data:playlists}=await sb.from('playlists').select('*').order('sort_order');
