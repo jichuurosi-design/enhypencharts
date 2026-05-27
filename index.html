@@ -570,6 +570,144 @@ footer a:hover { color: var(--primary-red); }
 .skeleton-line { height: 10px; border-radius: 6px; background: #1a1a1a; margin-bottom: 0.6rem; }
 .skeleton-line.big { height: 28px; width: 70%; }
 @keyframes shimmer { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+/* ===== SPOTIFY CHARTS ===== */
+.sp-charts-wrap {
+  background: #0c0c0c;
+  border: 1px solid rgba(29,185,84,0.2);
+  border-radius: 24px;
+  padding: 1.6rem;
+}
+.sp-charts-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1.4rem;
+}
+.sp-charts-logo {
+  width: 30px; height: 30px;
+  background: #1db954;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sp-charts-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1db954;
+  letter-spacing: 1px;
+}
+.sp-charts-section-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.sp-type-tabs {
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+}
+.sp-type-tab {
+  padding: 0.42rem 1rem;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(220,38,38,0.3);
+  color: var(--text-muted);
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+}
+.sp-type-tab:hover { border-color: rgba(220,38,38,0.7); color: var(--primary-red); }
+.sp-type-tab.active { background: rgba(220,38,38,0.85); color: white; border-color: var(--primary-red); }
+.sp-charts-region-box {
+  background: #111;
+  border: 1px solid var(--border-dim);
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+}
+.sp-region-tabs {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+}
+.sp-region-tab {
+  padding: 0.3rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-muted);
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+}
+.sp-region-tab:hover { border-color: rgba(29,185,84,0.5); color: #ccc; }
+.sp-region-tab.active { background: rgba(29,185,84,0.85); color: white; border-color: #1db954; }
+.sp-table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;
+}
+.sp-table-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.sp-count-badge {
+  background: rgba(220,38,38,0.2);
+  color: var(--primary-red);
+  border: 1px solid rgba(220,38,38,0.4);
+  border-radius: 20px;
+  padding: 0.12rem 0.6rem;
+  font-size: 0.62rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+.sp-updated-label { font-size: 0.65rem; color: var(--text-muted); }
+.sp-chart-table { width: 100%; border-collapse: collapse; }
+.sp-chart-table th {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--primary-red);
+  letter-spacing: 1px;
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border-dim);
+}
+.sp-chart-table td {
+  padding: 0.75rem 0.8rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  vertical-align: middle;
+}
+.sp-rank-badge {
+  background: rgba(220,38,38,0.15);
+  color: var(--primary-red);
+  border: 1px solid rgba(220,38,38,0.4);
+  border-radius: 6px;
+  padding: 2px 9px;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.sp-song-name { color: var(--text-main); font-weight: 600; font-size: 0.85rem; }
+.sp-artist-name { color: var(--text-muted); font-size: 0.7rem; margin-top: 2px; }
+.sp-daily-val { color: #1db954; font-family: 'Orbitron', monospace; font-weight: 700; font-size: 0.82rem; }
+.sp-change-up { color: #4ade80; font-weight: 700; font-size: 0.78rem; }
+.sp-change-dn { color: #f87171; font-weight: 700; font-size: 0.78rem; }
+.sp-empty { text-align: center; padding: 2.5rem; color: var(--text-muted); font-size: 0.82rem; }
+@media (max-width: 700px) {
+  .sp-chart-table th:nth-child(4), .sp-chart-table td:nth-child(4) { display: none; }
+}
 </style>
 </head>
 <body>
@@ -682,11 +820,70 @@ footer a:hover { color: var(--primary-red); }
 
 <!-- CHARTS -->
 <div id="charts" class="page">
-  <section><div class="section-header"><div class="section-title">Charts & estadísticas</div><div class="section-line"></div></div>
-    <div class="tabs"><button class="tab active" onclick="switchChartTab('spotify-chart',this)">Spotify</button><button class="tab" onclick="switchChartTab('yt-chart',this)">YouTube</button><button class="tab" onclick="switchChartTab('apple-chart',this)">Apple Music</button></div>
-    <div id="spotify-chart"><div id="charts-goals-table"><div class="loading"><div class="spin"></div></div></div></div>
-    <div id="yt-chart" style="display:none"><div class="empty"><p>📺 YouTube stats disponibles en la pestaña YouTube</p></div></div>
-    <div id="apple-chart" style="display:none"><div class="empty"><p>🎶 Próximamente</p></div></div>
+  <section>
+    <div class="section-header"><div class="section-title">Spotify Charts — ENHYPEN</div><div class="section-line"></div></div>
+
+    <!-- Spotify Charts UI -->
+    <div class="sp-charts-wrap">
+
+      <!-- Header -->
+      <div class="sp-charts-header">
+        <div class="sp-charts-logo">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.65 14.4c-.2.33-.61.43-.94.23-2.58-1.58-5.83-1.93-9.65-1.06-.37.08-.73-.15-.81-.52-.08-.37.15-.73.52-.81 4.18-.95 7.77-.54 10.65 1.22.33.2.43.61.23.94zm1.24-2.77c-.25.4-.77.52-1.17.27-2.95-1.82-7.45-2.34-10.94-1.28-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 3.98-1.21 8.93-.62 12.33 1.47.4.25.52.77.27 1.17zm.11-2.89C14.5 8.78 8.91 8.54 5.69 9.52c-.54.17-1.11-.13-1.28-.67-.17-.54.13-1.11.67-1.28 3.72-1.13 9.91-.91 13.81 1.49.49.3.65.94.35 1.43-.3.49-.94.65-1.43.35z"/></svg>
+        </div>
+        <span class="sp-charts-title">Spotify Charts</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem">
+          <div class="dot-live" style="width:6px;height:6px"></div>
+          <span style="font-size:0.65rem;color:var(--text-muted)">Actualizado por el staff</span>
+        </div>
+      </div>
+
+      <!-- Chart Type -->
+      <div class="sp-charts-section-label">Chart Type</div>
+      <div class="sp-type-tabs">
+        <button class="sp-type-tab active" onclick="spSetType(this,'daily-songs')">🎵 Daily Songs</button>
+        <button class="sp-type-tab" onclick="spSetType(this,'weekly-songs')">📅 Weekly Songs</button>
+        <button class="sp-type-tab" onclick="spSetType(this,'daily-artists')">🎤 Daily Artists</button>
+        <button class="sp-type-tab" onclick="spSetType(this,'weekly-albums')">💿 Weekly Albums</button>
+      </div>
+
+      <!-- Region -->
+      <div class="sp-charts-region-box">
+        <div class="sp-charts-section-label" style="margin-bottom:0.6rem">Region</div>
+        <div class="sp-region-tabs">
+          <button class="sp-region-tab active" onclick="spSetRegion(this,'global','Global','🌐')">🌐 Global</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'usa','USA','🇺🇸')">🇺🇸 USA</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'uk','UK','🇬🇧')">🇬🇧 UK</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'kr','Korea','🇰🇷')">🇰🇷 Korea</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'fr','France','🇫🇷')">🇫🇷 France</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'de','Germany','🇩🇪')">🇩🇪 Germany</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'br','Brazil','🇧🇷')">🇧🇷 Brazil</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'mx','Mexico','🇲🇽')">🇲🇽 Mexico</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'jp','Japan','🇯🇵')">🇯🇵 Japan</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'th','Thailand','🇹🇭')">🇹🇭 Thailand</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'sa','Saudi Arabia','🇸🇦')">🇸🇦 Saudi Arabia</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'au','Australia','🇦🇺')">🇦🇺 Australia</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'ca','Canada','🇨🇦')">🇨🇦 Canada</button>
+          <button class="sp-region-tab" onclick="spSetRegion(this,'ar','Argentina','🇦🇷')">🇦🇷 Argentina</button>
+        </div>
+      </div>
+
+      <!-- Table Header -->
+      <div class="sp-table-header">
+        <div class="sp-table-title" id="spTableTitle">🌐 Global Daily Songs <span class="sp-count-badge" id="spItemCount">0 items</span></div>
+        <div class="sp-updated-label">🕐 Updated: <span id="spUpdatedTime">—</span></div>
+      </div>
+
+      <!-- Table -->
+      <div id="sp-charts-table-wrap">
+        <div class="loading"><div class="spin"></div><br>Cargando charts...</div>
+      </div>
+
+    </div>
+
+    <!-- Goals table (ahora debajo de Charts) -->
+    <div class="section-header" style="margin-top:2rem"><div class="section-title">Progreso de metas</div><div class="section-line"></div></div>
+    <div id="charts-goals-table"><div class="loading"><div class="spin"></div></div></div>
   </section>
 </div>
 
@@ -716,6 +913,7 @@ footer a:hover { color: var(--primary-red); }
     <button class="admin-tab" onclick="switchAdminTab('tab-ytdata',this)">📡 YouTube API</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-spotifydata',this)">🎧 Spotify Data</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-albums',this)">💿 Álbumes</button>
+    <button class="admin-tab" onclick="switchAdminTab('tab-charts',this)">📊 Sp. Charts</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-config',this)">⚙️ Configuración</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-images',this)">🖼️ Imágenes</button>
   </div>
@@ -852,6 +1050,60 @@ footer a:hover { color: var(--primary-red); }
             <button class="btn" style="margin-top:0.5rem" onclick="addAlbum()">Agregar álbum</button>
           </div>
         </details>
+      </div>
+    </div>
+
+    <!-- Spotify Charts Admin -->
+    <div class="admin-section" id="tab-charts">
+      <div class="admin-card" style="border-color:rgba(29,185,84,0.25)">
+        <h3 style="color:#1db954">📊 Entradas de Spotify Charts</h3>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Agrega posiciones de ENHYPEN en los charts de Spotify. Cada entrada corresponde a una combinación de tipo + región.</p>
+        <div id="admin-sp-charts-list"><div class="loading"><div class="spin"></div></div></div>
+      </div>
+      <div class="admin-card">
+        <h3>+ Agregar entrada al chart</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+          <div class="form-group">
+            <label>Tipo</label>
+            <select class="input" id="nc-type">
+              <option value="daily-songs">Daily Songs</option>
+              <option value="weekly-songs">Weekly Songs</option>
+              <option value="daily-artists">Daily Artists</option>
+              <option value="weekly-albums">Weekly Albums</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Región</label>
+            <select class="input" id="nc-region">
+              <option value="global">🌐 Global</option>
+              <option value="usa">🇺🇸 USA</option>
+              <option value="uk">🇬🇧 UK</option>
+              <option value="kr">🇰🇷 Korea</option>
+              <option value="fr">🇫🇷 France</option>
+              <option value="de">🇩🇪 Germany</option>
+              <option value="br">🇧🇷 Brazil</option>
+              <option value="mx">🇲🇽 Mexico</option>
+              <option value="jp">🇯🇵 Japan</option>
+              <option value="th">🇹🇭 Thailand</option>
+              <option value="sa">🇸🇦 Saudi Arabia</option>
+              <option value="au">🇦🇺 Australia</option>
+              <option value="ca">🇨🇦 Canada</option>
+              <option value="ar">🇦🇷 Argentina</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Canción / Artista</label><input class="input" id="nc-song" placeholder="ej: Knife"></div>
+        <div class="form-group"><label>Artistas (subtítulo)</label><input class="input" id="nc-artist" placeholder="ej: ENHYPEN"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.8rem">
+          <div class="form-group"><label>Posición (#)</label><input class="input" id="nc-rank" placeholder="ej: 16" type="number"></div>
+          <div class="form-group"><label>Daily / Weekly Streams</label><input class="input" id="nc-daily" placeholder="ej: 2920045"></div>
+          <div class="form-group"><label>Total Streams</label><input class="input" id="nc-total" placeholder="ej: 274066985"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+          <div class="form-group"><label>Cambio (+/-)</label><input class="input" id="nc-change" placeholder="ej: +3 o -5"></div>
+          <div class="form-group"><label>Dirección</label><select class="input" id="nc-dir"><option value="up">▲ Subida</option><option value="down">▼ Bajada</option><option value="new">✦ Nuevo</option></select></div>
+        </div>
+        <button class="btn" onclick="addSpChartEntry()">Agregar entrada</button>
       </div>
     </div>
 
@@ -1541,6 +1793,7 @@ async function loadAdminData(){
   }
   await loadAdminVideos();
   await loadAdminSpotifySongs();
+  await loadAdminSpCharts();
   let {data:images}=await sb.from('images').select('*').order('sort_order');
   document.getElementById('admin-images-grid').innerHTML=images&&images.length?images.map(img=>`<div class="img-item"><img src="${img.url}" onerror="this.parentElement.style.display='none'"><button class="img-del" onclick="deleteImage(${img.id})">✕</button></div>`).join(''):'<p>Sin imágenes</p>';
 }
@@ -1555,6 +1808,155 @@ async function deletePlaylist(id){ if(confirm('¿Eliminar playlist?')){ await sb
 async function saveConfig(){ let keys=['hero_tag','debut_text','hero_bg_url','spotify_url','youtube_url','applemusic_url','weverse_url','instagram_url','twitter_url']; for(let k of keys){ let el=document.getElementById('cfg-'+k); if(el) await sb.from('site_config').upsert({key:k,value:el.value.trim()}); } showToast('Configuración guardada'); await loadConfig(); }
 async function addImage(){ let url=document.getElementById('img-url').value.trim(); if(!url){ showToast('URL requerida',true); return; } await sb.from('images').insert({url, sort_order:Date.now()}); showToast('Imagen agregada'); document.getElementById('img-url').value=''; await loadAdminData(); }
 async function deleteImage(id){ if(confirm('¿Eliminar imagen?')){ await sb.from('images').delete().eq('id',id); showToast('Imagen eliminada'); await loadAdminData(); } }
+
+// ========== SPOTIFY CHARTS (público) ==========
+let spCurrentType = 'daily-songs';
+let spCurrentRegion = 'global';
+let spCurrentRegionLabel = 'Global';
+let spCurrentRegionFlag = '🌐';
+
+const SP_TYPE_LABELS = {
+  'daily-songs': 'Daily Songs',
+  'weekly-songs': 'Weekly Songs',
+  'daily-artists': 'Daily Artists',
+  'weekly-albums': 'Weekly Albums'
+};
+
+function spSetType(btn, type) {
+  document.querySelectorAll('.sp-type-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  spCurrentType = type;
+  loadSpChartsPublic();
+}
+
+function spSetRegion(btn, region, label, flag) {
+  document.querySelectorAll('.sp-region-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  spCurrentRegion = region;
+  spCurrentRegionLabel = label;
+  spCurrentRegionFlag = flag;
+  loadSpChartsPublic();
+}
+
+async function loadSpChartsPublic() {
+  const wrap = document.getElementById('sp-charts-table-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  try {
+    const { data, error } = await sb.from('sp_charts')
+      .select('*')
+      .eq('chart_type', spCurrentType)
+      .eq('region', spCurrentRegion)
+      .order('rank_position', { ascending: true });
+    const typeLabel = SP_TYPE_LABELS[spCurrentType] || spCurrentType;
+    const title = `${spCurrentRegionFlag} ${spCurrentRegionLabel} ${typeLabel}`;
+    const count = (data || []).length;
+    document.getElementById('spTableTitle').innerHTML = `${title} <span class="sp-count-badge">${count} item${count !== 1 ? 's' : ''}</span>`;
+    const now = new Date();
+    document.getElementById('spUpdatedTime').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      wrap.innerHTML = `<div class="sp-empty">Sin entradas para esta combinación.<br><span style="font-size:0.7rem">El admin puede agregar posiciones desde el panel ⚙️</span></div>`;
+      return;
+    }
+    const isWeekly = spCurrentType.startsWith('weekly');
+    const streamHeader = isWeekly ? 'WEEKLY STREAMS' : 'DAILY STREAMS';
+    let html = `<table class="sp-chart-table"><thead><tr>
+      <th>RANK</th><th>TRACK / ARTIST</th>
+      <th>${streamHeader}</th>
+      <th>TOTAL STREAMS</th>
+      <th>CHANGE</th>
+    </tr></thead><tbody>`;
+    data.forEach(r => {
+      const changeClass = r.change_dir === 'up' ? 'sp-change-up' : r.change_dir === 'down' ? 'sp-change-dn' : 'sp-change-up';
+      const changeArrow = r.change_dir === 'up' ? '▲' : r.change_dir === 'down' ? '▼' : '✦';
+      const changeVal = r.change_val ? `${changeArrow} ${r.change_val}` : '—';
+      const totalFmt = r.total_streams ? Number(r.total_streams).toLocaleString('en-US') : '—';
+      const dailyFmt = r.daily_streams ? `<span class="sp-daily-val">${Number(r.daily_streams).toLocaleString('en-US')}</span>` : '—';
+      html += `<tr>
+        <td><span class="sp-rank-badge">#${r.rank_position}</span></td>
+        <td><div class="sp-song-name">${escapeHtml(r.song_title)}</div><div class="sp-artist-name">${escapeHtml(r.artist_name || '')}</div></td>
+        <td>${dailyFmt}</td>
+        <td style="color:var(--text-dim)">${totalFmt}</td>
+        <td><span class="${changeClass}">${changeVal}</span></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+  } catch(e) {
+    console.error('SpCharts error:', e);
+    wrap.innerHTML = `<div class="sp-empty">⚠️ Error cargando charts. Verifica la tabla sp_charts en Supabase.</div>`;
+  }
+}
+
+// ========== SPOTIFY CHARTS (admin) ==========
+async function loadAdminSpCharts() {
+  const container = document.getElementById('admin-sp-charts-list');
+  if (!container) return;
+  const { data } = await sb.from('sp_charts').select('*').order('chart_type').order('region').order('rank_position');
+  if (!data || data.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">No hay entradas aún. Agrega posiciones de ENHYPEN desde el formulario de abajo.</p>';
+    return;
+  }
+  container.innerHTML = data.map(e => `
+    <div class="admin-list-item">
+      <div class="ali-info">
+        <div class="ali-name">#${e.rank_position} · ${escapeHtml(e.song_title)}</div>
+        <div class="ali-sub">${e.chart_type} · ${e.region} · ${Number(e.daily_streams||0).toLocaleString('en-US')} streams</div>
+      </div>
+      <div class="ali-actions">
+        <button class="btn btn-sm btn-ghost" onclick="editSpChartEntry(${e.id},${e.rank_position},'${escapeHtml(e.song_title).replace(/'/g,"\\'")}',${e.daily_streams||0},${e.total_streams||0},'${e.change_val||''}')">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteSpChartEntry(${e.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+async function addSpChartEntry() {
+  const chart_type = document.getElementById('nc-type').value;
+  const region = document.getElementById('nc-region').value;
+  const song_title = document.getElementById('nc-song').value.trim();
+  const artist_name = document.getElementById('nc-artist').value.trim();
+  const rank_position = parseInt(document.getElementById('nc-rank').value) || 1;
+  const daily_streams = parseInt(document.getElementById('nc-daily').value.replace(/\D/g,'')) || 0;
+  const total_streams = parseInt(document.getElementById('nc-total').value.replace(/\D/g,'')) || 0;
+  const change_val = document.getElementById('nc-change').value.trim();
+  const change_dir = document.getElementById('nc-dir').value;
+  if (!song_title) { showToast('Escribe el nombre de la canción', true); return; }
+  const { error } = await sb.from('sp_charts').insert({ chart_type, region, song_title, artist_name, rank_position, daily_streams, total_streams, change_val, change_dir });
+  if (error) { showToast('Error: ' + error.message, true); console.error(error); return; }
+  showToast('Entrada agregada ✅');
+  ['nc-song','nc-artist','nc-rank','nc-daily','nc-total','nc-change'].forEach(id => document.getElementById(id).value = '');
+  await loadAdminSpCharts();
+  await loadSpChartsPublic();
+}
+
+async function editSpChartEntry(id, rank, song, daily, total, change) {
+  const newRank = prompt(`Posición de "${song}":`, rank);
+  if (newRank === null) return;
+  const newDaily = prompt('Daily/Weekly streams:', daily);
+  if (newDaily === null) return;
+  const newTotal = prompt('Total streams:', total);
+  if (newTotal === null) return;
+  const newChange = prompt('Cambio (ej: +3 o -5):', change);
+  if (newChange === null) return;
+  await sb.from('sp_charts').update({
+    rank_position: parseInt(newRank) || rank,
+    daily_streams: parseInt(newDaily.replace(/\D/g,'')) || 0,
+    total_streams: parseInt(newTotal.replace(/\D/g,'')) || 0,
+    change_val: newChange.trim()
+  }).eq('id', id);
+  showToast('Entrada actualizada ✅');
+  await loadAdminSpCharts();
+  await loadSpChartsPublic();
+}
+
+async function deleteSpChartEntry(id) {
+  if (!confirm('¿Eliminar esta entrada?')) return;
+  await sb.from('sp_charts').delete().eq('id', id);
+  showToast('Entrada eliminada');
+  await loadAdminSpCharts();
+  await loadSpChartsPublic();
+}
 
 // ========== NAVEGACIÓN ==========
 function openAdminLogin(){ if(isAdmin){ openAdminPanel(); return; } document.getElementById('admin-overlay').classList.add('open'); }
@@ -1674,7 +2076,7 @@ async function saveArtistChartManual() {
   await loadKworbArtist(true);
 }
 // ========== INICIALIZACIÓN ==========
-async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic()]); loadKworbArtist(); }
+async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic(), loadSpChartsPublic()]); loadKworbArtist(); }
 loadAll();
 let seq=''; document.addEventListener('keydown',e=>{ seq=(seq+e.key.toLowerCase()).slice(-3); if(seq==='adm'){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; } });
 let tap=0, timer; document.querySelector('.nav-logo').addEventListener('click',()=>{ tap++; clearTimeout(timer); timer=setTimeout(()=>tap=0,600); if(tap>=5){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; tap=0; } });
