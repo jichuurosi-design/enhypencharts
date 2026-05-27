@@ -598,7 +598,6 @@ footer a:hover { color: var(--primary-red); }
         <h3>+ Agregar canción</h3>
         <div class="form-group"><label>Título</label><input class="input" id="ns-title" placeholder="ej: Bite Me"></div>
         <div class="form-group"><label>Streams totales</label><input class="input" id="ns-streams" placeholder="0"></div>
-        <div class="form-group"><label>Likes (opcional)</label><input class="input" id="ns-likes" placeholder="0"></div>
         <div class="form-group"><label>URL de Spotify (opcional)</label><input class="input" id="ns-url" placeholder="https://open.spotify.com/track/..."></div>
         <button class="btn" onclick="addSpotifySong()">Agregar canción</button>
       </div>
@@ -684,11 +683,12 @@ async function loadSpotifySongsPublic() {
       document.getElementById('spotify-songs-table').innerHTML = '<div class="empty"><p>🎧 No hay canciones agregadas. El admin puede añadirlas desde el panel.</p></div>';
       return;
     }
-    let html = `<table class="spotify-table"><thead><tr><th>#</th><th>CANCIÓN</th><th>STREAMS TOTALES</th><th style="color:#4ade80">+STREAMS HOY</th><th>LIKES</th><th>LINK</th></tr></thead><tbody>`;
+    let html = `<table class="spotify-table"><thead><tr><th>RANK</th><th>CANCIÓN</th><th>STREAMS TOTALES</th><th style="color:#4ade80">DAILY STREAMS</th><th style="color:#4ade80">CHANGES (+/-)</th><th>LINK</th></tr></thead><tbody>`;
     data.forEach((song, i) => {
-      const daily = song.daily_streams > 0 ? `<span style="color:#4ade80;font-weight:700">+${fmt(song.daily_streams)}</span>` : '—';
+      const daily = song.daily_streams > 0 ? `<span style="color:#4ade80;font-family:'Orbitron',monospace;font-weight:700">${fmt(song.daily_streams)}</span>` : '—';
+      const changes = song.daily_streams > 0 ? `<span style="color:#4ade80;font-weight:700">▲ +${fmt(song.daily_streams)}</span>` : '<span style="color:var(--text-muted)">—</span>';
       const link = song.spotify_url ? `<a href="${song.spotify_url}" target="_blank" style="color:var(--primary-red);text-decoration:none">🎵 Escuchar</a>` : '—';
-      html += `<tr><td style="color:var(--primary-gold);font-family:monospace">${i+1}</td><td class="yt-video-title">${escapeHtml(song.title)}</td><td style="color:var(--primary-gold)">${fmt(song.total_streams)}</td><td>${daily}</td><td>${fmt(song.likes)}</td><td>${link}</td></tr>`;
+      html += `<tr><td><span style="color:var(--primary-red);font-family:'Orbitron',monospace;font-weight:700;background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.4);border-radius:6px;padding:2px 8px">#${i+1}</span></td><td><div class="yt-video-title">${escapeHtml(song.title)}</div><div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px">${fmt(song.total_streams)} total streams</div></td><td style="color:var(--primary-gold);font-family:'Orbitron',monospace">${fmt(song.total_streams)}</td><td>${daily}</td><td>${changes}</td><td>${link}</td></tr>`;
     });
     html += `</tbody></table>`;
     document.getElementById('spotify-songs-table').innerHTML = html;
@@ -699,19 +699,18 @@ async function loadAdminSpotifySongs() {
   if (!data || data.length === 0) { document.getElementById('admin-spotify-songs-list').innerHTML = '<p>No hay canciones aún.</p>'; return; }
   let html = '';
   for (const s of data) {
-    html += `<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${escapeHtml(s.title)}</div><div class="ali-sub">${fmt(s.total_streams)} streams | +${fmt(s.daily_streams)} hoy | ${fmt(s.likes)} likes</div></div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editSpotifySong(${s.id}, '${escapeHtml(s.title).replace(/'/g, "\\'")}', ${s.total_streams}, ${s.likes}, '${(s.spotify_url || '').replace(/'/g, "\\'")}')">✏️ Editar</button><button class="btn btn-sm btn-danger" onclick="deleteSpotifySong(${s.id})">✕</button></div></div>`;
+    html += `<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${escapeHtml(s.title)}</div><div class="ali-sub">${fmt(s.total_streams)} streams | +${fmt(s.daily_streams)} hoy</div></div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editSpotifySong(${s.id}, '${escapeHtml(s.title).replace(/'/g, "\'")}', ${s.total_streams}, '${(s.spotify_url || '').replace(/'/g, "\'")}')">✏️ Editar</button><button class="btn btn-sm btn-danger" onclick="deleteSpotifySong(${s.id})">✕</button></div></div>`;
   }
   document.getElementById('admin-spotify-songs-list').innerHTML = html;
 }
 async function addSpotifySong() {
   const title = document.getElementById('ns-title').value.trim();
   const total_streams = parseInt(document.getElementById('ns-streams').value.replace(/\D/g,'')) || 0;
-  const likes = parseInt(document.getElementById('ns-likes').value.replace(/\D/g,'')) || 0;
   const spotify_url = document.getElementById('ns-url').value.trim();
   if (!title) { showToast('Escribe el título', true); return; }
   const { data: exist } = await sb.from('spotify_songs').select('sort_order').order('sort_order', { ascending: false }).limit(1);
   const sort_order = (exist && exist[0]) ? exist[0].sort_order + 1 : 1;
-  const { data: inserted, error } = await sb.from('spotify_songs').insert({ title, total_streams, likes, spotify_url, sort_order, daily_streams: 0 }).select();
+  const { data: inserted, error } = await sb.from('spotify_songs').insert({ title, total_streams, spotify_url, sort_order, daily_streams: 0 }).select();
   if (error) { showToast('Error al guardar', true); return; }
   const newId = inserted[0].id;
   const today = new Date().toISOString().slice(0,10);
@@ -719,27 +718,23 @@ async function addSpotifySong() {
   showToast('Canción agregada ✅');
   document.getElementById('ns-title').value = '';
   document.getElementById('ns-streams').value = '';
-  document.getElementById('ns-likes').value = '';
   document.getElementById('ns-url').value = '';
   await loadAdminSpotifySongs();
   await loadSpotifySongsPublic();
 }
-async function editSpotifySong(id, title, currentStreams, currentLikes, currentUrl) {
+async function editSpotifySong(id, title, currentStreams, currentUrl) {
   const newStreams = prompt(`Streams totales de "${title}":`, currentStreams);
   if (newStreams === null) return;
-  const newLikes = prompt(`Likes de "${title}":`, currentLikes);
-  if (newLikes === null) return;
   const newUrl = prompt(`URL de Spotify (deja vacío si no):`, currentUrl);
   if (newUrl === null) return;
   const nStreams = parseInt(newStreams.replace(/\D/g,'')) || 0;
-  const nLikes = parseInt(newLikes.replace(/\D/g,'')) || 0;
   const nUrl = newUrl.trim();
   const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().slice(0,10);
   const { data: snap } = await sb.from('spotify_snapshots').select('total_streams').eq('song_id', id).eq('snapshot_date', yesterdayStr).maybeSingle();
   const oldStreams = snap ? snap.total_streams : 0;
   const dailyIncrease = (oldStreams && nStreams > oldStreams) ? nStreams - oldStreams : 0;
-  await sb.from('spotify_songs').update({ total_streams: nStreams, likes: nLikes, spotify_url: nUrl || null, daily_streams: dailyIncrease }).eq('id', id);
+  await sb.from('spotify_songs').update({ total_streams: nStreams, spotify_url: nUrl || null, daily_streams: dailyIncrease }).eq('id', id);
   const today = new Date().toISOString().slice(0,10);
   await sb.from('spotify_snapshots').upsert({ song_id: id, snapshot_date: today, total_streams: nStreams }, { onConflict: 'song_id,snapshot_date' });
   showToast(`"${title}" actualizado ✅`);
