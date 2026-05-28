@@ -851,6 +851,7 @@ footer a:hover { color: var(--primary-red); }
 .wv-verified { color: var(--primary-red); font-size: 0.72rem; }
 .wv-card-date { font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
 .wv-card-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; background: var(--bg-elevated); }
+.wv-card-caption { padding: 0.5rem 1rem 0.3rem; font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
 .wv-card-footer { padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.5rem; border-top: 1px solid var(--border-dim); }
 .wv-tag { font-size: 0.65rem; color: var(--primary-red); background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.25); border-radius: 20px; padding: 0.15rem 0.6rem; font-weight: 600; }
 /* Lightbox */
@@ -903,7 +904,7 @@ footer a:hover { color: var(--primary-red); }
   <div class="hero">
     <div class="hero-tag" id="hero-tag">SIN:VANISH // THEY FELL FOR THE FORBIDDEN</div>
     <h1>ENHYPEN<br><span style="font-size: 0.5em; display: block;">SIN & VANISH</span></h1>
-    <p class="hero-sub">Streaming hub | Fan Page</p>
+    <p class="hero-sub">Streaming hub | Fan page</p>
     <div class="hero-debut">
       <div class="dot-live"></div>
       <span id="debut-text">Awaken need to love · Faced the storm</span>
@@ -1289,7 +1290,26 @@ footer a:hover { color: var(--primary-red); }
     <div class="admin-section" id="tab-config"><div class="admin-card"><h3>Textos del hero</h3><div class="form-group"><label>Tag</label><input class="input" id="cfg-hero_tag" placeholder="SIN:VANISH // ..."></div><div class="form-group"><label>Texto debut</label><input class="input" id="cfg-debut_text" placeholder="Awaken need to love"></div><div class="form-group"><label>🖼️ Imagen de fondo del hero (URL)</label><input class="input" id="cfg-hero_bg_url" placeholder="https://...jpg"><p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem">Pega la URL directa de la imagen. Recomendado: 1920x1080px o más. Puedes subir a <a href="https://imgbb.com" target="_blank" style="color:var(--primary-red)">imgbb.com</a> gratis.</p></div><div id="hero-bg-preview" style="display:none;margin-top:0.8rem;border-radius:12px;overflow:hidden;border:1px solid var(--border-dim);max-height:160px"><img id="hero-bg-img-preview" style="width:100%;height:160px;object-fit:cover;object-position:top" src="" alt="preview"></div><button class="btn btn-ghost btn-sm" style="margin-top:0.6rem" onclick="previewHeroBg()">👁️ Previsualizar</button></div><div class="admin-card"><h3>Links sociales</h3><div class="form-group"><label>🎵 Spotify URL</label><input class="input" id="cfg-spotify_url"></div><div class="form-group"><label>▶ YouTube</label><input class="input" id="cfg-youtube_url"></div><div class="form-group"><label>🎶 Apple Music</label><input class="input" id="cfg-applemusic_url"></div><div class="form-group"><label>💬 Weverse</label><input class="input" id="cfg-weverse_url"></div><div class="form-group"><label>📸 Instagram</label><input class="input" id="cfg-instagram_url"></div><div class="form-group"><label>🐦 Twitter/X</label><input class="input" id="cfg-twitter_url"></div><button class="btn" onclick="saveConfig()">Guardar configuración</button></div></div>
 
     <!-- Imágenes -->
-    <div class="admin-section" id="tab-images"><div class="admin-card"><h3>Imágenes de la era</h3><div id="admin-images-grid" class="img-grid"></div><div class="form-group" style="margin-top:1rem"><label>URL de imagen</label><div style="display:flex; gap:0.5rem"><input class="input" id="img-url" placeholder="https://..."><button class="btn" onclick="addImage()">Agregar</button></div></div></div></div>
+    <div class="admin-section" id="tab-images">
+      <div class="admin-card">
+        <h3>👤 Perfil de publicación</h3>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">El nombre y avatar que aparecen en cada post de la galería.</p>
+        <div class="form-group"><label>Nombre del admin</label><input class="input" id="admin-profile-name" placeholder="ej: Admin 1"></div>
+        <div class="form-group"><label>Iniciales del avatar (2 letras)</label><input class="input" id="admin-profile-initials" placeholder="ej: A1" maxlength="3"></div>
+        <button class="btn" onclick="saveAdminProfile()">💾 Guardar perfil</button>
+        <div id="profile-save-status" style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-muted)"></div>
+      </div>
+      <div class="admin-card">
+        <h3>📸 Publicar imagen</h3>
+        <div class="form-group"><label>URL de imagen</label><input class="input" id="img-url" placeholder="https://..."></div>
+        <div class="form-group"><label>Caption (opcional)</label><input class="input" id="img-caption" placeholder="ej: ¡Nueva era!"></div>
+        <button class="btn" onclick="addImage()">Publicar</button>
+      </div>
+      <div class="admin-card">
+        <h3>🖼️ Publicaciones</h3>
+        <div id="admin-images-grid" class="img-grid"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1954,6 +1974,7 @@ async function deleteYTVideo(id){ if(!confirm('¿Eliminar video?')) return; awai
 // ========== ADMIN DATA LOAD (unificado) ==========
 async function loadAdminData(){
   updateAdminYTStatus();
+  await loadAdminProfile();
   await loadBulkUpdateList();
   await loadAdminAlbums();
   await loadBulkAlbumsList();
@@ -1984,7 +2005,53 @@ async function addPlaylist(){ let name=document.getElementById('np-name').value.
 function editPlaylist(id,name,desc,url,platform){ let newUrl=prompt(`Editar URL de "${name}"`,url); if(newUrl===null) return; sb.from('playlists').update({url:newUrl}).eq('id',id).then(async()=>{ showToast('Playlist actualizada'); await loadAdminData(); await loadPlaylistsPublic(); }); }
 async function deletePlaylist(id){ if(confirm('¿Eliminar playlist?')){ await sb.from('playlists').delete().eq('id',id); showToast('Playlist eliminada'); await loadAdminData(); await loadPlaylistsPublic(); } }
 async function saveConfig(){ let keys=['hero_tag','debut_text','hero_bg_url','spotify_url','youtube_url','applemusic_url','weverse_url','instagram_url','twitter_url']; for(let k of keys){ let el=document.getElementById('cfg-'+k); if(el) await sb.from('site_config').upsert({key:k,value:el.value.trim()}); } showToast('Configuración guardada'); await loadConfig(); }
-async function addImage(){ let url=document.getElementById('img-url').value.trim(); if(!url){ showToast('URL requerida',true); return; } await sb.from('images').insert({url, sort_order:Date.now()}); showToast('Imagen agregada'); document.getElementById('img-url').value=''; await loadAdminData(); await loadGalleryPublic(); }
+async function saveAdminProfile() {
+  const name = document.getElementById('admin-profile-name').value.trim();
+  const initials = document.getElementById('admin-profile-initials').value.trim().toUpperCase();
+  if (!name && !initials) { showToast('Escribe al menos el nombre', true); return; }
+  if (name) await sb.from('site_config').upsert({ key: 'admin_profile_name', value: name });
+  if (initials) await sb.from('site_config').upsert({ key: 'admin_profile_initials', value: initials });
+  document.getElementById('profile-save-status').textContent = '✅ Perfil guardado';
+  showToast('Perfil guardado ✅');
+}
+
+async function loadAdminProfile() {
+  try {
+    const { data } = await sb.from('site_config').select('key,value').in('key', ['admin_profile_name','admin_profile_initials']);
+    if (!data) return;
+    data.forEach(r => {
+      if (r.key === 'admin_profile_name') {
+        const el = document.getElementById('admin-profile-name');
+        if (el) el.value = r.value;
+      }
+      if (r.key === 'admin_profile_initials') {
+        const el = document.getElementById('admin-profile-initials');
+        if (el) el.value = r.value;
+      }
+    });
+  } catch(e) {}
+}
+
+async function addImage(){
+  const url = document.getElementById('img-url').value.trim();
+  const caption = document.getElementById('img-caption').value.trim();
+  if (!url) { showToast('URL requerida', true); return; }
+  // Get current admin profile
+  let authorName = 'Admin', authorInitials = 'SV';
+  try {
+    const { data: cfg } = await sb.from('site_config').select('key,value').in('key', ['admin_profile_name','admin_profile_initials']);
+    if (cfg) cfg.forEach(r => {
+      if (r.key === 'admin_profile_name') authorName = r.value;
+      if (r.key === 'admin_profile_initials') authorInitials = r.value;
+    });
+  } catch(e) {}
+  await sb.from('images').insert({ url, caption: caption || null, author_name: authorName, author_initials: authorInitials, sort_order: Date.now() });
+  showToast('Imagen publicada ✅');
+  document.getElementById('img-url').value = '';
+  document.getElementById('img-caption').value = '';
+  await loadAdminData();
+  await loadGalleryPublic();
+}
 async function deleteImage(id){ if(confirm('¿Eliminar imagen?')){ await sb.from('images').delete().eq('id',id); showToast('Imagen eliminada'); await loadAdminData(); await loadGalleryPublic(); } }
 
 // ========== SPOTIFY CHARTS (público) ==========
@@ -2334,15 +2401,29 @@ async function loadGalleryPublic() {
   lbImages = data.map(i => i.url);
   grid.innerHTML = data.map((img, idx) => {
     const d = new Date(img.created_at || Date.now());
-    const dateStr = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+    const now = new Date();
+    const diffMs = now - d;
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffH = Math.floor(diffMin / 60);
+    const diffD = Math.floor(diffH / 24);
+    let dateStr;
+    if (diffMin < 1) dateStr = 'ahora mismo';
+    else if (diffMin < 60) dateStr = `hace ${diffMin} min`;
+    else if (diffH < 24) dateStr = `hace ${diffH}h`;
+    else if (diffD < 7) dateStr = `hace ${diffD}d`;
+    else dateStr = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+    const authorName = img.author_name || 'Admin';
+    const authorInitials = img.author_initials || 'SV';
+    const caption = img.caption ? `<div class="wv-card-caption">${escapeHtml(img.caption)}</div>` : '';
     return `<div class="wv-card" onclick="openLightbox(${idx})">
       <div class="wv-card-header">
-        <div class="wv-avatar">SV</div>
+        <div class="wv-avatar">${escapeHtml(authorInitials)}</div>
         <div class="wv-card-meta">
-          <div class="wv-card-author">Admin <span class="wv-verified">✦</span></div>
+          <div class="wv-card-author">${escapeHtml(authorName)} <span class="wv-verified">✦</span></div>
           <div class="wv-card-date">${dateStr}</div>
         </div>
       </div>
+      ${caption}
       <img class="wv-card-img" src="${img.url}" loading="lazy" onerror="this.parentElement.style.display='none'" alt="Era image">
       <div class="wv-card-footer">
         <span class="wv-tag">SIN:VANISH</span>
