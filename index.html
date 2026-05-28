@@ -1290,7 +1290,7 @@ footer a:hover { color: var(--primary-red); }
       <!-- Artist Chart Manual -->
       <div class="admin-card" style="border-color:rgba(29,185,84,0.25)">
         <h3 style="color:#1db954">🎧 Artist Chart — Oyentes y Seguidores</h3>
-        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1.2rem">Los Total Streams se calculan automáticamente. Actualiza Oyentes y Seguidores manualmente cuando quieras.</p>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1.2rem">Actualiza manualmente los datos del Artist Chart. Deja en blanco los campos que no quieras cambiar.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
           <div class="form-group">
             <label>Monthly Listeners</label>
@@ -1301,6 +1301,16 @@ footer a:hover { color: var(--primary-red); }
             <label>Total Followers</label>
             <input class="input" id="sp-followers" placeholder="ej: 14980663" style="font-family:'Orbitron',monospace">
             <span style="font-size:0.68rem;color:var(--text-muted);margin-top:0.3rem;display:block">Número sin puntos ni comas</span>
+          </div>
+          <div class="form-group">
+            <label>Total Streams</label>
+            <input class="input" id="sp-total-streams" placeholder="ej: 7226138226" style="font-family:'Orbitron',monospace">
+            <span style="font-size:0.68rem;color:var(--text-muted);margin-top:0.3rem;display:block">Déjalo vacío para calcular automático</span>
+          </div>
+          <div class="form-group">
+            <label>+Streams Today</label>
+            <input class="input" id="sp-streams-today" placeholder="ej: 4847454" style="font-family:'Orbitron',monospace">
+            <span style="font-size:0.68rem;color:var(--text-muted);margin-top:0.3rem;display:block">Déjalo vacío para calcular automático</span>
           </div>
         </div>
         <button class="btn" style="background:#1a5c2e" onclick="saveArtistChartManual()">💾 Guardar Artist Chart</button>
@@ -2465,25 +2475,35 @@ async function loadKworbArtist(forceRefresh = false) {
   const btn = document.getElementById('kworb-btn');
   if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
 
-  // 1. Listeners y Followers desde Supabase (manual)
-  let listeners = null, followers = null;
+  // 1. Listeners, Followers, Total Streams y Today desde Supabase (manual)
+  let listeners = null, followers = null, manualStreams = null, manualToday = null;
   try {
-    const { data: cfg } = await sb.from('site_config').select('key,value').in('key', ['sp_monthly_listeners','sp_followers']);
+    const { data: cfg } = await sb.from('site_config').select('key,value')
+      .in('key', ['sp_monthly_listeners','sp_followers','sp_total_streams','sp_streams_today']);
     if (cfg) {
       cfg.forEach(r => {
-        if (r.key === 'sp_monthly_listeners') listeners = parseInt(r.value) || null;
-        if (r.key === 'sp_followers')          followers = parseInt(r.value) || null;
+        if (r.key === 'sp_monthly_listeners') listeners     = parseInt(r.value) || null;
+        if (r.key === 'sp_followers')          followers     = parseInt(r.value) || null;
+        if (r.key === 'sp_total_streams')      manualStreams = parseInt(r.value) || null;
+        if (r.key === 'sp_streams_today')      manualToday   = parseInt(r.value) || null;
       });
     }
+    // Precargar campos del admin
     const elL = document.getElementById('sp-monthly-listeners');
     const elF = document.getElementById('sp-followers');
-    if (elL && listeners) elL.value = listeners;
-    if (elF && followers) elF.value = followers;
+    const elS = document.getElementById('sp-total-streams');
+    const elT = document.getElementById('sp-streams-today');
+    if (elL && listeners)     elL.value = listeners;
+    if (elF && followers)     elF.value = followers;
+    if (elS && manualStreams) elS.value = manualStreams;
+    if (elT && manualToday)   elT.value = manualToday;
   } catch(e) { console.warn('Supabase artist config error:', e); }
 
-  // 2. Total streams desde discografía local
-  const totalStreams = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.streams || 0), 0);
-  const totalDaily   = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.daily  || 0), 0);
+  // 2. Total streams: manual si está definido, si no calcular desde discografía local
+  const calcStreams = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.streams || 0), 0);
+  const calcDaily   = ENHYPEN_DISCOGRAPHY.reduce((acc, s) => acc + (s.daily  || 0), 0);
+  const totalStreams = manualStreams || calcStreams;
+  const totalDaily   = manualToday  || calcDaily;
 
   // 3. Cache check
   if (!forceRefresh) {
@@ -2514,7 +2534,7 @@ async function loadKworbArtist(forceRefresh = false) {
       `Fuente: kworb.net · ${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`;
   } catch(e) {
     console.warn('Kworb fetch failed (non-critical):', e.message);
-    document.getElementById('kworb-updated').textContent = 'Streams: cálculo local · kworb.net no disponible';
+    document.getElementById('kworb-updated').textContent = 'Streams calculados desde discografía local';
   }
 
   renderArtistChart(listeners, followers, totalStreams, streamsDaily);
@@ -2522,11 +2542,20 @@ async function loadKworbArtist(forceRefresh = false) {
 }
 
 async function saveArtistChartManual() {
-  const listeners = (document.getElementById('sp-monthly-listeners').value || '').replace(/\D/g,'');
-  const followers  = (document.getElementById('sp-followers').value || '').replace(/\D/g,'');
-  if (!listeners && !followers) { showToast('Escribe al menos un valor', true); return; }
-  if (listeners) await sb.from('site_config').upsert({ key: 'sp_monthly_listeners', value: listeners });
-  if (followers)  await sb.from('site_config').upsert({ key: 'sp_followers',          value: followers });
+  const listeners    = (document.getElementById('sp-monthly-listeners')?.value || '').replace(/\D/g,'');
+  const followers    = (document.getElementById('sp-followers')?.value || '').replace(/\D/g,'');
+  const totalStreams = (document.getElementById('sp-total-streams')?.value || '').replace(/\D/g,'');
+  const streamsToday = (document.getElementById('sp-streams-today')?.value || '').replace(/\D/g,'');
+
+  if (!listeners && !followers && !totalStreams && !streamsToday) {
+    showToast('Escribe al menos un valor', true); return;
+  }
+  const updates = [];
+  if (listeners)    updates.push(sb.from('site_config').upsert({ key: 'sp_monthly_listeners', value: listeners }));
+  if (followers)    updates.push(sb.from('site_config').upsert({ key: 'sp_followers',          value: followers }));
+  if (totalStreams) updates.push(sb.from('site_config').upsert({ key: 'sp_total_streams',      value: totalStreams }));
+  if (streamsToday) updates.push(sb.from('site_config').upsert({ key: 'sp_streams_today',      value: streamsToday }));
+  await Promise.all(updates);
   showToast('Artist Chart guardado ✅');
   await loadKworbArtist(true);
 }
