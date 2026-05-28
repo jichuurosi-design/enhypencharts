@@ -2619,7 +2619,8 @@ async function loadPostComments(imageId) {
   const list = document.getElementById('pm-comments-list');
   list.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.75rem">Cargando...</div>';
   try {
-    const { data } = await sb.from('post_comments').select('*').eq('image_id', imageId).order('created_at', { ascending: true });
+    const { data, error } = await sb.from('post_comments').select('*').eq('image_id', imageId).order('created_at', { ascending: true });
+    if (error) throw error;
     if (!data || !data.length) {
       list.innerHTML = '<div class="pm-no-comments">Sin comentarios aún</div>';
       return;
@@ -2627,7 +2628,7 @@ async function loadPostComments(imageId) {
     list.innerHTML = data.map(c => {
       const isAdminComment = c.is_admin;
       return `<div class="pm-comment">
-        <div class="pm-comment-avatar ${isAdminComment ? 'admin-av' : ''}">${isAdminComment ? (c.author_initials || 'SV') : c.author_name?.slice(0,2).toUpperCase() || '??'}</div>
+        <div class="pm-comment-avatar ${isAdminComment ? 'admin-av' : ''}">${isAdminComment ? (c.author_initials || 'SV') : (c.author_name?.slice(0,2).toUpperCase() || '??')}</div>
         <div class="pm-comment-body">
           <div class="pm-comment-name">${escapeHtml(c.author_name || 'Admin')}${isAdminComment ? '<span class="verified-badge">✦</span>' : ''}</div>
           <div class="pm-comment-text">${escapeHtml(c.content)}</div>
@@ -2637,7 +2638,8 @@ async function loadPostComments(imageId) {
       </div>`;
     }).join('');
   } catch(e) {
-    list.innerHTML = '<div class="pm-no-comments">Error cargando comentarios</div>';
+    console.error('loadPostComments error:', e);
+    list.innerHTML = `<div class="pm-no-comments" style="color:var(--primary-red)">Error: ${e.message || e.code || 'tabla post_comments no existe'}<br><span style="font-size:.7rem;color:var(--text-muted)">Crea la tabla en Supabase SQL Editor</span></div>`;
   }
 }
 
@@ -2671,12 +2673,27 @@ function cancelComment() {
 async function submitComment() {
   if (!isAdmin) return;
   const content = document.getElementById('pm-comment-input').value.trim();
-  if (!content) return;
+  if (!content) { showToast('Escribe algo primero', true); return; }
   const img = pmData[pmIndex];
-  const { data: cfg } = await sb.from('site_config').select('key,value').in('key', ['admin_author_name','admin_author_initials']);
-  let authorName = 'Admin', authorInitials = 'SV';
-  if (cfg) { cfg.forEach(r => { if(r.key==='admin_author_name') authorName=r.value||authorName; if(r.key==='admin_author_initials') authorInitials=r.value||authorInitials; }); }
-  await sb.from('post_comments').insert({ image_id: img.id, content, author_name: authorName, author_initials: authorInitials, is_admin: true });
+
+  // Usar nombre del autor de la imagen actual o fallback a config
+  let authorName = img.author_name || 'Admin';
+  let authorInitials = img.author_initials || 'SV';
+
+  const { error } = await sb.from('post_comments').insert({
+    image_id: img.id,
+    content,
+    author_name: authorName,
+    author_initials: authorInitials,
+    is_admin: true
+  });
+
+  if (error) {
+    console.error('Comment insert error:', error);
+    showToast('Error al guardar: ' + (error.message || error.code), true);
+    return;
+  }
+
   document.getElementById('pm-comment-input').value = '';
   showToast('Comentario publicado ✅');
   await loadPostComments(img.id);
