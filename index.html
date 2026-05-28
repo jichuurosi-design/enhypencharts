@@ -1546,7 +1546,7 @@ async function loadPlaylistsPublic(){
 // ========== SPOTIFY SONGS (manual) ==========
 async function loadSpotifySongsPublic() {
   try {
-    const { data, error } = await sb.from('spotify_songs').select('*').order('sort_order');
+    const { data, error } = await sb.from('spotify_songs').select('*').order('total_streams', { ascending: false });
     if (error) throw error;
     if (!data || data.length === 0) {
       document.getElementById('spotify-songs-table').innerHTML = '<div class="empty"><p>🎧 No hay canciones agregadas. El admin puede añadirlas desde el panel.</p></div>';
@@ -1564,7 +1564,7 @@ async function loadSpotifySongsPublic() {
   } catch(e) { console.error('Spotify songs error:', e); document.getElementById('spotify-songs-table').innerHTML = '<div class="empty"><p>⚠️ Error cargando canciones</p></div>'; }
 }
 async function loadAdminSpotifySongs() {
-  const { data } = await sb.from('spotify_songs').select('*').order('sort_order');
+  const { data } = await sb.from('spotify_songs').select('*').order('total_streams', { ascending: false });
   if (!data || data.length === 0) { document.getElementById('admin-spotify-songs-list').innerHTML = '<p>No hay canciones aún.</p>'; return; }
   let html = '';
   for (const s of data) {
