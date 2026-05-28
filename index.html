@@ -2045,7 +2045,7 @@ async function addImage(){
       if (r.key === 'admin_profile_initials') authorInitials = r.value;
     });
   } catch(e) {}
-  const { error: imgErr } = await sb.from('images').insert({ url, caption: caption || null, author_name: authorName, author_initials: authorInitials, sort_order: Date.now() });
+  const { error: imgErr } = await sb.from('images').insert({ url, caption: caption || null, author_name: authorName, author_initials: authorInitials, sort_order: Math.floor(Date.now() / 1000) });
   if (imgErr) {
     console.error('Insert error:', imgErr);
     showToast('Error: ' + (imgErr.message || 'fallo al guardar'), true);
