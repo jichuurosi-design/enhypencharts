@@ -985,10 +985,8 @@ footer a:hover { color: var(--primary-red); }
           <button class="sp-region-tab" onclick="spSetRegion(this,'mx','Mexico','🇲🇽')">🇲🇽 Mexico</button>
           <button class="sp-region-tab" onclick="spSetRegion(this,'jp','Japan','🇯🇵')">🇯🇵 Japan</button>
           <button class="sp-region-tab" onclick="spSetRegion(this,'th','Thailand','🇹🇭')">🇹🇭 Thailand</button>
-          <button class="sp-region-tab" onclick="spSetRegion(this,'sa','Saudi Arabia','🇸🇦')">🇸🇦 Saudi Arabia</button>
           <button class="sp-region-tab" onclick="spSetRegion(this,'au','Australia','🇦🇺')">🇦🇺 Australia</button>
           <button class="sp-region-tab" onclick="spSetRegion(this,'ca','Canada','🇨🇦')">🇨🇦 Canada</button>
-          <button class="sp-region-tab" onclick="spSetRegion(this,'ar','Argentina','🇦🇷')">🇦🇷 Argentina</button>
         </div>
       </div>
 
@@ -1209,10 +1207,8 @@ footer a:hover { color: var(--primary-red); }
               <option value="mx">🇲🇽 Mexico</option>
               <option value="jp">🇯🇵 Japan</option>
               <option value="th">🇹🇭 Thailand</option>
-              <option value="sa">🇸🇦 Saudi Arabia</option>
               <option value="au">🇦🇺 Australia</option>
               <option value="ca">🇨🇦 Canada</option>
-              <option value="ar">🇦🇷 Argentina</option>
             </select>
           </div>
         </div>
@@ -1220,8 +1216,8 @@ footer a:hover { color: var(--primary-red); }
         <div class="form-group"><label>Artistas (subtítulo)</label><input class="input" id="nc-artist" placeholder="ej: ENHYPEN"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.8rem">
           <div class="form-group"><label>Posición (#)</label><input class="input" id="nc-rank" placeholder="ej: 16" type="number"></div>
-          <div class="form-group"><label>Daily / Weekly Streams</label><input class="input" id="nc-daily" placeholder="ej: 2920045"></div>
-          <div class="form-group"><label>Total Streams</label><input class="input" id="nc-total" placeholder="ej: 274066985"></div>
+          <div class="form-group"><label>Daily / Weekly Streams</label><input class="input" id="nc-daily" placeholder="ej: 2920045 (no aplica para Daily Artists)"></div>
+          <div class="form-group"><label>Total Streams / Yesterday's Position</label><input class="input" id="nc-total" placeholder="ej: 274066985 · o posición de ayer para Daily Artists"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
           <div class="form-group"><label>Cambio (+/-)</label><input class="input" id="nc-change" placeholder="ej: +3 o -5"></div>
@@ -1984,26 +1980,48 @@ async function loadSpChartsPublic() {
       return;
     }
     const isWeekly = spCurrentType.startsWith('weekly');
-    const streamHeader = isWeekly ? 'WEEKLY STREAMS' : 'DAILY STREAMS';
-    let html = `<table class="sp-chart-table"><thead><tr>
-      <th>RANK</th><th>TRACK / ARTIST</th>
-      <th>${streamHeader}</th>
-      <th>TOTAL STREAMS</th>
-      <th>CHANGE</th>
-    </tr></thead><tbody>`;
+    const isDailyArtist = spCurrentType === 'daily-artists';
+    let tableHead, html;
+    if (isDailyArtist) {
+      tableHead = `<table class="sp-chart-table"><thead><tr>
+        <th>RANK</th><th>ARTIST</th>
+        <th>YESTERDAY'S POSITION</th>
+        <th>CHANGES</th>
+      </tr></thead><tbody>`;
+    } else {
+      const streamHeader = isWeekly ? 'WEEKLY STREAMS' : 'DAILY STREAMS';
+      tableHead = `<table class="sp-chart-table"><thead><tr>
+        <th>RANK</th><th>TRACK / ARTIST</th>
+        <th>${streamHeader}</th>
+        <th>TOTAL STREAMS</th>
+        <th>CHANGE</th>
+      </tr></thead><tbody>`;
+    }
+    html = tableHead;
     data.forEach(r => {
       const changeClass = r.change_dir === 'up' ? 'sp-change-up' : r.change_dir === 'down' ? 'sp-change-dn' : 'sp-change-up';
       const changeArrow = r.change_dir === 'up' ? '▲' : r.change_dir === 'down' ? '▼' : '✦';
       const changeVal = r.change_val ? `${changeArrow} ${r.change_val}` : '—';
-      const totalFmt = r.total_streams ? Number(r.total_streams).toLocaleString('en-US') : '—';
-      const dailyFmt = r.daily_streams ? `<span class="sp-daily-val">${Number(r.daily_streams).toLocaleString('en-US')}</span>` : '—';
-      html += `<tr>
-        <td><span class="sp-rank-badge">#${r.rank_position}</span></td>
-        <td><div class="sp-song-name">${escapeHtml(r.song_title)}</div><div class="sp-artist-name">${escapeHtml(r.artist_name || '')}</div></td>
-        <td>${dailyFmt}</td>
-        <td style="color:var(--text-dim)">${totalFmt}</td>
-        <td><span class="${changeClass}">${changeVal}</span></td>
-      </tr>`;
+      if (isDailyArtist) {
+        // RANK | ARTIST | YESTERDAY'S POSITION | CHANGES
+        const yesterdayPos = r.total_streams ? `#${Number(r.total_streams).toLocaleString('en-US')}` : '—';
+        html += `<tr>
+          <td><span class="sp-rank-badge">#${r.rank_position}</span></td>
+          <td><div class="sp-song-name">${escapeHtml(r.song_title)}</div></td>
+          <td style="color:var(--text-dim)">${yesterdayPos}</td>
+          <td><span class="${changeClass}">${changeVal}</span></td>
+        </tr>`;
+      } else {
+        const totalFmt = r.total_streams ? Number(r.total_streams).toLocaleString('en-US') : '—';
+        const dailyFmt = r.daily_streams ? `<span class="sp-daily-val">${Number(r.daily_streams).toLocaleString('en-US')}</span>` : '—';
+        html += `<tr>
+          <td><span class="sp-rank-badge">#${r.rank_position}</span></td>
+          <td><div class="sp-song-name">${escapeHtml(r.song_title)}</div><div class="sp-artist-name">${escapeHtml(r.artist_name || '')}</div></td>
+          <td>${dailyFmt}</td>
+          <td style="color:var(--text-dim)">${totalFmt}</td>
+          <td><span class="${changeClass}">${changeVal}</span></td>
+        </tr>`;
+      }
     });
     html += '</tbody></table>';
     wrap.innerHTML = html;
