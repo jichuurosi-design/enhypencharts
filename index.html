@@ -1584,16 +1584,23 @@ async function addSpotifySong() {
 async function editSpotifySong(id, title, currentStreams, currentUrl) {
   const newStreams = prompt(`Streams totales de "${title}":`, currentStreams);
   if (newStreams === null) return;
-  const newUrl = prompt(`URL de Spotify (deja vacío si no):`, currentUrl);
+  const newUrl = prompt(`URL de Spotify (deja vacío para mantener la actual):`, currentUrl);
   if (newUrl === null) return;
   const nStreams = parseInt(newStreams.replace(/\D/g,'')) || 0;
-  const nUrl = newUrl.trim();
+  // Solo actualizar URL si el usuario escribió algo; si está vacío, conservar la existente
+  const nUrl = newUrl.trim() !== '' ? newUrl.trim() : currentUrl;
+
   const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().slice(0,10);
   const { data: snap } = await sb.from('spotify_snapshots').select('total_streams').eq('song_id', id).eq('snapshot_date', yesterdayStr).maybeSingle();
-  const oldStreams = snap ? snap.total_streams : 0;
+  // Si no hay snapshot de ayer, usar el valor actual como base para daily
+  const oldStreams = snap ? snap.total_streams : currentStreams;
   const dailyIncrease = (oldStreams && nStreams > oldStreams) ? nStreams - oldStreams : 0;
-  await sb.from('spotify_songs').update({ total_streams: nStreams, spotify_url: nUrl || null, daily_streams: dailyIncrease }).eq('id', id);
+
+  const updateData = { total_streams: nStreams, daily_streams: dailyIncrease };
+  if (nUrl) updateData.spotify_url = nUrl;
+
+  await sb.from('spotify_songs').update(updateData).eq('id', id);
   const today = new Date().toISOString().slice(0,10);
   await sb.from('spotify_snapshots').upsert({ song_id: id, snapshot_date: today, total_streams: nStreams }, { onConflict: 'song_id,snapshot_date' });
   showToast(`"${title}" actualizado ✅`);
@@ -1796,19 +1803,38 @@ async function saveBulkStreams() {
   const today = new Date().toISOString().slice(0, 10);
   const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
   const yStr = yesterday.toISOString().slice(0, 10);
+
+  // Cargar todos los valores actuales de la DB para usar como base de daily
+  const { data: currentSongs } = await sb.from('spotify_songs').select('id, total_streams, spotify_url');
+  const currentMap = {};
+  if (currentSongs) currentSongs.forEach(s => currentMap[s.id] = s);
+
   let saved = 0, errors = 0;
   for (const input of inputs) {
     const id = parseInt(input.dataset.id);
     const newStreams = parseInt(input.value.replace(/\D/g, '')) || 0;
-    // get yesterday snapshot for daily calc
+
+    // Buscar snapshot de ayer; si no existe, usar valor actual de la DB
     const { data: snap } = await sb.from('spotify_snapshots').select('total_streams').eq('song_id', id).eq('snapshot_date', yStr).maybeSingle();
-    const oldStreams = snap ? snap.total_streams : 0;
-    const daily = (oldStreams && newStreams > oldStreams) ? newStreams - oldStreams : 0;
-    const { error } = await sb.from('spotify_songs').update({ total_streams: newStreams, daily_streams: daily }).eq('id', id);
+    const baseStreams = snap ? snap.total_streams : (currentMap[id]?.total_streams || 0);
+    const daily = (baseStreams && newStreams > baseStreams) ? newStreams - baseStreams : 0;
+
+    // Preservar spotify_url — NO tocarla en el bulk update
+    const { error } = await sb.from('spotify_songs').update({
+      total_streams: newStreams,
+      daily_streams: daily
+    }).eq('id', id);
+
     if (!error) {
-      await sb.from('spotify_snapshots').upsert({ song_id: id, snapshot_date: today, total_streams: newStreams }, { onConflict: 'song_id,snapshot_date' });
+      await sb.from('spotify_snapshots').upsert(
+        { song_id: id, snapshot_date: today, total_streams: newStreams },
+        { onConflict: 'song_id,snapshot_date' }
+      );
       saved++;
-    } else { errors++; }
+    } else {
+      console.error('Bulk save error for id', id, error);
+      errors++;
+    }
   }
   showToast(errors ? `${saved} guardados, ${errors} errores` : `✅ ${saved} canciones actualizadas`);
   await loadAdminSpotifySongs();
