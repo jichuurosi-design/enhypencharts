@@ -1341,6 +1341,7 @@ footer a:hover { color: var(--primary-red); }
         <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap;margin-top:0.7rem">
           <button class="btn" onclick="processPaste()">● Procesar</button>
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('paste-area').value='';document.getElementById('paste-preview').style.display='none';document.getElementById('paste-status').textContent=''">✕ Limpiar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteAllSongs()" style="margin-left:auto">🗑️ Eliminar todas las canciones</button>
           <span id="paste-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
         </div>
         <!-- Preview -->
@@ -1359,7 +1360,6 @@ footer a:hover { color: var(--primary-red); }
           </div>
           <div style="display:flex;gap:0.7rem;margin-top:0.8rem;flex-wrap:wrap;align-items:center">
             <button class="btn" onclick="savePasteData()">💾 Guardar en Supabase</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteAllSongs()" style="margin-left:auto">🗑️ Eliminar todas las canciones</button>
           </div>
           <div id="paste-save-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem"></div>
         </div>
@@ -1917,7 +1917,7 @@ async function savePasteData() {
 async function deleteAllSongs() {
   if (!confirm('⚠️ ¿Eliminar TODAS las canciones? Esto no se puede deshacer.')) return;
   if (!confirm('¿Segura? Se borrarán canciones y sus snapshots históricos.')) return;
-  const statusEl = document.getElementById('paste-save-status');
+  const statusEl = document.getElementById('paste-status');
   statusEl.textContent = '⏳ Eliminando...';
   const { data } = await sb.from('spotify_songs').select('id');
   if (data && data.length) {
