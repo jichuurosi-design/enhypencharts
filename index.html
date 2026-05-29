@@ -623,6 +623,16 @@ footer a:hover { color: var(--primary-red); }
 .skeleton-line { height: 10px; border-radius: 6px; background: #1a1a1a; margin-bottom: 0.6rem; }
 .skeleton-line.big { height: 28px; width: 70%; }
 @keyframes shimmer { 0%,100%{opacity:0.5} 50%{opacity:1} }
+/* Editable stream table */
+.stream-cell{background:transparent;border:none;outline:none;color:var(--text-main);font-family:'Orbitron',monospace;font-size:0.78rem;text-align:right;width:100%;padding:0.5rem 0.6rem;transition:background .15s;}
+.stream-cell:focus{background:rgba(220,38,38,0.08);border-radius:6px;outline:1px solid var(--primary-red);}
+.stream-row{border-bottom:1px solid rgba(255,255,255,0.04);transition:background .15s;}
+.stream-row:hover{background:rgba(255,255,255,0.02);}
+.stream-row.modified .stream-cell{color:#1db954;}
+.stream-row td{padding:0 !important;}
+.stream-row td:first-child{padding:0.4rem 0.8rem !important;}
+.stream-title{font-size:0.8rem;font-weight:600;color:var(--text-main);}
+.stream-prev{font-size:0.64rem;color:var(--text-muted);margin-top:2px;}
 
 /* ===== SPOTIFY CHARTS ===== */
 .sp-charts-wrap {
@@ -1317,27 +1327,44 @@ footer a:hover { color: var(--primary-red); }
       </div>
       <div class="admin-card">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:0.8rem">
-          <h3 style="margin:0">⚡ Actualización desde Kworb</h3>
-          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Abrir Kworb</a>
-        </div>
-        <div style="background:#111;border:1px solid var(--border-dim);border-radius:12px;padding:0.9rem;margin-bottom:1rem">
-          <div style="font-size:0.72rem;color:var(--text-muted);line-height:1.8">
-            <strong style="color:var(--text-main)">Cómo usar:</strong><br>
-            1. Abre Kworb con el botón de arriba<br>
-            2. Selecciona toda la tabla (<kbd style="background:#222;border:1px solid #333;border-radius:4px;padding:1px 5px">Ctrl+A</kbd> o selección manual)<br>
-            3. Copia (<kbd style="background:#222;border:1px solid #333;border-radius:4px;padding:1px 5px">Ctrl+C</kbd>)<br>
-            4. Pega abajo y presiona <strong style="color:#1db954">Procesar y guardar</strong>
+          <h3 style="margin:0">⚡ Tabla de streams</h3>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Ver en Kworb</a>
+            <button class="btn btn-ghost btn-sm" onclick="loadStreamTable()">🔄 Recargar</button>
           </div>
         </div>
-        <div class="form-group">
-          <label>Pega la tabla de Kworb aquí</label>
-          <textarea id="kworb-paste-input" class="input" rows="8" placeholder="Pega aquí el contenido copiado de kworb.net..." style="resize:vertical;font-family:'DM Mono',monospace;font-size:0.73rem;line-height:1.6"></textarea>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:1rem">Edita los streams y daily directamente en la tabla. Puedes copiar y pegar desde Kworb o Excel. Cuando termines presiona <strong style="color:#1db954">Guardar todo</strong>.</p>
+
+        <!-- Paste from kworb/excel shortcut -->
+        <details style="margin-bottom:1rem">
+          <summary style="font-size:0.75rem;color:var(--text-dim);cursor:pointer;padding:0.5rem 0">📋 Pegar desde Kworb / Excel (opcional)</summary>
+          <div style="margin-top:0.7rem;background:#111;border:1px solid var(--border-dim);border-radius:10px;padding:0.9rem">
+            <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.6rem">Copia la tabla de Kworb o Excel (formato: <code style="background:#1a1a1a;padding:1px 5px;border-radius:3px">Título &nbsp; Streams &nbsp; Daily</code>) y pégala aquí. Se rellenarán los campos automáticamente.</p>
+            <textarea id="kworb-paste-input" class="input" rows="5" placeholder="Pega aquí..." style="resize:vertical;font-size:0.72rem;font-family:'DM Mono',monospace"></textarea>
+            <button class="btn btn-sm" style="margin-top:0.6rem" onclick="pasteIntoTable()">📥 Autorellenar tabla</button>
+            <div id="paste-feedback" style="font-size:0.72rem;margin-top:0.5rem;display:none"></div>
+          </div>
+        </details>
+
+        <!-- Excel-like table -->
+        <div style="overflow-x:auto;border:1px solid var(--border-dim);border-radius:12px">
+          <table id="stream-edit-table" style="width:100%;border-collapse:collapse;min-width:520px">
+            <thead>
+              <tr style="background:#111">
+                <th style="padding:0.6rem 0.8rem;font-size:0.62rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:left;border-bottom:1px solid var(--border-dim);width:40%">CANCIÓN</th>
+                <th style="padding:0.6rem 0.8rem;font-size:0.62rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim);width:28%">TOTAL STREAMS</th>
+                <th style="padding:0.6rem 0.8rem;font-size:0.62rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim);width:22%">DAILY</th>
+                <th style="padding:0.6rem 0.8rem;font-size:0.62rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:center;border-bottom:1px solid var(--border-dim);width:10%">✏️</th>
+              </tr>
+            </thead>
+            <tbody id="stream-table-body">
+              <tr><td colspan="4" style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.8rem"><div class="spin" style="display:inline-block;width:18px;height:18px;border:2px solid var(--border-dim);border-top-color:var(--primary-red);border-radius:50%;animation:spin .7s linear infinite;margin-right:0.5rem;vertical-align:middle"></div>Cargando...</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div id="kworb-parse-preview" style="display:none;margin-bottom:1rem"></div>
-        <div style="display:flex;gap:0.7rem;flex-wrap:wrap">
-          <button class="btn" onclick="parseAndPreviewKworb()">🔍 Procesar</button>
-          <button class="btn btn-success" id="kworb-save-btn" onclick="saveKworbData()" style="display:none">💾 Guardar todo</button>
-          <button class="btn btn-ghost" onclick="document.getElementById('kworb-paste-input').value='';document.getElementById('kworb-parse-preview').style.display='none';document.getElementById('kworb-save-btn').style.display='none'">✕ Limpiar</button>
+        <div style="margin-top:1rem;display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap">
+          <button class="btn" onclick="saveStreamTable()">💾 Guardar todo</button>
+          <span id="stream-table-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
         </div>
       </div>
       <div class="admin-card">
@@ -1819,8 +1846,188 @@ async function loadBulkUpdateList() {
   container.innerHTML = html;
 }
 
-// ========== KWORB PASTE PARSER ==========
-let kworbParsed = []; // { title, streams, daily }
+// ========== EDITABLE STREAM TABLE ==========
+let streamTableData = []; // { id, title, total_streams, daily_streams }
+
+async function loadStreamTable() {
+  const tbody = document.getElementById('stream-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="4" style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.8rem"><div class="spin" style="display:inline-block;width:18px;height:18px;border:2px solid var(--border-dim);border-top-color:var(--primary-red);border-radius:50%;animation:spin .7s linear infinite;margin-right:0.5rem;vertical-align:middle"></div>Cargando...</td></tr>`;
+
+  const { data } = await sb.from('spotify_songs').select('id,title,total_streams,daily_streams').order('total_streams', { ascending: false });
+  if (!data || !data.length) {
+    tbody.innerHTML = `<tr><td colspan="4" style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:0.8rem">No hay canciones. Precarga la discografía primero.</td></tr>`;
+    return;
+  }
+  streamTableData = data;
+  renderStreamTable();
+}
+
+function renderStreamTable() {
+  const tbody = document.getElementById('stream-table-body');
+  tbody.innerHTML = streamTableData.map((s, i) => `
+    <tr class="stream-row" id="srow-${s.id}">
+      <td style="padding:0.4rem 0.8rem !important">
+        <div class="stream-title">${escapeHtml(s.title)}</div>
+        <div class="stream-prev">Actual: ${fmt(s.total_streams || 0)}</div>
+      </td>
+      <td>
+        <input class="stream-cell" type="text"
+          data-id="${s.id}" data-field="total_streams" data-orig="${s.total_streams||0}"
+          value="${s.total_streams||0}"
+          oninput="markModified(this)"
+          onkeydown="tableNav(event,${i},0)">
+      </td>
+      <td>
+        <input class="stream-cell" type="text"
+          data-id="${s.id}" data-field="daily_streams" data-orig="${s.daily_streams||0}"
+          value="${s.daily_streams||0}"
+          oninput="markModified(this)"
+          onkeydown="tableNav(event,${i},1)">
+      </td>
+      <td style="text-align:center;padding:0 0.4rem !important">
+        <span id="srow-status-${s.id}" style="font-size:0.75rem"></span>
+      </td>
+    </tr>`).join('');
+}
+
+function markModified(input) {
+  const row = input.closest('.stream-row');
+  row.classList.add('modified');
+}
+
+// Arrow key / Enter navigation between cells
+function tableNav(e, rowIdx, colIdx) {
+  if (e.key === 'Enter' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    const next = document.querySelector(`#stream-table-body tr:nth-child(${rowIdx+2}) input[data-field="${colIdx===0?'total_streams':'daily_streams'}"]`);
+    if (next) next.focus();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    const prev = document.querySelector(`#stream-table-body tr:nth-child(${rowIdx}) input[data-field="${colIdx===0?'total_streams':'daily_streams'}"]`);
+    if (prev) prev.focus();
+  } else if (e.key === 'Tab') {
+    // default tab behavior is fine
+  }
+}
+
+async function saveStreamTable() {
+  const inputs = document.querySelectorAll('#stream-table-body .stream-cell');
+  const statusEl = document.getElementById('stream-table-status');
+  statusEl.textContent = 'Guardando...';
+
+  // Group by song id
+  const changes = {};
+  inputs.forEach(inp => {
+    const id = inp.dataset.id;
+    const field = inp.dataset.field;
+    const val = parseInt(inp.value.replace(/[^\d]/g,'')) || 0;
+    if (!changes[id]) changes[id] = {};
+    changes[id][field] = val;
+  });
+
+  const today = new Date().toISOString().slice(0,10);
+  let saved = 0, errors = 0;
+
+  for (const [id, fields] of Object.entries(changes)) {
+    const statusCell = document.getElementById(`srow-status-${id}`);
+    const { error } = await sb.from('spotify_songs').update(fields).eq('id', id);
+    if (!error) {
+      saved++;
+      if (statusCell) statusCell.textContent = '✅';
+      if (fields.total_streams) {
+        await sb.from('spotify_snapshots').upsert(
+          { song_id: parseInt(id), snapshot_date: today, total_streams: fields.total_streams },
+          { onConflict: 'song_id,snapshot_date' }
+        );
+      }
+      // Update orig value and remove modified
+      const row = document.getElementById(`srow-${id}`);
+      if (row) {
+        row.classList.remove('modified');
+        row.querySelector('[data-field="total_streams"]')?.setAttribute('data-orig', fields.total_streams || 0);
+        row.querySelector('[data-field="daily_streams"]')?.setAttribute('data-orig', fields.daily_streams || 0);
+        // Update "Actual" subtitle
+        const prevEl = row.querySelector('.stream-prev');
+        if (prevEl && fields.total_streams) prevEl.textContent = `Actual: ${fmt(fields.total_streams)}`;
+      }
+    } else {
+      errors++;
+      if (statusCell) statusCell.textContent = '❌';
+    }
+  }
+
+  statusEl.textContent = errors ? `${saved} guardadas · ${errors} errores` : `✅ ${saved} canciones guardadas`;
+  setTimeout(() => { statusEl.textContent = ''; }, 4000);
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
+}
+
+// ---- Paste autofill from Kworb/Excel ----
+function normalizeTitle(t) {
+  return t.toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
+}
+function titlesMatch(a, b) {
+  const na = normalizeTitle(a), nb = normalizeTitle(b);
+  if (na === nb) return true;
+  if (na.includes(nb) || nb.includes(na)) return true;
+  const wa = new Set(na.split(' ')), wb = nb.split(' ');
+  const overlap = wb.filter(w => wa.has(w) && w.length > 2).length;
+  return overlap >= Math.ceil(wb.length * 0.5);
+}
+
+function pasteIntoTable() {
+  const raw = document.getElementById('kworb-paste-input').value.trim();
+  const feedback = document.getElementById('paste-feedback');
+  feedback.style.display = 'block';
+  if (!raw) { feedback.innerHTML = '<span style="color:var(--primary-red)">⚠ Pega algo primero</span>'; return; }
+
+  // Parse lines: handle tab, pipe, or multi-space separated
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l && !l.match(/^[-|:\s]+$/));
+  let matched = 0, skipped = 0;
+
+  for (const line of lines) {
+    // Split by tab, then pipe, then 2+ spaces
+    let parts;
+    if (line.includes('\t')) parts = line.split('\t');
+    else if (line.includes('|')) parts = line.split('|');
+    else parts = line.split(/\s{2,}/);
+    parts = parts.map(p => p.trim()).filter(p => p);
+    if (parts.length < 2) continue;
+
+    // Title is first part (remove leading rank like "1." or "#1")
+    const title = parts[0].replace(/^[#\d]+[.\s]*/, '').trim();
+    if (!title || title.toLowerCase().includes('song title') || title.toLowerCase().includes('title')) continue;
+
+    // Numbers: find all valid ones
+    const nums = [];
+    for (let i = 1; i < parts.length; i++) {
+      const n = parseInt(parts[i].replace(/[^0-9]/g,''));
+      if (!isNaN(n) && n > 1000) nums.push(n);
+    }
+    if (!nums.length) continue;
+    const streams = Math.max(...nums);
+    const daily = nums.length > 1 ? nums.find(n => n < streams) || 0 : 0;
+
+    // Find matching row in table
+    const row = Array.from(document.querySelectorAll('#stream-table-body .stream-row')).find(r => {
+      const t = r.querySelector('.stream-title')?.textContent || '';
+      return titlesMatch(t, title);
+    });
+
+    if (row) {
+      const sInput = row.querySelector('[data-field="total_streams"]');
+      const dInput = row.querySelector('[data-field="daily_streams"]');
+      if (sInput) { sInput.value = streams; sInput.dispatchEvent(new Event('input')); }
+      if (dInput && daily) { dInput.value = daily; dInput.dispatchEvent(new Event('input')); }
+      matched++;
+    } else skipped++;
+  }
+
+  feedback.innerHTML = matched
+    ? `<span style="color:#1db954">✅ ${matched} canciones rellenadas${skipped ? ` · ${skipped} sin match` : ''}. Revisa y presiona <strong>Guardar todo</strong>.</span>`
+    : `<span style="color:var(--primary-red)">⚠ No se encontraron matches. Verifica el formato (Título, Streams, Daily).</span>`;
+}
 
 function parseAndPreviewKworb() {
   const raw = document.getElementById('kworb-paste-input').value.trim();
@@ -2554,7 +2761,7 @@ function closeAdmin(){ document.getElementById('admin-panel').classList.remove('
 function showPage(id,el){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active')); if(el) el.classList.add('active'); document.getElementById('nav-links').classList.remove('open'); window.scrollTo(0,0); }
 function toggleMobileNav(){ document.getElementById('nav-links').classList.toggle('open'); }
 function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.getElementById('spotify-chart').style.display=id==='spotify-chart'?'block':'none'; document.getElementById('yt-chart').style.display=id==='yt-chart'?'block':'none'; document.getElementById('apple-chart').style.display=id==='apple-chart'?'block':'none'; }
-function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id==='tab-spotifydata') loadStreamTable(); }
 
 // ========== KWORB ARTIST CHART ==========
 const KWORB_ARTIST_SLUG = 'enhypen';
