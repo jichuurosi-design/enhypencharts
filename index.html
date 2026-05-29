@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,200;14..32,400;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 /* ========== THEME SYSTEM ========== */
 :root {
@@ -1843,7 +1843,14 @@ function handleXLDrop(e) {
 function handleXLFile(file) {
   if (!file) return;
   const ext = file.name.split('.').pop().toLowerCase();
-  document.getElementById('xl-status').textContent = '⏳ Leyendo archivo...';
+  const statusEl = document.getElementById('xl-status');
+
+  if (ext !== 'csv' && typeof XLSX === 'undefined') {
+    statusEl.textContent = '❌ La librería Excel no cargó. Intenta refrescar la página o usa un archivo .csv';
+    return;
+  }
+
+  statusEl.textContent = '⏳ Leyendo archivo...';
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
@@ -1859,9 +1866,10 @@ function handleXLFile(file) {
       }
       parseXLRows(rows, file.name);
     } catch(err) {
-      document.getElementById('xl-status').textContent = '❌ Error: ' + err.message;
+      statusEl.textContent = '❌ Error: ' + err.message;
     }
   };
+  reader.onerror = () => { statusEl.textContent = '❌ No se pudo leer el archivo.'; };
   reader.readAsArrayBuffer(file);
 }
 
