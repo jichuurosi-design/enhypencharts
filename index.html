@@ -1394,30 +1394,52 @@ footer a:hover { color: var(--primary-red); }
     <!-- Álbumes -->
     <div class="admin-section" id="tab-albums">
       <div class="admin-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:1rem">
-          <h3 style="margin:0">💿 Álbumes / EPs</h3>
-          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Kworb Albums</a>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:0.8rem">
+          <h3 style="margin:0">📊 Actualización masiva de álbumes</h3>
+          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Kworb</a>
         </div>
-        <div id="admin-albums-list"></div>
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-dim);border-radius:12px;padding:0.9rem;margin-bottom:1rem;font-size:0.72rem;color:var(--text-muted);line-height:1.8">
+          <strong style="color:var(--text-main)">Cómo usar:</strong> Ve a Kworb Albums → copia la tabla → pega abajo → Procesar → Guardar.<br>
+          Formato esperado: <code style="background:#1a1a1a;padding:1px 5px;border-radius:3px">| Album | Streams | Daily |</code> o separado por tabs/comas.
+        </div>
+        <label style="font-size:0.72rem;font-weight:600;color:var(--text-dim);margin-bottom:0.4rem;display:block">Pega la tabla de Kworb aquí</label>
+        <textarea id="paste-albums-area" rows="7" placeholder="| Album | Streams | Daily |&#10;| --- | --- | --- |&#10;| DIMENSION : ANSWER | 1,139,963,107 | 357,608 |&#10;..."
+          style="width:100%;background:var(--input-bg);border:1px solid var(--border-dim);border-radius:12px;padding:0.8rem;color:var(--text-main);font-family:monospace;font-size:0.75rem;resize:vertical;outline:none;line-height:1.6;box-sizing:border-box"
+          onfocus="this.style.borderColor='var(--primary-red)'" onblur="this.style.borderColor='var(--border-dim)'"></textarea>
+        <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap;margin-top:0.7rem">
+          <button class="btn" onclick="processAlbumsPaste()">● Procesar</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('paste-albums-area').value='';document.getElementById('paste-albums-preview').style.display='none';document.getElementById('paste-albums-status').textContent=''">✕ Limpiar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteAllAlbums()" style="margin-left:auto">🗑️ Eliminar todos los álbumes</button>
+          <span id="paste-albums-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
+        </div>
+        <div id="paste-albums-preview" style="display:none;margin-top:1rem">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--text-dim);margin-bottom:0.5rem" id="paste-albums-preview-label"></div>
+          <div style="overflow-x:auto;max-height:260px;overflow-y:auto;border:1px solid var(--border-dim);border-radius:10px">
+            <table style="width:100%;border-collapse:collapse;min-width:380px">
+              <thead><tr style="background:var(--bg-elevated);position:sticky;top:0">
+                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:left;border-bottom:1px solid var(--border-dim)">ÁLBUM</th>
+                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim)">STREAMS</th>
+                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim)">DAILY</th>
+                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:center;border-bottom:1px solid var(--border-dim)">ESTADO</th>
+              </tr></thead>
+              <tbody id="paste-albums-preview-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;gap:0.7rem;margin-top:0.8rem">
+            <button class="btn" onclick="saveAlbumsPasteData()">💾 Guardar en Supabase</button>
+          </div>
+          <div id="paste-albums-save-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem"></div>
+        </div>
       </div>
       <div class="admin-card">
-        <details open>
-          <summary style="cursor:pointer;font-weight:600;color:var(--text-dim);font-size:0.85rem">⚡ Actualización rápida de álbumes</summary>
-          <div style="margin-top:1rem">
-            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Actualiza los streams de todos los álbumes de una vez.</p>
-            <div id="bulk-albums-list"><div class="loading"><div class="spin"></div></div></div>
-            <div style="margin-top:1rem;display:flex;gap:0.8rem;flex-wrap:wrap">
-              <button class="btn" onclick="saveBulkAlbums()">💾 Guardar álbumes</button>
-              <button class="btn btn-ghost" onclick="loadBulkAlbumsList()">🔄 Recargar</button>
-            </div>
-          </div>
-        </details>
+        <h3>💿 Lista de álbumes</h3>
+        <div id="admin-albums-list"></div>
       </div>
       <div class="admin-card">
         <details>
           <summary style="cursor:pointer;font-weight:600;color:var(--text-dim);font-size:0.85rem">📥 Precargar discografía de álbumes</summary>
           <div style="margin-top:1rem">
-            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Carga todos los álbumes/EPs de ENHYPEN con sus streams actuales de Kworb.</p>
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Carga todos los álbumes/EPs de ENHYPEN con sus streams actuales.</p>
             <button class="btn" onclick="preloadAlbums()">📥 Cargar álbumes</button>
             <div id="preload-albums-status" style="margin-top:0.8rem;font-size:0.78rem;color:var(--text-muted)"></div>
           </div>
@@ -1958,6 +1980,110 @@ async function deleteAllSongs() {
   document.getElementById('paste-status').textContent = '';
   showToast('Canciones eliminadas');
   await loadAdminSpotifySongs(); await loadSpotifySongsPublic();
+}
+
+// ========== ALBUMS PASTE TABLE ==========
+let pasteAlbumsParsed = [];
+
+function processAlbumsPaste() {
+  const text = document.getElementById('paste-albums-area').value.trim();
+  const statusEl = document.getElementById('paste-albums-status');
+  if (!text) { statusEl.textContent = '⚠️ Pega el contenido primero.'; return; }
+
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+  pasteAlbumsParsed = [];
+
+  for (const line of lines) {
+    let cols;
+    if (line.includes('|')) {
+      cols = line.split('|').map(c => c.trim()).filter(c => c);
+    } else if (line.includes('\t')) {
+      cols = line.split('\t').map(c => c.trim());
+    } else if (line.includes(';')) {
+      cols = line.split(';').map(c => c.trim());
+    } else {
+      cols = line.split(',').map(c => c.trim());
+    }
+    if (cols.length < 2) continue;
+    const title = cols[0];
+    if (!title || title === '---' || title.toLowerCase().includes('album') || title === '-') continue;
+    const streamsRaw = (cols[1] || '0').replace(/,/g, '').replace(/[^0-9]/g, '');
+    const dailyRaw  = (cols[2] || '0').replace(/,/g, '').replace(/[^0-9]/g, '');
+    const streams = parseInt(streamsRaw) || 0;
+    const daily   = parseInt(dailyRaw)   || 0;
+    if (title && streams > 0) pasteAlbumsParsed.push({ title, streams, daily });
+  }
+
+  if (!pasteAlbumsParsed.length) {
+    statusEl.textContent = '⚠️ No se pudieron parsear álbumes. Verifica el formato.';
+    document.getElementById('paste-albums-preview').style.display = 'none';
+    return;
+  }
+  statusEl.textContent = `✅ ${pasteAlbumsParsed.length} álbumes detectados`;
+  renderAlbumsPastePreview();
+}
+
+async function renderAlbumsPastePreview() {
+  const { data: dbAlbums } = await sb.from('spotify_albums').select('id,title,total_streams');
+  const noMatch = pasteAlbumsParsed.filter(r => !dbAlbums?.find(a => titlesMatch(a.title, r.title))).length;
+  document.getElementById('paste-albums-preview-label').textContent = `${pasteAlbumsParsed.length} álbumes · ${pasteAlbumsParsed.length - noMatch} actualizarán · ${noMatch} serán nuevos`;
+  document.getElementById('paste-albums-preview-body').innerHTML = pasteAlbumsParsed.map(r => {
+    const match = dbAlbums?.find(a => titlesMatch(a.title, r.title));
+    const st = match
+      ? `<span style="color:#1db954;font-size:0.72rem">✅ match</span>`
+      : `<span style="color:var(--primary-red);font-size:0.72rem">⚠ nuevo</span>`;
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+      <td style="padding:0.4rem 0.7rem;font-size:0.77rem;color:var(--text-main)">${escapeHtml(r.title)}</td>
+      <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:#1db954;text-align:right">${fmtCompact(r.streams)}</td>
+      <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--text-dim);text-align:right">${r.daily ? '+' + fmtCompact(r.daily) : '—'}</td>
+      <td style="padding:0.4rem 0.7rem;text-align:center">${st}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('paste-albums-preview').style.display = 'block';
+}
+
+async function saveAlbumsPasteData() {
+  if (!pasteAlbumsParsed.length) return;
+  const statusEl = document.getElementById('paste-albums-save-status');
+  statusEl.textContent = '⏳ Guardando...';
+  const { data: dbAlbums } = await sb.from('spotify_albums').select('id,title,total_streams');
+  const today = new Date().toISOString().slice(0, 10);
+  let updated = 0, inserted = 0, errors = 0;
+
+  for (const r of pasteAlbumsParsed) {
+    const match = dbAlbums?.find(a => titlesMatch(a.title, r.title));
+    if (match) {
+      const { error } = await sb.from('spotify_albums').update({ total_streams: r.streams, daily_streams: r.daily }).eq('id', match.id);
+      if (!error) { await sb.from('spotify_album_snapshots').upsert({ album_id: match.id, snapshot_date: today, total_streams: r.streams }, { onConflict: 'album_id,snapshot_date' }); updated++; }
+      else errors++;
+    } else {
+      const { error } = await sb.from('spotify_albums').insert({ title: r.title, total_streams: r.streams, daily_streams: r.daily, spotify_url: null });
+      if (!error) inserted++; else errors++;
+    }
+  }
+
+  const msg = `✅ ${updated} actualizados · ${inserted} nuevos${errors ? ` · ${errors} errores` : ''}`;
+  statusEl.textContent = msg; showToast(msg);
+  await loadAdminAlbums(); await loadSpotifyAlbumsPublic();
+}
+
+async function deleteAllAlbums() {
+  if (!confirm('⚠️ ¿Eliminar TODOS los álbumes? Esto no se puede deshacer.')) return;
+  if (!confirm('¿Segura? Se borrarán álbumes y sus snapshots.')) return;
+  const statusEl = document.getElementById('paste-albums-status');
+  statusEl.textContent = '⏳ Eliminando...';
+  const { data } = await sb.from('spotify_albums').select('id');
+  if (data && data.length) {
+    const ids = data.map(a => a.id);
+    await sb.from('spotify_album_snapshots').delete().in('album_id', ids);
+    await sb.from('spotify_albums').delete().in('id', ids);
+  }
+  pasteAlbumsParsed = [];
+  statusEl.textContent = '🗑️ Todos los álbumes eliminados.';
+  document.getElementById('paste-albums-preview').style.display = 'none';
+  document.getElementById('paste-albums-area').value = '';
+  showToast('Álbumes eliminados');
+  await loadAdminAlbums(); await loadSpotifyAlbumsPublic();
 }
 
 // ========== ALBUMS ==========
