@@ -1217,7 +1217,6 @@ footer a:hover { color: var(--primary-red); }
           <div id="pm-author-handle">@sinvanish</div>
         </div>
         <button id="pm-close" onclick="closePostModal()">✕</button>
-        <button id="pm-delete-btn" onclick="deleteImage(pmCurrentId)" style="display:none;background:#b00020;border:none;color:#fff;border-radius:8px;padding:0.3rem 0.85rem;font-size:0.75rem;font-weight:700;cursor:pointer;margin-left:0.4rem">🗑️ Eliminar post</button>
       </div>
       <div id="pm-body">
         <div id="pm-caption-wrap">
@@ -2404,39 +2403,86 @@ async function deleteYTVideo(id){ if(!confirm('¿Eliminar video?')) return; awai
 
 // ========== ADMIN DATA LOAD (unificado) ==========
 async function loadAdminData(){
-  updateAdminYTStatus();
-  await loadAdminProfile();
-  await loadBulkUpdateList();
-  await loadAdminAlbums();
-  await loadBulkAlbumsList();
-  let {data:goals}=await sb.from('goals').select('*').order('sort_order');
-  document.getElementById('admin-goals-list').innerHTML=goals&&goals.length?goals.map(g=>`<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${g.song}</div><div class="ali-sub">${fmt(g.current)} / ${fmt(g.target)} · ${g.platform}</div></div><div class="pct-badge">${Math.min(100,Math.round(g.current/g.target*100))}%</div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editGoal(${g.id},'${g.song.replace(/'/g,"\\'")}',${g.current},${g.target})">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteGoal(${g.id})">✕</button></div></div>`).join(''):'<p>Sin metas</p>';
-  let {data:playlists}=await sb.from('playlists').select('*').order('sort_order');
-  document.getElementById('admin-playlists-list').innerHTML=playlists&&playlists.length?playlists.map(p=>`<div class="admin-list-item"><div>${p.icon||'🎵'}</div><div class="ali-info"><div class="ali-name">${p.name}</div><div class="ali-sub">${p.description||''} · ${p.platform}</div></div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editPlaylist(${p.id},'${p.name.replace(/'/g,"\\'")}','${(p.description||'').replace(/'/g,"\\'")}','${p.url||''}','${p.platform}')">✏️</button><button class="btn btn-sm btn-danger" onclick="deletePlaylist(${p.id})">✕</button></div></div>`).join(''):'<p>Sin playlists</p>';
-  let {data:cfg}=await sb.from('site_config').select('*');
-  if(cfg){
-    cfg.forEach(r=>{ let el=document.getElementById('cfg-'+r.key); if(el) el.value=r.value||''; });
-    document.getElementById('yt-subs').value=cfg.find(c=>c.key==='yt_subs')?.value||'17600000';
-    document.getElementById('yt-views').value=cfg.find(c=>c.key==='yt_views')?.value||'3200000000';
-    document.getElementById('yt-subs-daily').value=cfg.find(c=>c.key==='yt_subs_daily')?.value||'100000';
-    document.getElementById('yt-views-daily').value=cfg.find(c=>c.key==='yt_views_daily')?.value||'3200000';
-  }
-  await loadAdminVideos();
-  await loadAdminSpotifySongs();
-  await loadAdminSpCharts();
-  let {data:images}=await sb.from('images').select('*').order('created_at',{ascending:false});
-  document.getElementById('admin-images-grid').innerHTML = images && images.length
-    ? images.map(img => `
-      <div style="position:relative;border-radius:12px;overflow:hidden;background:var(--bg-elevated);border:1px solid var(--border-dim)">
-        <img src="${img.url}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" onerror="this.style.display='none'">
-        <div style="padding:0.5rem 0.6rem;font-size:0.7rem;color:var(--text-dim);line-height:1.4">
-          <div style="font-weight:600;color:var(--text-main)">${img.author_name||'Admin'}</div>
-          ${img.caption?`<div style="color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${img.caption}</div>`:''}
-          <div style="color:var(--text-muted);margin-top:2px">❤️ ${img.likes||0}</div>
-        </div>
-        <button onclick="deleteImage(${img.id})" style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(0,0,0,0.75);border:none;color:#fff;border-radius:6px;padding:0.2rem 0.5rem;font-size:0.72rem;cursor:pointer">✕</button>
-      </div>`).join('')
-    : '<p style="color:var(--text-muted);font-size:0.82rem;grid-column:1/-1">Sin publicaciones aún</p>';
+  // Wrap every section independently so one failure doesn't break the rest
+  try { updateAdminYTStatus(); } catch(e){}
+  try { await loadAdminProfile(); } catch(e){}
+  try { await loadBulkUpdateList(); } catch(e){}
+  try { await loadAdminAlbums(); } catch(e){}
+  try { await loadBulkAlbumsList(); } catch(e){}
+
+  // ── Goals ──
+  try {
+    const {data:goals, error:ge} = await sb.from('goals').select('*').order('sort_order');
+    if(ge) throw ge;
+    document.getElementById('admin-goals-list').innerHTML = goals&&goals.length
+      ? goals.map(g=>`<div class="admin-list-item">
+          <div class="ali-info">
+            <div class="ali-name">${g.song}</div>
+            <div class="ali-sub">${fmt(g.current)} / ${fmt(g.target)} · ${g.platform}</div>
+          </div>
+          <div class="pct-badge">${Math.min(100,Math.round(g.current/g.target*100))}%</div>
+          <div class="ali-actions">
+            <button class="btn btn-sm btn-ghost" onclick="editGoal(${g.id},'${g.song.replace(/'/g,"\'")}',${g.current},${g.target})">✏️</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteGoal(${g.id})">✕</button>
+          </div>
+        </div>`).join('')
+      : '<p style="color:var(--text-muted)">Sin metas aún</p>';
+  } catch(e){ console.error('Goals admin error:',e); }
+
+  // ── Playlists ──
+  try {
+    const {data:playlists, error:pe} = await sb.from('playlists').select('*').order('sort_order');
+    if(pe) throw pe;
+    document.getElementById('admin-playlists-list').innerHTML = playlists&&playlists.length
+      ? playlists.map(p=>`<div class="admin-list-item">
+          <div>${p.icon||'🎵'}</div>
+          <div class="ali-info">
+            <div class="ali-name">${p.name}</div>
+            <div class="ali-sub">${p.description||''} · ${p.platform}</div>
+          </div>
+          <div class="ali-actions">
+            <button class="btn btn-sm btn-ghost" onclick="editPlaylist(${p.id},'${p.name.replace(/'/g,"\'")}','${(p.description||'').replace(/'/g,"\'")}','${p.url||''}','${p.platform}')">✏️</button>
+            <button class="btn btn-sm btn-danger" onclick="deletePlaylist(${p.id})">✕</button>
+          </div>
+        </div>`).join('')
+      : '<p style="color:var(--text-muted)">Sin playlists aún</p>';
+  } catch(e){ console.error('Playlists admin error:',e); }
+
+  // ── Config ──
+  try {
+    const {data:cfg} = await sb.from('site_config').select('*');
+    if(cfg){
+      cfg.forEach(r=>{ const el=document.getElementById('cfg-'+r.key); if(el) el.value=r.value||''; });
+      const get = key => cfg.find(c=>c.key===key)?.value;
+      if(document.getElementById('yt-subs')) document.getElementById('yt-subs').value=get('yt_subs')||'17600000';
+      if(document.getElementById('yt-views')) document.getElementById('yt-views').value=get('yt_views')||'3200000000';
+      if(document.getElementById('yt-subs-daily')) document.getElementById('yt-subs-daily').value=get('yt_subs_daily')||'100000';
+      if(document.getElementById('yt-views-daily')) document.getElementById('yt-views-daily').value=get('yt_views_daily')||'3200000';
+    }
+  } catch(e){ console.error('Config admin error:',e); }
+
+  // ── Videos / Spotify / Charts ──
+  try { await loadAdminVideos(); } catch(e){ console.error('Admin videos error:',e); }
+  try { await loadAdminSpotifySongs(); } catch(e){ console.error('Admin spotify error:',e); }
+  try { await loadAdminSpCharts(); } catch(e){ console.error('Admin charts error:',e); }
+
+  // ── Images ──
+  try {
+    const {data:images, error:ie} = await sb.from('images').select('*').order('created_at',{ascending:false});
+    if(ie) throw ie;
+    document.getElementById('admin-images-grid').innerHTML = images && images.length
+      ? images.map(img=>`
+          <div style="position:relative;border-radius:12px;overflow:hidden;background:var(--bg-elevated);border:1px solid var(--border-dim)">
+            <img src="${img.url}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" onerror="this.style.display='none'">
+            <div style="padding:0.5rem 0.6rem;font-size:0.7rem;color:var(--text-dim);line-height:1.4">
+              <div style="font-weight:600;color:var(--text-main)">${img.author_name||'Admin'}</div>
+              ${img.caption?`<div style="color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${img.caption}</div>`:''}
+              <div style="color:var(--text-muted);margin-top:2px">❤️ ${img.likes||0}</div>
+            </div>
+            <button onclick="deleteImage('${img.id}')" style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(180,0,0,0.88);border:none;color:#fff;border-radius:6px;padding:0.25rem 0.6rem;font-size:0.72rem;cursor:pointer;font-weight:600">🗑️</button>
+          </div>`).join('')
+      : '<p style="color:var(--text-muted);font-size:0.82rem;grid-column:1/-1">Sin publicaciones aún</p>';
+  } catch(e){ console.error('Images admin error:',e); document.getElementById('admin-images-grid').innerHTML='<p style="color:var(--text-muted)">Error al cargar imágenes</p>'; }
 }
 
 // ========== CRUD METAS, PLAYLISTS, IMÁGENES (igual que tenías) ==========
@@ -2487,12 +2533,8 @@ async function addImage(){
       if (r.key === 'admin_profile_initials') authorInitials = r.value;
     });
   } catch(e) {}
-  // Get next sort_order safely (max existing + 1, not Date.now which overflows INTEGER)
   let nextSort = 1;
-  try {
-    const { data: lastImg } = await sb.from('images').select('sort_order').order('sort_order', { ascending: false }).limit(1);
-    if (lastImg && lastImg[0]) nextSort = (lastImg[0].sort_order || 0) + 1;
-  } catch(e) {}
+  try { const {data:li}=await sb.from('images').select('sort_order').order('sort_order',{ascending:false}).limit(1); if(li&&li[0]) nextSort=(li[0].sort_order||0)+1; } catch(e){}
   const { error: imgErr } = await sb.from('images').insert({ url, caption: caption || null, author_name: authorName, author_initials: authorInitials, sort_order: nextSort, likes: 0 });
   if (imgErr) {
     console.error('Insert error:', imgErr);
@@ -2506,12 +2548,11 @@ async function addImage(){
   await loadGalleryPublic();
 }
 async function deleteImage(id){
-  if (!id) { showToast('ID de imagen no válido', true); return; }
+  if (!id) { showToast('ID no válido', true); return; }
   if (!confirm('¿Eliminar esta imagen?')) return;
   const { error } = await sb.from('images').delete().eq('id', id);
-  if (error) { showToast('Error al eliminar: ' + error.message, true); console.error(error); return; }
+  if (error) { showToast('Error: ' + error.message, true); console.error(error); return; }
   showToast('Imagen eliminada ✅');
-  // Cerrar modal si está abierto
   document.getElementById('post-modal-overlay')?.classList.remove('open');
   await loadAdminData();
   await loadGalleryPublic();
