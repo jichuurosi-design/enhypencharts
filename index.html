@@ -437,7 +437,7 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
 .admin-section.active { display: block; }
 .admin-card { background: var(--admin-card-bg); border: 1px solid var(--border-dim); border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; }
 .admin-list-item { background: var(--admin-item-bg); border-radius: 16px; padding: 0.8rem 1rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 0.6rem; }
-.img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.8rem; }
+.img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.8rem; }
 .img-item { position: relative; aspect-ratio: 1; background: #0a0a0a; border-radius: 12px; overflow: hidden; }
 .img-item img { width: 100%; height: 100%; object-fit: cover; }
 .img-del { position: absolute; top: 4px; right: 4px; background: black; border: none; color: white; border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 0.7rem; }
@@ -2423,8 +2423,19 @@ async function loadAdminData(){
   await loadAdminVideos();
   await loadAdminSpotifySongs();
   await loadAdminSpCharts();
-  let {data:images}=await sb.from('images').select('*').order('sort_order');
-  document.getElementById('admin-images-grid').innerHTML=images&&images.length?images.map(img=>`<div class="img-item"><img src="${img.url}" onerror="this.parentElement.style.display='none'"><button class="img-del" onclick="deleteImage(${img.id})">✕</button></div>`).join(''):'<p>Sin imágenes</p>';
+  let {data:images}=await sb.from('images').select('*').order('created_at',{ascending:false});
+  document.getElementById('admin-images-grid').innerHTML = images && images.length
+    ? images.map(img => `
+      <div style="position:relative;border-radius:12px;overflow:hidden;background:var(--bg-elevated);border:1px solid var(--border-dim)">
+        <img src="${img.url}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" onerror="this.style.display='none'">
+        <div style="padding:0.5rem 0.6rem;font-size:0.7rem;color:var(--text-dim);line-height:1.4">
+          <div style="font-weight:600;color:var(--text-main)">${img.author_name||'Admin'}</div>
+          ${img.caption?`<div style="color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${img.caption}</div>`:''}
+          <div style="color:var(--text-muted);margin-top:2px">❤️ ${img.likes||0}</div>
+        </div>
+        <button onclick="deleteImage(${img.id})" style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(0,0,0,0.75);border:none;color:#fff;border-radius:6px;padding:0.2rem 0.5rem;font-size:0.72rem;cursor:pointer">✕</button>
+      </div>`).join('')
+    : '<p style="color:var(--text-muted);font-size:0.82rem;grid-column:1/-1">Sin publicaciones aún</p>';
 }
 
 // ========== CRUD METAS, PLAYLISTS, IMÁGENES (igual que tenías) ==========
@@ -2475,7 +2486,7 @@ async function addImage(){
       if (r.key === 'admin_profile_initials') authorInitials = r.value;
     });
   } catch(e) {}
-  const { error: imgErr } = await sb.from('images').insert({ url, caption: caption || null, author_name: authorName, author_initials: authorInitials, sort_order: Math.floor(Date.now() / 1000) });
+  const { error: imgErr } = await sb.from('images').insert({ url, caption: caption || null, author_name: authorName, author_initials: authorInitials, sort_order: Date.now(), likes: 0 });
   if (imgErr) {
     console.error('Insert error:', imgErr);
     showToast('Error: ' + (imgErr.message || 'fallo al guardar'), true);
@@ -3027,7 +3038,7 @@ document.addEventListener('keydown', e => {
 async function loadGalleryPublic() {
   const grid = document.getElementById('gallery-grid');
   if (!grid) return;
-  const { data } = await sb.from('images').select('*').order('sort_order', { ascending: false });
+  const { data } = await sb.from('images').select('*').order('created_at', { ascending: false });
   if (!data || !data.length) { grid.innerHTML = '<div class="empty"><p>📸 Sin imágenes aún</p></div>'; return; }
   pmData = data;
   grid.innerHTML = data.map((img, idx) => {
