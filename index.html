@@ -8,14 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,200;14..32,400;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js" onerror="loadXlsxFallback()"></script>
-<script>
-function loadXlsxFallback(){
-  var s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-  document.head.appendChild(s);
-}
-</script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 /* ========== THEME SYSTEM ========== */
 :root {
@@ -1853,13 +1846,7 @@ function handleXLFile(file) {
   const statusEl = document.getElementById('xl-status');
 
   if (ext !== 'csv' && typeof XLSX === 'undefined') {
-    statusEl.textContent = '⏳ Cargando librería Excel, espera un momento...';
-    // Try to load it dynamically and retry
-    const s = document.createElement('script');
-    s.src = 'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
-    s.onload = () => { statusEl.textContent = '✅ Librería cargada. Procesando...'; setTimeout(() => handleXLFile(file), 300); };
-    s.onerror = () => { statusEl.textContent = '❌ No se pudo cargar la librería Excel. Usa un archivo .csv en su lugar.'; };
-    document.head.appendChild(s);
+    statusEl.textContent = '❌ La librería Excel no cargó. Intenta refrescar la página o usa un archivo .csv';
     return;
   }
 
@@ -1870,7 +1857,12 @@ function handleXLFile(file) {
       let rows = [];
       if (ext === 'csv') {
         const text = new TextDecoder().decode(e.target.result);
-        rows = text.trim().split('\n').map(l => l.split(',').map(c => c.replace(/^"|"$/g,'').trim()));
+        // Auto-detect separator: semicolon or comma
+        const firstLine = text.split('\n')[0] || '';
+        const sep = firstLine.includes(';') ? ';' : ',';
+        rows = text.trim().split('\n').map(l =>
+          l.split(sep).map(c => c.replace(/^"|"$/g,'').trim())
+        );
       } else {
         const data = new Uint8Array(e.target.result);
         const wb = XLSX.read(data, { type: 'array' });
@@ -1910,15 +1902,12 @@ function parseXLRows(rows, filename) {
     const title = String(row[titleCol]||'').trim();
     if (!title || title.toLowerCase() === 'nan' || title.toLowerCase() === 'song title') continue;
 
-    const streamsRaw = String(row[streamsCol]||'0').replace(/[^0-9.]/g,'');
+    const streamsRaw = String(row[streamsCol]||'0').replace(/,/g,'').replace(/[^0-9.]/g,'');
     let streams = parseFloat(streamsRaw)||0;
-    if (streams < 10000 && streams > 0) streams = Math.round(streams*1000);
-    else streams = Math.round(streams);
+    streams = Math.round(streams);
 
-    const dailyRaw = String(row[dailyCol]||'0');
-    const dailyF = parseFloat(dailyRaw.replace(/[^0-9.]/g,''))||0;
-    const hasDecimal = dailyRaw.includes('.') && dailyF < 1000 && !dailyRaw.match(/\.0+$/);
-    const daily = hasDecimal ? Math.round(dailyF*1000) : Math.round(dailyF);
+    const dailyRaw = String(row[dailyCol]||'0').replace(/,/g,'').replace(/[^0-9.]/g,'');
+    const daily = Math.round(parseFloat(dailyRaw)||0);
 
     if (streams > 0) xlParsed.push({ title, streams, daily });
   }
