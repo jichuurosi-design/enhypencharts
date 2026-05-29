@@ -1316,15 +1316,28 @@ footer a:hover { color: var(--primary-red); }
         <button class="btn" style="background:#1a5c2e" onclick="saveArtistChartManual()">💾 Guardar Artist Chart</button>
       </div>
       <div class="admin-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:1rem">
-          <h3 style="margin:0">⚡ Actualización Rápida</h3>
-          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Ver en Kworb</a>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:0.8rem">
+          <h3 style="margin:0">⚡ Actualización desde Kworb</h3>
+          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Abrir Kworb</a>
         </div>
-        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1.2rem">Entra a Kworb, copia los streams de cada canción y pégalos aquí. Haz clic en <strong style="color:var(--text-main)">Guardar todo</strong> cuando termines.</p>
-        <div id="bulk-update-list"><div class="loading"><div class="spin"></div><br>Cargando canciones...</div></div>
-        <div style="margin-top:1rem;display:flex;gap:0.8rem;flex-wrap:wrap">
-          <button class="btn" onclick="saveBulkStreams()">💾 Guardar todo</button>
-          <button class="btn btn-ghost" onclick="loadBulkUpdateList()">🔄 Recargar lista</button>
+        <div style="background:#111;border:1px solid var(--border-dim);border-radius:12px;padding:0.9rem;margin-bottom:1rem">
+          <div style="font-size:0.72rem;color:var(--text-muted);line-height:1.8">
+            <strong style="color:var(--text-main)">Cómo usar:</strong><br>
+            1. Abre Kworb con el botón de arriba<br>
+            2. Selecciona toda la tabla (<kbd style="background:#222;border:1px solid #333;border-radius:4px;padding:1px 5px">Ctrl+A</kbd> o selección manual)<br>
+            3. Copia (<kbd style="background:#222;border:1px solid #333;border-radius:4px;padding:1px 5px">Ctrl+C</kbd>)<br>
+            4. Pega abajo y presiona <strong style="color:#1db954">Procesar y guardar</strong>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Pega la tabla de Kworb aquí</label>
+          <textarea id="kworb-paste-input" class="input" rows="8" placeholder="Pega aquí el contenido copiado de kworb.net..." style="resize:vertical;font-family:'DM Mono',monospace;font-size:0.73rem;line-height:1.6"></textarea>
+        </div>
+        <div id="kworb-parse-preview" style="display:none;margin-bottom:1rem"></div>
+        <div style="display:flex;gap:0.7rem;flex-wrap:wrap">
+          <button class="btn" onclick="parseAndPreviewKworb()">🔍 Procesar</button>
+          <button class="btn btn-success" id="kworb-save-btn" onclick="saveKworbData()" style="display:none">💾 Guardar todo</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('kworb-paste-input').value='';document.getElementById('kworb-parse-preview').style.display='none';document.getElementById('kworb-save-btn').style.display='none'">✕ Limpiar</button>
         </div>
       </div>
       <div class="admin-card">
@@ -1806,47 +1819,155 @@ async function loadBulkUpdateList() {
   container.innerHTML = html;
 }
 
-async function saveBulkStreams() {
-  const inputs = document.querySelectorAll('#bulk-update-list input[data-id]');
-  if (!inputs.length) { showToast('No hay canciones para guardar', true); return; }
-  showToast('Guardando...');
+// ========== KWORB PASTE PARSER ==========
+let kworbParsed = []; // { title, streams, daily }
+
+function parseAndPreviewKworb() {
+  const raw = document.getElementById('kworb-paste-input').value.trim();
+  if (!raw) { showToast('Pega el contenido de Kworb primero', true); return; }
+
+  kworbParsed = [];
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 2);
+
+  for (const line of lines) {
+    // Kworb format (tab or multiple spaces):
+    // "Song Title   123,456,789   +12,345   ..."
+    // or "Song Title\t123,456,789\t+12,345"
+    // Numbers can have commas as thousand separators
+
+    // Split by tabs first, then by 2+ spaces
+    let parts = line.includes('\t') ? line.split('\t') : line.split(/\s{2,}/);
+    parts = parts.map(p => p.trim()).filter(p => p.length > 0);
+    if (parts.length < 2) continue;
+
+    // Find the title (first non-numeric part)
+    const title = parts[0].replace(/^\d+\.?\s*/, '').trim(); // remove leading rank number
+    if (!title || title.match(/^[\d,+\-▲▼]+$/)) continue;
+
+    // Find streams: largest number in the row
+    let streams = 0, daily = 0;
+    for (let i = 1; i < parts.length; i++) {
+      const clean = parts[i].replace(/[,\s+▲▼]/g, '').trim();
+      const n = parseInt(clean);
+      if (!isNaN(n) && n > 0) {
+        if (n > streams) { daily = streams; streams = n; }
+        else if (n > daily && n < streams) daily = n;
+      }
+    }
+
+    if (streams > 10000) { // filter out junk
+      kworbParsed.push({ title, streams, daily });
+    }
+  }
+
+  const preview = document.getElementById('kworb-parse-preview');
+  if (!kworbParsed.length) {
+    preview.style.display = 'block';
+    preview.innerHTML = `<div style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);border-radius:10px;padding:0.9rem;font-size:0.78rem;color:var(--text-muted)">
+      ⚠ No se pudieron parsear canciones. Asegúrate de copiar toda la tabla de Kworb (incluyendo los números).
+    </div>`;
+    document.getElementById('kworb-save-btn').style.display = 'none';
+    return;
+  }
+
+  // Show preview table
+  preview.style.display = 'block';
+  preview.innerHTML = `
+    <div style="font-size:0.75rem;color:#1db954;font-weight:600;margin-bottom:0.6rem">✅ ${kworbParsed.length} canciones detectadas — revisa antes de guardar:</div>
+    <div style="max-height:260px;overflow-y:auto;border:1px solid var(--border-dim);border-radius:10px;background:#0a0a0a">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="padding:0.5rem 0.7rem;font-size:0.62rem;color:var(--primary-red);text-align:left;border-bottom:1px solid var(--border-dim);font-family:'Orbitron',monospace">CANCIÓN</th>
+          <th style="padding:0.5rem 0.7rem;font-size:0.62rem;color:var(--primary-red);text-align:right;border-bottom:1px solid var(--border-dim);font-family:'Orbitron',monospace">TOTAL</th>
+          <th style="padding:0.5rem 0.7rem;font-size:0.62rem;color:var(--primary-red);text-align:right;border-bottom:1px solid var(--border-dim);font-family:'Orbitron',monospace">DAILY</th>
+          <th style="padding:0.5rem 0.7rem;font-size:0.62rem;color:var(--primary-red);text-align:center;border-bottom:1px solid var(--border-dim);font-family:'Orbitron',monospace">MATCH</th>
+        </tr></thead>
+        <tbody>${kworbParsed.map(r => `
+          <tr>
+            <td style="padding:0.45rem 0.7rem;font-size:0.75rem;color:var(--text-main);border-bottom:1px solid rgba(255,255,255,0.03)">${escapeHtml(r.title)}</td>
+            <td style="padding:0.45rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:#1db954;text-align:right;border-bottom:1px solid rgba(255,255,255,0.03)">${fmtCompact(r.streams)}</td>
+            <td style="padding:0.45rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--text-dim);text-align:right;border-bottom:1px solid rgba(255,255,255,0.03)">${r.daily ? '+'+fmtCompact(r.daily) : '—'}</td>
+            <td style="padding:0.45rem 0.7rem;text-align:center;border-bottom:1px solid rgba(255,255,255,0.03)" id="match-${escapeHtml(r.title).replace(/\s/g,'_')}">⏳</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  document.getElementById('kworb-save-btn').style.display = 'inline-flex';
+}
+
+function normalizeTitle(t) {
+  return t.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function titlesMatch(dbTitle, kworbTitle) {
+  const a = normalizeTitle(dbTitle);
+  const b = normalizeTitle(kworbTitle);
+  if (a === b) return true;
+  if (a.includes(b) || b.includes(a)) return true;
+  // Check word overlap (>=50%)
+  const wa = new Set(a.split(' '));
+  const wb = b.split(' ');
+  const overlap = wb.filter(w => wa.has(w) && w.length > 2).length;
+  return overlap >= Math.ceil(wb.length * 0.5);
+}
+
+async function saveKworbData() {
+  if (!kworbParsed.length) { showToast('Procesa los datos primero', true); return; }
+  const btn = document.getElementById('kworb-save-btn');
+  btn.disabled = true; btn.textContent = '⏳ Guardando...';
+
+  // Load all songs from DB
+  const { data: dbSongs } = await sb.from('spotify_songs').select('id, title, total_streams');
+  if (!dbSongs || !dbSongs.length) { showToast('No hay canciones en la DB', true); btn.disabled = false; return; }
+
   const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-  const yStr = yesterday.toISOString().slice(0, 10);
+  let matched = 0, saved = 0, unmatched = [];
 
-  // Cargar todos los valores actuales de la DB para usar como base de daily
-  const { data: currentSongs } = await sb.from('spotify_songs').select('id, total_streams, spotify_url');
-  const currentMap = {};
-  if (currentSongs) currentSongs.forEach(s => currentMap[s.id] = s);
+  for (const krow of kworbParsed) {
+    // Find matching DB song
+    const dbSong = dbSongs.find(s => titlesMatch(s.title, krow.title));
+    const matchCell = document.getElementById('match-' + escapeHtml(krow.title).replace(/\s/g,'_'));
 
-  let saved = 0, errors = 0;
-  for (const input of inputs) {
-    const id = parseInt(input.dataset.id);
-    const newStreams = parseInt(input.value.replace(/\D/g, '')) || 0;
+    if (!dbSong) {
+      unmatched.push(krow.title);
+      if (matchCell) matchCell.textContent = '❌';
+      continue;
+    }
 
-    // Buscar snapshot de ayer; si no existe, usar valor actual de la DB
-    const { data: snap } = await sb.from('spotify_snapshots').select('total_streams').eq('song_id', id).eq('snapshot_date', yStr).maybeSingle();
-    const baseStreams = snap ? snap.total_streams : (currentMap[id]?.total_streams || 0);
-    const daily = (baseStreams && newStreams > baseStreams) ? newStreams - baseStreams : 0;
+    matched++;
+    if (matchCell) matchCell.textContent = '✅';
 
-    // Preservar spotify_url — NO tocarla en el bulk update
+    const oldStreams = dbSong.total_streams || 0;
+    const daily = (krow.daily > 0) ? krow.daily : ((krow.streams > oldStreams) ? krow.streams - oldStreams : 0);
+
     const { error } = await sb.from('spotify_songs').update({
-      total_streams: newStreams,
+      total_streams: krow.streams,
       daily_streams: daily
-    }).eq('id', id);
+    }).eq('id', dbSong.id);
 
     if (!error) {
       await sb.from('spotify_snapshots').upsert(
-        { song_id: id, snapshot_date: today, total_streams: newStreams },
+        { song_id: dbSong.id, snapshot_date: today, total_streams: krow.streams },
         { onConflict: 'song_id,snapshot_date' }
       );
       saved++;
-    } else {
-      console.error('Bulk save error for id', id, error);
-      errors++;
     }
   }
-  showToast(errors ? `${saved} guardados, ${errors} errores` : `✅ ${saved} canciones actualizadas`);
+
+  btn.disabled = false; btn.textContent = '💾 Guardar todo';
+
+  const msg = unmatched.length
+    ? `✅ ${saved}/${matched} guardadas · ${unmatched.length} sin match`
+    : `✅ ${saved} canciones actualizadas`;
+  showToast(msg);
+
+  if (unmatched.length) {
+    console.warn('Sin match en DB:', unmatched);
+  }
+
   await loadAdminSpotifySongs();
   await loadSpotifySongsPublic();
 }
