@@ -8,7 +8,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,200;14..32,400;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js" onerror="loadXlsxFallback()"></script>
+<script>
+function loadXlsxFallback(){
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+  document.head.appendChild(s);
+}
+</script>
 <style>
 /* ========== THEME SYSTEM ========== */
 :root {
@@ -1846,7 +1853,13 @@ function handleXLFile(file) {
   const statusEl = document.getElementById('xl-status');
 
   if (ext !== 'csv' && typeof XLSX === 'undefined') {
-    statusEl.textContent = '❌ La librería Excel no cargó. Intenta refrescar la página o usa un archivo .csv';
+    statusEl.textContent = '⏳ Cargando librería Excel, espera un momento...';
+    // Try to load it dynamically and retry
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = () => { statusEl.textContent = '✅ Librería cargada. Procesando...'; setTimeout(() => handleXLFile(file), 300); };
+    s.onerror = () => { statusEl.textContent = '❌ No se pudo cargar la librería Excel. Usa un archivo .csv en su lugar.'; };
+    document.head.appendChild(s);
     return;
   }
 
