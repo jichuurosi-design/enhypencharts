@@ -1821,6 +1821,32 @@ const ENHYPEN_DISCOGRAPHY = [
   { title: "事件的起源 (El Inicio del Caso - Chino)", streams: 106457, daily: 220, spotify_url: "" },
 ]; // { id, title, total_streams, daily_streams }
 
+async function preloadDiscography() {
+  const statusEl = document.getElementById('preload-status');
+  statusEl.textContent = '⏳ Cargando discografía...';
+  const { data: existing } = await sb.from('spotify_songs').select('title');
+  const existingTitles = (existing || []).map(s => s.title.toLowerCase().trim());
+  const { data: sortData } = await sb.from('spotify_songs').select('sort_order').order('sort_order', { ascending: false }).limit(1);
+  let maxSort = (sortData && sortData[0]) ? sortData[0].sort_order : 0;
+  const today = new Date().toISOString().slice(0, 10);
+  let inserted = 0, skipped = 0, errors = 0;
+  for (const song of ENHYPEN_DISCOGRAPHY) {
+    if (existingTitles.includes(song.title.toLowerCase().trim())) { skipped++; continue; }
+    const { data: ins, error } = await sb.from('spotify_songs').insert({
+      title: song.title, total_streams: song.streams || 0, daily_streams: song.daily || 0,
+      spotify_url: song.spotify_url || null, sort_order: ++maxSort
+    }).select('id').single();
+    if (!error && ins) {
+      await sb.from('spotify_snapshots').upsert({ song_id: ins.id, snapshot_date: today, total_streams: song.streams || 0 }, { onConflict: 'song_id,snapshot_date' });
+      inserted++;
+    } else { errors++; }
+  }
+  statusEl.textContent = `✅ ${inserted} canciones cargadas · ${skipped} ya existían${errors ? ` · ${errors} errores` : ''}`;
+  showToast(`Discografía cargada: ${inserted} canciones ✅`);
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
+}
+
 // ========== PASTE TABLE ==========
 let pasteParsed = [];
 
@@ -1991,9 +2017,10 @@ async function loadSpotifyAlbumsPublic() {
 }
 
 async function loadAdminAlbums() {
-  const { data } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
+  const { data, error } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
   const container = document.getElementById('admin-albums-list');
   if (!container) return;
+  if (error) { container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">⚠️ Tabla spotify_albums no encontrada. Crea la tabla en Supabase o precarga la discografía.</p>'; return; }
   if (!data || data.length === 0) { container.innerHTML = '<p style="color:var(--text-muted)">No hay álbumes. Usa "Precargar discografía".</p>'; return; }
   container.innerHTML = data.map(a => `<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${escapeHtml(a.title)}</div><div class="ali-sub">${fmt(a.total_streams)} streams | +${fmt(a.daily_streams)} hoy | ${a.year||''}</div></div><div class="ali-actions"><button class="btn btn-sm btn-danger" onclick="deleteAlbum(${a.id})">✕</button></div></div>`).join('');
 }
@@ -2001,7 +2028,8 @@ async function loadAdminAlbums() {
 async function loadBulkAlbumsList() {
   const container = document.getElementById('bulk-albums-list');
   if (!container) return;
-  const { data } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
+  const { data, error } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
+  if (error) { container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">⚠️ Tabla spotify_albums no encontrada. Primero precarga los álbumes.</p>'; return; }
   if (!data || data.length === 0) { container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">No hay álbumes. Primero precarga la discografía.</p>'; return; }
   let html = '<div style="display:grid;gap:0.5rem">';
   data.forEach(a => {
@@ -2380,7 +2408,10 @@ async function loadSpChartsPublic() {
     document.getElementById('spTableTitle').innerHTML = `${title} <span class="sp-count-badge">${count} item${count !== 1 ? 's' : ''}</span>`;
     const now = new Date();
     document.getElementById('spUpdatedTime').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    if (error) throw error;
+    if (error) {
+      wrap.innerHTML = `<div class="sp-empty">⚠️ Tabla sp_charts no creada aún. Créala en Supabase con el SQL del setup.</div>`;
+      return;
+    }
     if (!data || data.length === 0) {
       wrap.innerHTML = `<div class="sp-empty">Sin entradas para esta combinación.<br><span style="font-size:0.7rem">El admin puede agregar posiciones desde el panel ⚙️</span></div>`;
       return;
@@ -2441,7 +2472,11 @@ async function loadSpChartsPublic() {
 async function loadAdminSpCharts() {
   const container = document.getElementById('admin-sp-charts-list');
   if (!container) return;
-  const { data } = await sb.from('sp_charts').select('*').order('chart_type').order('region').order('rank_position');
+  const { data, error } = await sb.from('sp_charts').select('*').order('chart_type').order('region').order('rank_position');
+  if (error) {
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">⚠️ Tabla sp_charts no encontrada. Créala en Supabase con el SQL del setup.</p>';
+    return;
+  }
   if (!data || data.length === 0) {
     container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">No hay entradas aún. Agrega posiciones de ENHYPEN desde el formulario de abajo.</p>';
     return;
