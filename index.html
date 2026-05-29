@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,200;14..32,400;14..32,600;14..32,700&family=Orbitron:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 /* ========== THEME SYSTEM ========== */
 :root {
@@ -1327,44 +1328,51 @@ footer a:hover { color: var(--primary-red); }
       </div>
       <div class="admin-card">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:0.8rem">
-          <h3 style="margin:0">⚡ Tabla de streams</h3>
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-            <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Ver en Kworb</a>
-            <button class="btn btn-ghost btn-sm" onclick="loadStreamTable()">🔄 Recargar</button>
+          <h3 style="margin:0">📊 Actualizar desde Excel</h3>
+          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Ver en Kworb</a>
+        </div>
+        <div style="background:#111;border:1px solid var(--border-dim);border-radius:12px;padding:0.9rem;margin-bottom:1rem">
+          <div style="font-size:0.72rem;color:var(--text-muted);line-height:1.9">
+            <strong style="color:var(--text-main)">Cómo usar:</strong><br>
+            1. Descarga la tabla de Kworb o edita tu propio Excel<br>
+            2. El archivo debe tener 3 columnas: <code style="background:#1a1a1a;padding:1px 6px;border-radius:3px">Song Title · Streams · Daily</code><br>
+            3. Sube el archivo — se procesará automáticamente y actualizará Supabase
           </div>
         </div>
-        <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:1rem">Edita los streams y daily directamente en la tabla. Puedes copiar y pegar desde Kworb o Excel. Cuando termines presiona <strong style="color:#1db954">Guardar todo</strong>.</p>
 
-        <!-- Paste from kworb/excel shortcut -->
-        <details style="margin-bottom:1rem">
-          <summary style="font-size:0.75rem;color:var(--text-dim);cursor:pointer;padding:0.5rem 0">📋 Pegar desde Kworb / Excel (opcional)</summary>
-          <div style="margin-top:0.7rem;background:#111;border:1px solid var(--border-dim);border-radius:10px;padding:0.9rem">
-            <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.6rem">Copia la tabla de Kworb o Excel (formato: <code style="background:#1a1a1a;padding:1px 5px;border-radius:3px">Título &nbsp; Streams &nbsp; Daily</code>) y pégala aquí. Se rellenarán los campos automáticamente.</p>
-            <textarea id="kworb-paste-input" class="input" rows="5" placeholder="Pega aquí..." style="resize:vertical;font-size:0.72rem;font-family:'DM Mono',monospace"></textarea>
-            <button class="btn btn-sm" style="margin-top:0.6rem" onclick="pasteIntoTable()">📥 Autorellenar tabla</button>
-            <div id="paste-feedback" style="font-size:0.72rem;margin-top:0.5rem;display:none"></div>
-          </div>
-        </details>
-
-        <!-- Excel-like table -->
-        <div style="overflow-x:auto;border:1px solid var(--border-dim);border-radius:12px">
-          <table id="stream-edit-table" style="width:100%;border-collapse:collapse;min-width:520px">
-            <thead>
-              <tr style="background:#111">
-                <th style="padding:0.6rem 0.8rem;font-size:0.62rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:left;border-bottom:1px solid var(--border-dim);width:40%">CANCIÓN</th>
-                <th style="padding:0.6rem 0.8rem;font-size:0.62rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim);width:28%">TOTAL STREAMS</th>
-                <th style="padding:0.6rem 0.8rem;font-size:0.62rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim);width:22%">DAILY</th>
-                <th style="padding:0.6rem 0.8rem;font-size:0.62rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:center;border-bottom:1px solid var(--border-dim);width:10%">✏️</th>
-              </tr>
-            </thead>
-            <tbody id="stream-table-body">
-              <tr><td colspan="4" style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.8rem"><div class="spin" style="display:inline-block;width:18px;height:18px;border:2px solid var(--border-dim);border-top-color:var(--primary-red);border-radius:50%;animation:spin .7s linear infinite;margin-right:0.5rem;vertical-align:middle"></div>Cargando...</td></tr>
-            </tbody>
-          </table>
+        <!-- Upload zone -->
+        <div id="xl-dropzone" style="border:2px dashed var(--border-dim);border-radius:14px;padding:2rem;text-align:center;cursor:pointer;transition:.2s;margin-bottom:1rem"
+          onclick="document.getElementById('xl-file-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='#1db954'"
+          ondragleave="this.style.borderColor=''"
+          ondrop="event.preventDefault();this.style.borderColor='';handleXLDrop(event)">
+          <div style="font-size:2rem;margin-bottom:0.5rem">📂</div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text-main)">Haz clic o arrastra tu Excel aquí</div>
+          <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem">.xlsx · .xls · .csv</div>
         </div>
-        <div style="margin-top:1rem;display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap">
-          <button class="btn" onclick="saveStreamTable()">💾 Guardar todo</button>
-          <span id="stream-table-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
+        <input type="file" id="xl-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleXLFile(this.files[0])">
+
+        <!-- Preview -->
+        <div id="xl-preview" style="display:none;margin-bottom:1rem">
+          <div style="font-size:0.75rem;font-weight:600;color:var(--text-dim);margin-bottom:0.6rem" id="xl-preview-label"></div>
+          <div style="overflow-x:auto;max-height:280px;overflow-y:auto;border:1px solid var(--border-dim);border-radius:10px">
+            <table style="width:100%;border-collapse:collapse;min-width:420px">
+              <thead><tr style="background:#111;position:sticky;top:0">
+                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:left;border-bottom:1px solid var(--border-dim)">CANCIÓN</th>
+                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim)">STREAMS</th>
+                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim)">DAILY</th>
+                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:center;border-bottom:1px solid var(--border-dim)">ESTADO</th>
+              </tr></thead>
+              <tbody id="xl-preview-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap">
+          <button class="btn" id="xl-save-btn" onclick="saveXLData()" style="display:none">💾 Guardar en Supabase</button>
+          <button class="btn btn-ghost btn-sm" id="xl-clear-btn" onclick="clearXL()" style="display:none">✕ Limpiar</button>
+          <span id="xl-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
         </div>
       </div>
       <div class="admin-card">
@@ -1824,334 +1832,146 @@ const ENHYPEN_DISCOGRAPHY = [
   { title: "事件的起源 (El Inicio del Caso - Chino)", streams: 106457, daily: 220, spotify_url: "" },
 ]; // { id, title, total_streams, daily_streams }
 
-async function loadStreamTable() {
-  const tbody = document.getElementById('stream-table-body');
-  if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="4" style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.8rem"><div class="spin" style="display:inline-block;width:18px;height:18px;border:2px solid var(--border-dim);border-top-color:var(--primary-red);border-radius:50%;animation:spin .7s linear infinite;margin-right:0.5rem;vertical-align:middle"></div>Cargando...</td></tr>`;
+// ========== EXCEL UPLOAD SYSTEM ==========
+let xlParsed = [];
 
-  const { data } = await sb.from('spotify_songs').select('id,title,total_streams,daily_streams').order('total_streams', { ascending: false });
-  if (!data || !data.length) {
-    tbody.innerHTML = `<tr><td colspan="4" style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:0.8rem">No hay canciones. Precarga la discografía primero.</td></tr>`;
+function handleXLDrop(e) {
+  const file = e.dataTransfer.files[0];
+  if (file) handleXLFile(file);
+}
+
+function handleXLFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  document.getElementById('xl-status').textContent = '⏳ Leyendo archivo...';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      let rows = [];
+      if (ext === 'csv') {
+        const text = new TextDecoder().decode(e.target.result);
+        rows = text.trim().split('\n').map(l => l.split(',').map(c => c.replace(/^"|"$/g,'').trim()));
+      } else {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      }
+      parseXLRows(rows, file.name);
+    } catch(err) {
+      document.getElementById('xl-status').textContent = '❌ Error: ' + err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseXLRows(rows, filename) {
+  xlParsed = [];
+  // Find header row
+  let dataStart = 0;
+  let titleCol = -1, streamsCol = -1, dailyCol = -1;
+  for (let i = 0; i < Math.min(5, rows.length); i++) {
+    const hrow = rows[i].map(c => String(c).toLowerCase());
+    const tIdx = hrow.findIndex(c => c.includes('song') || c.includes('title') || c.includes('canc'));
+    const sIdx = hrow.findIndex(c => c.includes('stream'));
+    const dIdx = hrow.findIndex(c => c.includes('daily') || c.includes('dia'));
+    if (tIdx >= 0) { titleCol = tIdx; streamsCol = sIdx >= 0 ? sIdx : tIdx+1; dailyCol = dIdx >= 0 ? dIdx : tIdx+2; dataStart = i+1; break; }
+  }
+  // Fallback: detect blank first column
+  if (titleCol < 0) {
+    const r = rows[1] || rows[0] || [];
+    const blank0 = String(r[0]||'').trim() === '';
+    titleCol = blank0 ? 1 : 0; streamsCol = blank0 ? 2 : 1; dailyCol = blank0 ? 3 : 2;
+  }
+
+  for (let i = dataStart; i < rows.length; i++) {
+    const row = rows[i];
+    const title = String(row[titleCol]||'').trim();
+    if (!title || title.toLowerCase() === 'nan' || title.toLowerCase() === 'song title') continue;
+
+    const streamsRaw = String(row[streamsCol]||'0').replace(/[^0-9.]/g,'');
+    let streams = parseFloat(streamsRaw)||0;
+    if (streams < 10000 && streams > 0) streams = Math.round(streams*1000);
+    else streams = Math.round(streams);
+
+    const dailyRaw = String(row[dailyCol]||'0');
+    const dailyF = parseFloat(dailyRaw.replace(/[^0-9.]/g,''))||0;
+    const hasDecimal = dailyRaw.includes('.') && dailyF < 1000 && !dailyRaw.match(/\.0+$/);
+    const daily = hasDecimal ? Math.round(dailyF*1000) : Math.round(dailyF);
+
+    if (streams > 0) xlParsed.push({ title, streams, daily });
+  }
+
+  if (!xlParsed.length) {
+    document.getElementById('xl-status').textContent = '❌ No se encontraron datos. Verifica las columnas: Song Title, Streams, Daily.';
     return;
   }
-  streamTableData = data;
-  renderStreamTable();
+  renderXLPreview(filename);
 }
 
-function renderStreamTable() {
-  const tbody = document.getElementById('stream-table-body');
-  tbody.innerHTML = streamTableData.map((s, i) => `
-    <tr class="stream-row" id="srow-${s.id}">
-      <td style="padding:0.4rem 0.8rem !important">
-        <div class="stream-title">${escapeHtml(s.title)}</div>
-        <div class="stream-prev">Actual: ${fmt(s.total_streams || 0)}</div>
-      </td>
-      <td>
-        <input class="stream-cell" type="text"
-          data-id="${s.id}" data-field="total_streams" data-orig="${s.total_streams||0}"
-          value="${s.total_streams||0}"
-          oninput="markModified(this)"
-          onkeydown="tableNav(event,${i},0)">
-      </td>
-      <td>
-        <input class="stream-cell" type="text"
-          data-id="${s.id}" data-field="daily_streams" data-orig="${s.daily_streams||0}"
-          value="${s.daily_streams||0}"
-          oninput="markModified(this)"
-          onkeydown="tableNav(event,${i},1)">
-      </td>
-      <td style="text-align:center;padding:0 0.4rem !important">
-        <span id="srow-status-${s.id}" style="font-size:0.75rem"></span>
-      </td>
-    </tr>`).join('');
+async function renderXLPreview(filename) {
+  const { data: dbSongs } = await sb.from('spotify_songs').select('id,title,total_streams');
+  const noMatch = xlParsed.filter(r => !dbSongs?.find(s => titlesMatch(s.title, r.title))).length;
+
+  document.getElementById('xl-preview-label').textContent = `📄 ${filename} · ${xlParsed.length} canciones`;
+  document.getElementById('xl-preview-body').innerHTML = xlParsed.map(r => {
+    const match = dbSongs?.find(s => titlesMatch(s.title, r.title));
+    const st = match
+      ? `<span style="color:#1db954;font-size:0.72rem">✅ match</span>`
+      : `<span style="color:var(--primary-red);font-size:0.72rem">⚠ nuevo</span>`;
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+      <td style="padding:0.4rem 0.7rem;font-size:0.77rem;color:var(--text-main)">${escapeHtml(r.title)}</td>
+      <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:#1db954;text-align:right">${fmtCompact(r.streams)}</td>
+      <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--text-dim);text-align:right">${r.daily?'+'+fmtCompact(r.daily):'—'}</td>
+      <td style="padding:0.4rem 0.7rem;text-align:center">${st}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('xl-status').textContent = `${xlParsed.length} canciones · ${xlParsed.length-noMatch} actualizarán · ${noMatch} serán nuevas`;
+  document.getElementById('xl-preview').style.display = 'block';
+  document.getElementById('xl-save-btn').style.display = 'inline-flex';
+  document.getElementById('xl-clear-btn').style.display = 'inline-flex';
+  document.getElementById('xl-dropzone').style.borderColor = '#1db954';
 }
 
-function markModified(input) {
-  const row = input.closest('.stream-row');
-  row.classList.add('modified');
-}
-
-// Arrow key / Enter navigation between cells
-function tableNav(e, rowIdx, colIdx) {
-  if (e.key === 'Enter' || e.key === 'ArrowDown') {
-    e.preventDefault();
-    const next = document.querySelector(`#stream-table-body tr:nth-child(${rowIdx+2}) input[data-field="${colIdx===0?'total_streams':'daily_streams'}"]`);
-    if (next) next.focus();
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    const prev = document.querySelector(`#stream-table-body tr:nth-child(${rowIdx}) input[data-field="${colIdx===0?'total_streams':'daily_streams'}"]`);
-    if (prev) prev.focus();
-  } else if (e.key === 'Tab') {
-    // default tab behavior is fine
-  }
-}
-
-async function saveStreamTable() {
-  const inputs = document.querySelectorAll('#stream-table-body .stream-cell');
-  const statusEl = document.getElementById('stream-table-status');
-  statusEl.textContent = 'Guardando...';
-
-  // Group by song id
-  const changes = {};
-  inputs.forEach(inp => {
-    const id = inp.dataset.id;
-    const field = inp.dataset.field;
-    const val = parseInt(inp.value.replace(/[^\d]/g,'')) || 0;
-    if (!changes[id]) changes[id] = {};
-    changes[id][field] = val;
-  });
-
-  const today = new Date().toISOString().slice(0,10);
-  let saved = 0, errors = 0;
-
-  for (const [id, fields] of Object.entries(changes)) {
-    const statusCell = document.getElementById(`srow-status-${id}`);
-    const { error } = await sb.from('spotify_songs').update(fields).eq('id', id);
-    if (!error) {
-      saved++;
-      if (statusCell) statusCell.textContent = '✅';
-      if (fields.total_streams) {
-        await sb.from('spotify_snapshots').upsert(
-          { song_id: parseInt(id), snapshot_date: today, total_streams: fields.total_streams },
-          { onConflict: 'song_id,snapshot_date' }
-        );
-      }
-      // Update orig value and remove modified
-      const row = document.getElementById(`srow-${id}`);
-      if (row) {
-        row.classList.remove('modified');
-        row.querySelector('[data-field="total_streams"]')?.setAttribute('data-orig', fields.total_streams || 0);
-        row.querySelector('[data-field="daily_streams"]')?.setAttribute('data-orig', fields.daily_streams || 0);
-        // Update "Actual" subtitle
-        const prevEl = row.querySelector('.stream-prev');
-        if (prevEl && fields.total_streams) prevEl.textContent = `Actual: ${fmt(fields.total_streams)}`;
-      }
-    } else {
-      errors++;
-      if (statusCell) statusCell.textContent = '❌';
-    }
-  }
-
-  statusEl.textContent = errors ? `${saved} guardadas · ${errors} errores` : `✅ ${saved} canciones guardadas`;
-  setTimeout(() => { statusEl.textContent = ''; }, 4000);
-  await loadAdminSpotifySongs();
-  await loadSpotifySongsPublic();
-}
-
-// ---- Paste autofill from Kworb/Excel ----
-function normalizeTitle(t) {
-  return t.toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
-}
-function titlesMatch(a, b) {
-  const na = normalizeTitle(a), nb = normalizeTitle(b);
-  if (na === nb) return true;
-  if (na.includes(nb) || nb.includes(na)) return true;
-  const wa = new Set(na.split(' ')), wb = nb.split(' ');
-  const overlap = wb.filter(w => wa.has(w) && w.length > 2).length;
-  return overlap >= Math.ceil(wb.length * 0.5);
-}
-
-function pasteIntoTable() {
-  const raw = document.getElementById('kworb-paste-input').value.trim();
-  const feedback = document.getElementById('paste-feedback');
-  feedback.style.display = 'block';
-  if (!raw) { feedback.innerHTML = '<span style="color:var(--primary-red)">⚠ Pega algo primero</span>'; return; }
-
-  // Parse lines: handle tab, pipe, or multi-space separated
-  const lines = raw.split('\n').map(l => l.trim()).filter(l => l && !l.match(/^[-|:\s]+$/));
-  let matched = 0, skipped = 0;
-
-  for (const line of lines) {
-    // Split by tab, then pipe, then 2+ spaces
-    let parts;
-    if (line.includes('\t')) parts = line.split('\t');
-    else if (line.includes('|')) parts = line.split('|');
-    else parts = line.split(/\s{2,}/);
-    parts = parts.map(p => p.trim()).filter(p => p);
-    if (parts.length < 2) continue;
-
-    // Title is first part (remove leading rank like "1." or "#1")
-    const title = parts[0].replace(/^[#\d]+[.\s]*/, '').trim();
-    if (!title || title.toLowerCase().includes('song title') || title.toLowerCase().includes('title')) continue;
-
-    // Numbers: find all valid ones
-    const nums = [];
-    for (let i = 1; i < parts.length; i++) {
-      const n = parseInt(parts[i].replace(/[^0-9]/g,''));
-      if (!isNaN(n) && n > 1000) nums.push(n);
-    }
-    if (!nums.length) continue;
-    const streams = Math.max(...nums);
-    const daily = nums.length > 1 ? nums.find(n => n < streams) || 0 : 0;
-
-    // Find matching row in table
-    const row = Array.from(document.querySelectorAll('#stream-table-body .stream-row')).find(r => {
-      const t = r.querySelector('.stream-title')?.textContent || '';
-      return titlesMatch(t, title);
-    });
-
-    if (row) {
-      const sInput = row.querySelector('[data-field="total_streams"]');
-      const dInput = row.querySelector('[data-field="daily_streams"]');
-      if (sInput) { sInput.value = streams; sInput.dispatchEvent(new Event('input')); }
-      if (dInput && daily) { dInput.value = daily; dInput.dispatchEvent(new Event('input')); }
-      matched++;
-    } else skipped++;
-  }
-
-  feedback.innerHTML = matched
-    ? `<span style="color:#1db954">✅ ${matched} canciones rellenadas${skipped ? ` · ${skipped} sin match` : ''}. Revisa y presiona <strong>Guardar todo</strong>.</span>`
-    : `<span style="color:var(--primary-red)">⚠ No se encontraron matches. Verifica el formato (Título, Streams, Daily).</span>`;
-}
-
-function parseAndPreviewKworb() {
-  const raw = document.getElementById('kworb-paste-input').value.trim();
-  if (!raw) { showToast('Pega el contenido de Kworb primero', true); return; }
-
-  kworbParsed = [];
-  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 2);
-
-  for (const line of lines) {
-    // Kworb format (tab or multiple spaces):
-    // "Song Title   123,456,789   +12,345   ..."
-    // or "Song Title\t123,456,789\t+12,345"
-    // Numbers can have commas as thousand separators
-
-    // Split by tabs first, then by 2+ spaces
-    let parts = line.includes('\t') ? line.split('\t') : line.split(/\s{2,}/);
-    parts = parts.map(p => p.trim()).filter(p => p.length > 0);
-    if (parts.length < 2) continue;
-
-    // Find the title (first non-numeric part)
-    const title = parts[0].replace(/^\d+\.?\s*/, '').trim(); // remove leading rank number
-    if (!title || title.match(/^[\d,+\-▲▼]+$/)) continue;
-
-    // Find streams: largest number in the row
-    let streams = 0, daily = 0;
-    for (let i = 1; i < parts.length; i++) {
-      const clean = parts[i].replace(/[,\s+▲▼]/g, '').trim();
-      const n = parseInt(clean);
-      if (!isNaN(n) && n > 0) {
-        if (n > streams) { daily = streams; streams = n; }
-        else if (n > daily && n < streams) daily = n;
-      }
-    }
-
-    if (streams > 10000) { // filter out junk
-      kworbParsed.push({ title, streams, daily });
-    }
-  }
-
-  const preview = document.getElementById('kworb-parse-preview');
-  if (!kworbParsed.length) {
-    preview.style.display = 'block';
-    preview.innerHTML = `<div style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);border-radius:10px;padding:0.9rem;font-size:0.78rem;color:var(--text-muted)">
-      ⚠ No se pudieron parsear canciones. Asegúrate de copiar toda la tabla de Kworb (incluyendo los números).
-    </div>`;
-    document.getElementById('kworb-save-btn').style.display = 'none';
-    return;
-  }
-
-  // Show preview table
-  preview.style.display = 'block';
-  preview.innerHTML = `
-    <div style="font-size:0.75rem;color:#1db954;font-weight:600;margin-bottom:0.6rem">✅ ${kworbParsed.length} canciones detectadas — revisa antes de guardar:</div>
-    <div style="max-height:260px;overflow-y:auto;border:1px solid var(--border-dim);border-radius:10px;background:#0a0a0a">
-      <table style="width:100%;border-collapse:collapse">
-        <thead><tr>
-          <th style="padding:0.5rem 0.7rem;font-size:0.62rem;color:var(--primary-red);text-align:left;border-bottom:1px solid var(--border-dim);font-family:'Orbitron',monospace">CANCIÓN</th>
-          <th style="padding:0.5rem 0.7rem;font-size:0.62rem;color:var(--primary-red);text-align:right;border-bottom:1px solid var(--border-dim);font-family:'Orbitron',monospace">TOTAL</th>
-          <th style="padding:0.5rem 0.7rem;font-size:0.62rem;color:var(--primary-red);text-align:right;border-bottom:1px solid var(--border-dim);font-family:'Orbitron',monospace">DAILY</th>
-          <th style="padding:0.5rem 0.7rem;font-size:0.62rem;color:var(--primary-red);text-align:center;border-bottom:1px solid var(--border-dim);font-family:'Orbitron',monospace">MATCH</th>
-        </tr></thead>
-        <tbody>${kworbParsed.map(r => `
-          <tr>
-            <td style="padding:0.45rem 0.7rem;font-size:0.75rem;color:var(--text-main);border-bottom:1px solid rgba(255,255,255,0.03)">${escapeHtml(r.title)}</td>
-            <td style="padding:0.45rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:#1db954;text-align:right;border-bottom:1px solid rgba(255,255,255,0.03)">${fmtCompact(r.streams)}</td>
-            <td style="padding:0.45rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--text-dim);text-align:right;border-bottom:1px solid rgba(255,255,255,0.03)">${r.daily ? '+'+fmtCompact(r.daily) : '—'}</td>
-            <td style="padding:0.45rem 0.7rem;text-align:center;border-bottom:1px solid rgba(255,255,255,0.03)" id="match-${escapeHtml(r.title).replace(/\s/g,'_')}">⏳</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
-  document.getElementById('kworb-save-btn').style.display = 'inline-flex';
-}
-
-function normalizeTitle(t) {
-  return t.toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function titlesMatch(dbTitle, kworbTitle) {
-  const a = normalizeTitle(dbTitle);
-  const b = normalizeTitle(kworbTitle);
-  if (a === b) return true;
-  if (a.includes(b) || b.includes(a)) return true;
-  // Check word overlap (>=50%)
-  const wa = new Set(a.split(' '));
-  const wb = b.split(' ');
-  const overlap = wb.filter(w => wa.has(w) && w.length > 2).length;
-  return overlap >= Math.ceil(wb.length * 0.5);
-}
-
-async function saveKworbData() {
-  if (!kworbParsed.length) { showToast('Procesa los datos primero', true); return; }
-  const btn = document.getElementById('kworb-save-btn');
+async function saveXLData() {
+  if (!xlParsed.length) return;
+  const btn = document.getElementById('xl-save-btn');
+  const statusEl = document.getElementById('xl-status');
   btn.disabled = true; btn.textContent = '⏳ Guardando...';
 
-  // Load all songs from DB
-  const { data: dbSongs } = await sb.from('spotify_songs').select('id, title, total_streams');
-  if (!dbSongs || !dbSongs.length) { showToast('No hay canciones en la DB', true); btn.disabled = false; return; }
+  const { data: dbSongs } = await sb.from('spotify_songs').select('id,title,total_streams,sort_order');
+  const today = new Date().toISOString().slice(0,10);
+  let maxSort = dbSongs?.reduce((m,s)=>Math.max(m,s.sort_order||0),0)||0;
+  let updated=0, inserted=0, errors=0;
 
-  const today = new Date().toISOString().slice(0, 10);
-  let matched = 0, saved = 0, unmatched = [];
-
-  for (const krow of kworbParsed) {
-    // Find matching DB song
-    const dbSong = dbSongs.find(s => titlesMatch(s.title, krow.title));
-    const matchCell = document.getElementById('match-' + escapeHtml(krow.title).replace(/\s/g,'_'));
-
-    if (!dbSong) {
-      unmatched.push(krow.title);
-      if (matchCell) matchCell.textContent = '❌';
-      continue;
-    }
-
-    matched++;
-    if (matchCell) matchCell.textContent = '✅';
-
-    const oldStreams = dbSong.total_streams || 0;
-    const daily = (krow.daily > 0) ? krow.daily : ((krow.streams > oldStreams) ? krow.streams - oldStreams : 0);
-
-    const { error } = await sb.from('spotify_songs').update({
-      total_streams: krow.streams,
-      daily_streams: daily
-    }).eq('id', dbSong.id);
-
-    if (!error) {
-      await sb.from('spotify_snapshots').upsert(
-        { song_id: dbSong.id, snapshot_date: today, total_streams: krow.streams },
-        { onConflict: 'song_id,snapshot_date' }
-      );
-      saved++;
+  for (const r of xlParsed) {
+    const match = dbSongs?.find(s => titlesMatch(s.title, r.title));
+    if (match) {
+      const {error} = await sb.from('spotify_songs').update({ total_streams:r.streams, daily_streams:r.daily }).eq('id',match.id);
+      if (!error) { await sb.from('spotify_snapshots').upsert({song_id:match.id,snapshot_date:today,total_streams:r.streams},{onConflict:'song_id,snapshot_date'}); updated++; }
+      else errors++;
+    } else {
+      const {data:ins,error} = await sb.from('spotify_songs').insert({title:r.title,total_streams:r.streams,daily_streams:r.daily,spotify_url:null,sort_order:++maxSort}).select('id').single();
+      if (!error&&ins) { await sb.from('spotify_snapshots').upsert({song_id:ins.id,snapshot_date:today,total_streams:r.streams},{onConflict:'song_id,snapshot_date'}); inserted++; }
+      else errors++;
     }
   }
 
-  btn.disabled = false; btn.textContent = '💾 Guardar todo';
+  btn.disabled=false; btn.textContent='💾 Guardar en Supabase';
+  const msg = `✅ ${updated} actualizadas · ${inserted} nuevas${errors?` · ${errors} errores`:''}`;
+  statusEl.textContent = msg; showToast(msg);
+  await loadAdminSpotifySongs(); await loadSpotifySongsPublic();
+}
 
-  const msg = unmatched.length
-    ? `✅ ${saved}/${matched} guardadas · ${unmatched.length} sin match`
-    : `✅ ${saved} canciones actualizadas`;
-  showToast(msg);
-
-  if (unmatched.length) {
-    console.warn('Sin match en DB:', unmatched);
-  }
-
-  await loadAdminSpotifySongs();
-  await loadSpotifySongsPublic();
+function clearXL() {
+  xlParsed=[];
+  document.getElementById('xl-preview').style.display='none';
+  document.getElementById('xl-save-btn').style.display='none';
+  document.getElementById('xl-clear-btn').style.display='none';
+  document.getElementById('xl-status').textContent='';
+  document.getElementById('xl-dropzone').style.borderColor='';
+  document.getElementById('xl-file-input').value='';
 }
 
 // ========== ALBUMS ==========
@@ -2736,7 +2556,7 @@ function closeAdmin(){ document.getElementById('admin-panel').classList.remove('
 function showPage(id,el){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active')); if(el) el.classList.add('active'); document.getElementById('nav-links').classList.remove('open'); window.scrollTo(0,0); }
 function toggleMobileNav(){ document.getElementById('nav-links').classList.toggle('open'); }
 function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.getElementById('spotify-chart').style.display=id==='spotify-chart'?'block':'none'; document.getElementById('yt-chart').style.display=id==='yt-chart'?'block':'none'; document.getElementById('apple-chart').style.display=id==='apple-chart'?'block':'none'; }
-function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id==='tab-spotifydata') loadStreamTable(); }
+function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
 // ========== KWORB ARTIST CHART ==========
 const KWORB_ARTIST_SLUG = 'enhypen';
