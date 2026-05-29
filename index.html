@@ -1328,51 +1328,40 @@ footer a:hover { color: var(--primary-red); }
       </div>
       <div class="admin-card">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:0.8rem">
-          <h3 style="margin:0">📊 Actualizar desde Excel</h3>
-          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Ver en Kworb</a>
+          <h3 style="margin:0">📊 Actualización masiva de streams</h3>
+          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Kworb</a>
         </div>
-        <div style="background:#111;border:1px solid var(--border-dim);border-radius:12px;padding:0.9rem;margin-bottom:1rem">
-          <div style="font-size:0.72rem;color:var(--text-muted);line-height:1.9">
-            <strong style="color:var(--text-main)">Cómo usar:</strong><br>
-            1. Descarga la tabla de Kworb o edita tu propio Excel<br>
-            2. El archivo debe tener 3 columnas: <code style="background:#1a1a1a;padding:1px 6px;border-radius:3px">Song Title · Streams · Daily</code><br>
-            3. Sube el archivo — se procesará automáticamente y actualizará Supabase
-          </div>
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-dim);border-radius:12px;padding:0.9rem;margin-bottom:1rem;font-size:0.72rem;color:var(--text-muted);line-height:1.8">
+          <strong style="color:var(--text-main)">Cómo usar:</strong> Ve a Kworb → selecciona toda la tabla (Ctrl+A o arrastra) → copia (Ctrl+C) → pega abajo → Procesar → Guardar.
         </div>
-
-        <!-- Upload zone -->
-        <div id="xl-dropzone" style="border:2px dashed var(--border-dim);border-radius:14px;padding:2rem;text-align:center;cursor:pointer;transition:.2s;margin-bottom:1rem"
-          onclick="document.getElementById('xl-file-input').click()"
-          ondragover="event.preventDefault();this.style.borderColor='#1db954'"
-          ondragleave="this.style.borderColor=''"
-          ondrop="event.preventDefault();this.style.borderColor='';handleXLDrop(event)">
-          <div style="font-size:2rem;margin-bottom:0.5rem">📂</div>
-          <div style="font-size:0.82rem;font-weight:600;color:var(--text-main)">Haz clic o arrastra tu Excel aquí</div>
-          <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem">.xlsx · .xls · .csv</div>
+        <label style="font-size:0.72rem;font-weight:600;color:var(--text-dim);margin-bottom:0.4rem;display:block">Pega la tabla de Kworb aquí</label>
+        <textarea id="paste-area" rows="8" placeholder="| Song Title | Streams | Daily |&#10;| --- | --- | --- |&#10;| Bite Me | 503,978,514 | 268,528 |&#10;..."
+          style="width:100%;background:var(--input-bg);border:1px solid var(--border-dim);border-radius:12px;padding:0.8rem;color:var(--text-main);font-family:monospace;font-size:0.75rem;resize:vertical;outline:none;line-height:1.6;box-sizing:border-box"
+          onfocus="this.style.borderColor='var(--primary-red)'" onblur="this.style.borderColor='var(--border-dim)'"></textarea>
+        <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap;margin-top:0.7rem">
+          <button class="btn" onclick="processPaste()">● Procesar</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('paste-area').value='';document.getElementById('paste-preview').style.display='none';document.getElementById('paste-status').textContent=''">✕ Limpiar</button>
+          <span id="paste-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
         </div>
-        <input type="file" id="xl-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleXLFile(this.files[0])">
-
         <!-- Preview -->
-        <div id="xl-preview" style="display:none;margin-bottom:1rem">
-          <div style="font-size:0.75rem;font-weight:600;color:var(--text-dim);margin-bottom:0.6rem" id="xl-preview-label"></div>
-          <div style="overflow-x:auto;max-height:280px;overflow-y:auto;border:1px solid var(--border-dim);border-radius:10px">
-            <table style="width:100%;border-collapse:collapse;min-width:420px">
-              <thead><tr style="background:#111;position:sticky;top:0">
+        <div id="paste-preview" style="display:none;margin-top:1rem">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--text-dim);margin-bottom:0.5rem" id="paste-preview-label"></div>
+          <div style="overflow-x:auto;max-height:260px;overflow-y:auto;border:1px solid var(--border-dim);border-radius:10px">
+            <table style="width:100%;border-collapse:collapse;min-width:380px">
+              <thead><tr style="background:var(--bg-elevated);position:sticky;top:0">
                 <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:left;border-bottom:1px solid var(--border-dim)">CANCIÓN</th>
                 <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim)">STREAMS</th>
                 <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim)">DAILY</th>
                 <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:center;border-bottom:1px solid var(--border-dim)">ESTADO</th>
               </tr></thead>
-              <tbody id="xl-preview-body"></tbody>
+              <tbody id="paste-preview-body"></tbody>
             </table>
           </div>
-        </div>
-
-        <!-- Actions -->
-        <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap">
-          <button class="btn" id="xl-save-btn" onclick="saveXLData()" style="display:none">💾 Guardar en Supabase</button>
-          <button class="btn btn-ghost btn-sm" id="xl-clear-btn" onclick="clearXL()" style="display:none">✕ Limpiar</button>
-          <span id="xl-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
+          <div style="display:flex;gap:0.7rem;margin-top:0.8rem;flex-wrap:wrap;align-items:center">
+            <button class="btn" onclick="savePasteData()">💾 Guardar en Supabase</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteAllSongs()" style="margin-left:auto">🗑️ Eliminar todas las canciones</button>
+          </div>
+          <div id="paste-save-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem"></div>
         </div>
       </div>
       <div class="admin-card">
@@ -1832,99 +1821,58 @@ const ENHYPEN_DISCOGRAPHY = [
   { title: "事件的起源 (El Inicio del Caso - Chino)", streams: 106457, daily: 220, spotify_url: "" },
 ]; // { id, title, total_streams, daily_streams }
 
-// ========== EXCEL UPLOAD SYSTEM ==========
-let xlParsed = [];
+// ========== PASTE TABLE ==========
+let pasteParsed = [];
 
-function handleXLDrop(e) {
-  const file = e.dataTransfer.files[0];
-  if (file) handleXLFile(file);
-}
+function processPaste() {
+  const text = document.getElementById('paste-area').value.trim();
+  const statusEl = document.getElementById('paste-status');
+  if (!text) { statusEl.textContent = '⚠️ Pega el contenido primero.'; return; }
 
-function handleXLFile(file) {
-  if (!file) return;
-  const ext = file.name.split('.').pop().toLowerCase();
-  const statusEl = document.getElementById('xl-status');
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+  pasteParsed = [];
 
-  if (ext !== 'csv' && typeof XLSX === 'undefined') {
-    statusEl.textContent = '❌ La librería Excel no cargó. Intenta refrescar la página o usa un archivo .csv';
-    return;
-  }
-
-  statusEl.textContent = '⏳ Leyendo archivo...';
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      let rows = [];
-      if (ext === 'csv') {
-        const text = new TextDecoder().decode(e.target.result);
-        // Auto-detect separator: semicolon or comma
-        const firstLine = text.split('\n')[0] || '';
-        const sep = firstLine.includes(';') ? ';' : ',';
-        rows = text.trim().split('\n').map(l =>
-          l.split(sep).map(c => c.replace(/^"|"$/g,'').trim())
-        );
-      } else {
-        const data = new Uint8Array(e.target.result);
-        const wb = XLSX.read(data, { type: 'array' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-      }
-      parseXLRows(rows, file.name);
-    } catch(err) {
-      statusEl.textContent = '❌ Error: ' + err.message;
+  for (const line of lines) {
+    // Support pipe-separated: | Song | 123,456 | 789 |
+    // Support tab-separated (copied from Excel/Kworb directly)
+    let cols;
+    if (line.includes('|')) {
+      cols = line.split('|').map(c => c.trim()).filter(c => c);
+    } else if (line.includes('\t')) {
+      cols = line.split('\t').map(c => c.trim());
+    } else if (line.includes(';')) {
+      cols = line.split(';').map(c => c.trim());
+    } else {
+      cols = line.split(',').map(c => c.trim());
     }
-  };
-  reader.onerror = () => { statusEl.textContent = '❌ No se pudo leer el archivo.'; };
-  reader.readAsArrayBuffer(file);
-}
+    if (cols.length < 2) continue;
 
-function parseXLRows(rows, filename) {
-  xlParsed = [];
-  // Find header row
-  let dataStart = 0;
-  let titleCol = -1, streamsCol = -1, dailyCol = -1;
-  for (let i = 0; i < Math.min(5, rows.length); i++) {
-    const hrow = rows[i].map(c => String(c).toLowerCase());
-    const tIdx = hrow.findIndex(c => c.includes('song') || c.includes('title') || c.includes('canc'));
-    const sIdx = hrow.findIndex(c => c.includes('stream'));
-    const dIdx = hrow.findIndex(c => c.includes('daily') || c.includes('dia'));
-    if (tIdx >= 0) { titleCol = tIdx; streamsCol = sIdx >= 0 ? sIdx : tIdx+1; dailyCol = dIdx >= 0 ? dIdx : tIdx+2; dataStart = i+1; break; }
-  }
-  // Fallback: detect blank first column
-  if (titleCol < 0) {
-    const r = rows[1] || rows[0] || [];
-    const blank0 = String(r[0]||'').trim() === '';
-    titleCol = blank0 ? 1 : 0; streamsCol = blank0 ? 2 : 1; dailyCol = blank0 ? 3 : 2;
+    const title = cols[0];
+    // Skip header/separator rows
+    if (!title || title === '---' || title.toLowerCase().includes('song') || title.toLowerCase().includes('title') || title === '-') continue;
+
+    const streamsRaw = (cols[1] || '0').replace(/,/g, '').replace(/[^0-9]/g, '');
+    const dailyRaw  = (cols[2] || '0').replace(/,/g, '').replace(/[^0-9]/g, '');
+    const streams = parseInt(streamsRaw) || 0;
+    const daily   = parseInt(dailyRaw)   || 0;
+
+    if (title && streams > 0) pasteParsed.push({ title, streams, daily });
   }
 
-  for (let i = dataStart; i < rows.length; i++) {
-    const row = rows[i];
-    const title = String(row[titleCol]||'').trim();
-    if (!title || title.toLowerCase() === 'nan' || title.toLowerCase() === 'song title') continue;
-
-    const streamsRaw = String(row[streamsCol]||'0').replace(/,/g,'').replace(/[^0-9.]/g,'');
-    let streams = parseFloat(streamsRaw)||0;
-    streams = Math.round(streams);
-
-    const dailyRaw = String(row[dailyCol]||'0').replace(/,/g,'').replace(/[^0-9.]/g,'');
-    const daily = Math.round(parseFloat(dailyRaw)||0);
-
-    if (streams > 0) xlParsed.push({ title, streams, daily });
-  }
-
-  if (!xlParsed.length) {
-    document.getElementById('xl-status').textContent = '❌ No se encontraron datos. Verifica las columnas: Song Title, Streams, Daily.';
+  if (!pasteParsed.length) {
+    statusEl.textContent = '⚠️ No se pudieron parsear canciones. Asegúrate de copiar toda la tabla de Kworb (incluyendo los números).';
+    document.getElementById('paste-preview').style.display = 'none';
     return;
   }
-  renderXLPreview(filename);
+  statusEl.textContent = `✅ ${pasteParsed.length} canciones detectadas`;
+  renderPastePreview();
 }
 
-async function renderXLPreview(filename) {
+async function renderPastePreview() {
   const { data: dbSongs } = await sb.from('spotify_songs').select('id,title,total_streams');
-  const noMatch = xlParsed.filter(r => !dbSongs?.find(s => titlesMatch(s.title, r.title))).length;
-
-  document.getElementById('xl-preview-label').textContent = `📄 ${filename} · ${xlParsed.length} canciones`;
-  document.getElementById('xl-preview-body').innerHTML = xlParsed.map(r => {
+  const noMatch = pasteParsed.filter(r => !dbSongs?.find(s => titlesMatch(s.title, r.title))).length;
+  document.getElementById('paste-preview-label').textContent = `${pasteParsed.length} canciones · ${pasteParsed.length - noMatch} actualizarán · ${noMatch} serán nuevas`;
+  document.getElementById('paste-preview-body').innerHTML = pasteParsed.map(r => {
     const match = dbSongs?.find(s => titlesMatch(s.title, r.title));
     const st = match
       ? `<span style="color:#1db954;font-size:0.72rem">✅ match</span>`
@@ -1932,56 +1880,58 @@ async function renderXLPreview(filename) {
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
       <td style="padding:0.4rem 0.7rem;font-size:0.77rem;color:var(--text-main)">${escapeHtml(r.title)}</td>
       <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:#1db954;text-align:right">${fmtCompact(r.streams)}</td>
-      <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--text-dim);text-align:right">${r.daily?'+'+fmtCompact(r.daily):'—'}</td>
+      <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--text-dim);text-align:right">${r.daily ? '+' + fmtCompact(r.daily) : '—'}</td>
       <td style="padding:0.4rem 0.7rem;text-align:center">${st}</td>
     </tr>`;
   }).join('');
-
-  document.getElementById('xl-status').textContent = `${xlParsed.length} canciones · ${xlParsed.length-noMatch} actualizarán · ${noMatch} serán nuevas`;
-  document.getElementById('xl-preview').style.display = 'block';
-  document.getElementById('xl-save-btn').style.display = 'inline-flex';
-  document.getElementById('xl-clear-btn').style.display = 'inline-flex';
-  document.getElementById('xl-dropzone').style.borderColor = '#1db954';
+  document.getElementById('paste-preview').style.display = 'block';
 }
 
-async function saveXLData() {
-  if (!xlParsed.length) return;
-  const btn = document.getElementById('xl-save-btn');
-  const statusEl = document.getElementById('xl-status');
-  btn.disabled = true; btn.textContent = '⏳ Guardando...';
-
+async function savePasteData() {
+  if (!pasteParsed.length) return;
+  const statusEl = document.getElementById('paste-save-status');
+  statusEl.textContent = '⏳ Guardando...';
   const { data: dbSongs } = await sb.from('spotify_songs').select('id,title,total_streams,sort_order');
-  const today = new Date().toISOString().slice(0,10);
-  let maxSort = dbSongs?.reduce((m,s)=>Math.max(m,s.sort_order||0),0)||0;
-  let updated=0, inserted=0, errors=0;
+  const today = new Date().toISOString().slice(0, 10);
+  let maxSort = dbSongs?.reduce((m, s) => Math.max(m, s.sort_order || 0), 0) || 0;
+  let updated = 0, inserted = 0, errors = 0;
 
-  for (const r of xlParsed) {
+  for (const r of pasteParsed) {
     const match = dbSongs?.find(s => titlesMatch(s.title, r.title));
     if (match) {
-      const {error} = await sb.from('spotify_songs').update({ total_streams:r.streams, daily_streams:r.daily }).eq('id',match.id);
-      if (!error) { await sb.from('spotify_snapshots').upsert({song_id:match.id,snapshot_date:today,total_streams:r.streams},{onConflict:'song_id,snapshot_date'}); updated++; }
+      const { error } = await sb.from('spotify_songs').update({ total_streams: r.streams, daily_streams: r.daily }).eq('id', match.id);
+      if (!error) { await sb.from('spotify_snapshots').upsert({ song_id: match.id, snapshot_date: today, total_streams: r.streams }, { onConflict: 'song_id,snapshot_date' }); updated++; }
       else errors++;
     } else {
-      const {data:ins,error} = await sb.from('spotify_songs').insert({title:r.title,total_streams:r.streams,daily_streams:r.daily,spotify_url:null,sort_order:++maxSort}).select('id').single();
-      if (!error&&ins) { await sb.from('spotify_snapshots').upsert({song_id:ins.id,snapshot_date:today,total_streams:r.streams},{onConflict:'song_id,snapshot_date'}); inserted++; }
+      const { data: ins, error } = await sb.from('spotify_songs').insert({ title: r.title, total_streams: r.streams, daily_streams: r.daily, spotify_url: null, sort_order: ++maxSort }).select('id').single();
+      if (!error && ins) { await sb.from('spotify_snapshots').upsert({ song_id: ins.id, snapshot_date: today, total_streams: r.streams }, { onConflict: 'song_id,snapshot_date' }); inserted++; }
       else errors++;
     }
   }
 
-  btn.disabled=false; btn.textContent='💾 Guardar en Supabase';
-  const msg = `✅ ${updated} actualizadas · ${inserted} nuevas${errors?` · ${errors} errores`:''}`;
+  const msg = `✅ ${updated} actualizadas · ${inserted} nuevas${errors ? ` · ${errors} errores` : ''}`;
   statusEl.textContent = msg; showToast(msg);
   await loadAdminSpotifySongs(); await loadSpotifySongsPublic();
 }
 
-function clearXL() {
-  xlParsed=[];
-  document.getElementById('xl-preview').style.display='none';
-  document.getElementById('xl-save-btn').style.display='none';
-  document.getElementById('xl-clear-btn').style.display='none';
-  document.getElementById('xl-status').textContent='';
-  document.getElementById('xl-dropzone').style.borderColor='';
-  document.getElementById('xl-file-input').value='';
+async function deleteAllSongs() {
+  if (!confirm('⚠️ ¿Eliminar TODAS las canciones? Esto no se puede deshacer.')) return;
+  if (!confirm('¿Segura? Se borrarán canciones y sus snapshots históricos.')) return;
+  const statusEl = document.getElementById('paste-save-status');
+  statusEl.textContent = '⏳ Eliminando...';
+  const { data } = await sb.from('spotify_songs').select('id');
+  if (data && data.length) {
+    const ids = data.map(s => s.id);
+    await sb.from('spotify_snapshots').delete().in('song_id', ids);
+    await sb.from('spotify_songs').delete().in('id', ids);
+  }
+  pasteParsed = [];
+  statusEl.textContent = '🗑️ Todas las canciones eliminadas.';
+  document.getElementById('paste-preview').style.display = 'none';
+  document.getElementById('paste-area').value = '';
+  document.getElementById('paste-status').textContent = '';
+  showToast('Canciones eliminadas');
+  await loadAdminSpotifySongs(); await loadSpotifySongsPublic();
 }
 
 // ========== ALBUMS ==========
