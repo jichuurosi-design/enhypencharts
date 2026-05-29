@@ -1217,6 +1217,7 @@ footer a:hover { color: var(--primary-red); }
           <div id="pm-author-handle">@sinvanish</div>
         </div>
         <button id="pm-close" onclick="closePostModal()">✕</button>
+        <button id="pm-delete-btn" onclick="deleteCurrentPost()" style="display:none;background:rgba(180,0,0,0.85);border:none;color:#fff;border-radius:8px;padding:0.35rem 0.9rem;font-size:0.75rem;cursor:pointer;font-weight:600;margin-left:0.5rem">🗑️ Eliminar post</button>
       </div>
       <div id="pm-body">
         <div id="pm-caption-wrap">
@@ -2433,7 +2434,7 @@ async function loadAdminData(){
           ${img.caption?`<div style="color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${img.caption}</div>`:''}
           <div style="color:var(--text-muted);margin-top:2px">❤️ ${img.likes||0}</div>
         </div>
-        <button onclick="deleteImage(${img.id})" style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(0,0,0,0.75);border:none;color:#fff;border-radius:6px;padding:0.2rem 0.5rem;font-size:0.72rem;cursor:pointer">✕</button>
+        <button onclick="deleteImage('${img.id}')" style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(0,0,0,0.75);border:none;color:#fff;border-radius:6px;padding:0.2rem 0.5rem;font-size:0.72rem;cursor:pointer;z-index:2">🗑️ Eliminar</button>
       </div>`).join('')
     : '<p style="color:var(--text-muted);font-size:0.82rem;grid-column:1/-1">Sin publicaciones aún</p>';
 }
@@ -2498,7 +2499,22 @@ async function addImage(){
   await loadAdminData();
   await loadGalleryPublic();
 }
-async function deleteImage(id){ if(confirm('¿Eliminar imagen?')){ await sb.from('images').delete().eq('id',id); showToast('Imagen eliminada'); await loadAdminData(); await loadGalleryPublic(); } }
+async function deleteImage(id){
+  if (!id) { showToast('ID inválido', true); return; }
+  if (!confirm('¿Eliminar esta imagen?')) return;
+  try {
+    const { error } = await sb.from('images').delete().eq('id', id);
+    if (error) { console.error('Delete error:', error); showToast('Error: ' + error.message, true); return; }
+    showToast('Imagen eliminada ✅');
+    await loadAdminData();
+    await loadGalleryPublic();
+    // Si el modal está abierto, cerrarlo
+    document.getElementById('post-modal-overlay').classList.remove('open');
+  } catch(e) {
+    console.error('deleteImage exception:', e);
+    showToast('Error al eliminar', true);
+  }
+}
 
 // ========== SPOTIFY CHARTS (público) ==========
 let spCurrentType = 'daily-songs';
@@ -2922,6 +2938,9 @@ async function openPostModal(idx) {
   await loadPostComments(img.id);
 
   document.getElementById('post-modal-overlay').classList.add('open');
+  // Admin: show delete button
+  const delBtn = document.getElementById('pm-delete-btn');
+  if (delBtn) delBtn.style.display = isAdmin ? 'inline-block' : 'none';
   document.body.style.overflow = 'hidden';
 }
 
