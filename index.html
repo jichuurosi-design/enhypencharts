@@ -1322,6 +1322,7 @@ footer a:hover { color: var(--primary-red); }
     <button class="admin-tab" onclick="switchAdminTab('tab-spotifydata',this)">🎧 Spotify Data</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-albums',this)">💿 Álbumes</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-charts',this)">📊 Sp. Charts</button>
+    <button class="admin-tab" onclick="switchAdminTab('tab-apple',this)">🍎 Apple Music</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-config',this)">⚙️ Configuración</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-images',this)">🖼️ Imágenes</button>
   </div>
@@ -1568,6 +1569,56 @@ footer a:hover { color: var(--primary-red); }
           <div class="form-group"><label>Dirección</label><select class="input" id="nc-dir"><option value="up">▲ Subida</option><option value="down">▼ Bajada</option><option value="new">✦ Nuevo</option></select></div>
         </div>
         <button class="btn" onclick="addSpChartEntry()">Agregar entrada</button>
+      </div>
+    </div>
+
+    <!-- Apple Music -->
+    <div class="admin-section" id="tab-apple">
+      <div class="admin-card" style="border-color:rgba(255,45,85,0.25)">
+        <h3 style="color:#ff2d55">🍎 Artist &amp; Reach</h3>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Actualiza manualmente los datos de Apple Music. Déjalo vacío para no modificarlo.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+          <div class="form-group">
+            <label>Global Daily Peak</label>
+            <input class="input" id="am-peak" placeholder="ej: Top 12" style="font-family:'Orbitron',monospace">
+          </div>
+          <div class="form-group">
+            <label>Countries Charted</label>
+            <input class="input" id="am-countries" placeholder="ej: 85+" style="font-family:'Orbitron',monospace">
+          </div>
+        </div>
+        <button class="btn" style="background:#7a1428" onclick="saveAppleReach()">💾 Guardar Reach</button>
+      </div>
+
+      <div class="admin-card">
+        <h3>🎵 Global Top 100 Songs</h3>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Agrega las canciones de ENHYPEN que aparecen en Apple Music Charts.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.7rem;margin-bottom:0.8rem">
+          <div class="form-group">
+            <label>Rank</label>
+            <input class="input input-mono" id="am-rank" placeholder="ej: 1" type="number" min="1">
+          </div>
+          <div class="form-group" style="grid-column:span 2">
+            <label>Canción</label>
+            <input class="input" id="am-song" placeholder="ej: Bite Me">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:0.8rem">
+          <div class="form-group">
+            <label>Artista</label>
+            <input class="input" id="am-artist" placeholder="ej: ENHYPEN">
+          </div>
+          <div class="form-group">
+            <label>Charts (países)</label>
+            <input class="input" id="am-charts" placeholder="ej: Indonesia #76">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0.8rem">
+          <label>Países (#)</label>
+          <input class="input input-mono" id="am-countries-count" placeholder="ej: 1" type="number" min="0">
+        </div>
+        <button class="btn" onclick="addAppleSong()">➕ Agregar canción</button>
+        <div id="am-songs-list" style="margin-top:1rem"></div>
       </div>
     </div>
 
@@ -2805,7 +2856,7 @@ function closeAdmin(){ document.getElementById('admin-panel').classList.remove('
 function showPage(id,el){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active')); if(el) el.classList.add('active'); document.getElementById('nav-links').classList.remove('open'); window.scrollTo(0,0); }
 function toggleMobileNav(){ document.getElementById('nav-links').classList.toggle('open'); }
 function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.getElementById('spotify-chart').style.display=id==='spotify-chart'?'block':'none'; document.getElementById('yt-chart').style.display=id==='yt-chart'?'block':'none'; document.getElementById('apple-chart').style.display=id==='apple-chart'?'block':'none'; }
-function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id==='tab-apple') loadAdminAppleSongs(); }
 
 // ========== KWORB ARTIST CHART ==========
 const KWORB_ARTIST_SLUG = 'enhypen';
@@ -3191,10 +3242,110 @@ async function loadGalleryPublic() {
   }).join('');
 }
 
-// ========== APPLE MUSIC (Kworb) ==========
-const APPLE_ENHYPEN_ID = 'enhypen';
-const APPLE_CACHE_KEY  = 'enhypen_apple_cache';
-const APPLE_CACHE_TTL  = 20 * 60 * 1000;
+// ========== APPLE MUSIC (Manual via Supabase) ==========
+const APPLE_CACHE_KEY = 'enhypen_apple_cache';
+const APPLE_CACHE_TTL = 10 * 60 * 1000;
+
+async function loadAppleMusic(forceRefresh = false) {
+  const btn = document.getElementById('apple-refresh-btn');
+  if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
+
+  try {
+    // Load reach data from site_config
+    const { data: cfg } = await sb.from('site_config').select('key,value')
+      .in('key', ['am_peak','am_countries']);
+    let peak = null, countries = null;
+    if (cfg) cfg.forEach(r => {
+      if (r.key === 'am_peak') peak = r.value;
+      if (r.key === 'am_countries') countries = r.value;
+    });
+
+    // Load songs from apple_charts table
+    const { data: songs, error } = await sb.from('apple_charts')
+      .select('*').order('rank_position', { ascending: true });
+
+    renderAppleArtistReach(peak, countries);
+
+    if (error) {
+      document.getElementById('apple-top-songs').innerHTML =
+        `<div class="apple-empty">⚠️ Crea la tabla <code>apple_charts</code> en Supabase.<br>
+        <span style="font-size:0.72rem">${error.message}</span></div>`;
+    } else {
+      renderAppleTopSongs(songs || []);
+    }
+
+    const now = new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('apple-updated').textContent = `Actualizado · ${now}`;
+
+    // Prefill admin fields
+    const elP = document.getElementById('am-peak');
+    const elC = document.getElementById('am-countries');
+    if (elP && peak) elP.value = peak;
+    if (elC && countries) elC.value = countries;
+
+  } catch(e) {
+    document.getElementById('apple-artist-reach').innerHTML =
+      `<div class="apple-error"><strong>⚠ Error</strong><br>${e.message}</div>`;
+    document.getElementById('apple-top-songs').innerHTML = '';
+  }
+
+  if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
+}
+
+async function saveAppleReach() {
+  const peak = document.getElementById('am-peak').value.trim();
+  const countries = document.getElementById('am-countries').value.trim();
+  if (!peak && !countries) { showToast('Escribe al menos un valor', true); return; }
+  if (peak) await sb.from('site_config').upsert({ key: 'am_peak', value: peak });
+  if (countries) await sb.from('site_config').upsert({ key: 'am_countries', value: countries });
+  showToast('Apple Music Reach guardado ✅');
+  await loadAppleMusic(true);
+}
+
+async function loadAdminAppleSongs() {
+  const { data } = await sb.from('apple_charts').select('*').order('rank_position', { ascending: true });
+  const list = document.getElementById('am-songs-list');
+  if (!list) return;
+  if (!data || !data.length) { list.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">Sin canciones aún</p>'; return; }
+  list.innerHTML = data.map(s => `
+    <div class="admin-list-item">
+      <div class="ali-info">
+        <div class="ali-name">#${s.rank_position} · ${escapeHtml(s.song_title)}</div>
+        <div class="ali-sub">${escapeHtml(s.artist_name||'')} · ${escapeHtml(s.charts||'')} · 🌍 ${s.countries_count||0}</div>
+      </div>
+      <button class="btn btn-sm btn-danger" onclick="deleteAppleSong(${s.id})">✕</button>
+    </div>`).join('');
+}
+
+async function addAppleSong() {
+  const rank = parseInt(document.getElementById('am-rank').value) || 0;
+  const song = document.getElementById('am-song').value.trim();
+  const artist = document.getElementById('am-artist').value.trim();
+  const charts = document.getElementById('am-charts').value.trim();
+  const countriesCount = parseInt(document.getElementById('am-countries-count').value) || 0;
+  if (!song || !rank) { showToast('Rank y canción son requeridos', true); return; }
+  const { error } = await sb.from('apple_charts').insert({
+    rank_position: rank, song_title: song, artist_name: artist,
+    charts, countries_count: countriesCount
+  });
+  if (error) { showToast('Error: ' + error.message, true); return; }
+  document.getElementById('am-rank').value = '';
+  document.getElementById('am-song').value = '';
+  document.getElementById('am-artist').value = '';
+  document.getElementById('am-charts').value = '';
+  document.getElementById('am-countries-count').value = '';
+  showToast('Canción agregada ✅');
+  await loadAdminAppleSongs();
+  await loadAppleMusic(true);
+}
+
+async function deleteAppleSong(id) {
+  if (!confirm('¿Eliminar esta canción?')) return;
+  await sb.from('apple_charts').delete().eq('id', id);
+  showToast('Eliminada');
+  await loadAdminAppleSongs();
+  await loadAppleMusic(true);
+}
 
 function parseAppleArtistPage(html) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
