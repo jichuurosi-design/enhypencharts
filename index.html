@@ -1991,26 +1991,25 @@ function processPaste() {
   pasteParsed = [];
 
   for (const line of lines) {
-    // Support pipe-separated: | Song | 123,456 | 789 |
-    // Support tab-separated (copied from Excel/Kworb directly)
     let cols;
     if (line.includes('|')) {
       cols = line.split('|').map(c => c.trim()).filter(c => c);
     } else if (line.includes('\t')) {
       cols = line.split('\t').map(c => c.trim());
-    } else if (line.includes(';')) {
-      cols = line.split(';').map(c => c.trim());
     } else {
-      cols = line.split(',').map(c => c.trim());
+      cols = line.split(/\s{2,}/).map(c => c.trim());
     }
     if (cols.length < 2) continue;
 
-    const title = cols[0];
-    // Skip header/separator rows
-    if (!title || title === '---' || title.toLowerCase().includes('song') || title.toLowerCase().includes('title') || title === '-') continue;
+    const title = cols[0].replace(/^\d+\.?\s*/, '').trim();
+    if (!title || title === '---' || title === '-' ||
+        title.toLowerCase().includes('song title') ||
+        title.toLowerCase().includes('title') ||
+        title.toLowerCase() === 'song') continue;
 
-    const streamsRaw = (cols[1] || '0').replace(/,/g, '').replace(/[^0-9]/g, '');
-    const dailyRaw  = (cols[2] || '0').replace(/,/g, '').replace(/[^0-9]/g, '');
+    // Parse numbers — remove all non-digit chars except nothing
+    const streamsRaw = (cols[1] || '').replace(/[^0-9]/g, '');
+    const dailyRaw   = (cols[2] || '').replace(/[^0-9]/g, '');
     const streams = parseInt(streamsRaw) || 0;
     const daily   = parseInt(dailyRaw)   || 0;
 
@@ -2018,11 +2017,11 @@ function processPaste() {
   }
 
   if (!pasteParsed.length) {
-    statusEl.textContent = '⚠️ No se pudieron parsear canciones. Asegúrate de copiar toda la tabla de Kworb (incluyendo los números).';
+    statusEl.textContent = '⚠️ No se pudo parsear. Formato esperado: Canción | Streams | Daily';
     document.getElementById('paste-preview').style.display = 'none';
     return;
   }
-  statusEl.textContent = `✅ ${pasteParsed.length} canciones detectadas`;
+  statusEl.textContent = `✅ ${pasteParsed.length} canciones detectadas — presiona Guardar`;
   renderPastePreview();
 }
 
@@ -2052,24 +2051,45 @@ async function savePasteData() {
   const { data: dbSongs } = await sb.from('spotify_songs').select('id,title,total_streams,sort_order');
   const today = new Date().toISOString().slice(0, 10);
   let maxSort = dbSongs?.reduce((m, s) => Math.max(m, s.sort_order || 0), 0) || 0;
-  let updated = 0, inserted = 0, errors = 0;
+  let updated = 0, inserted = 0, errors = 0, noMatch = 0;
 
   for (const r of pasteParsed) {
-    const match = dbSongs?.find(s => titlesMatch(s.title, r.title));
+    // Try exact match first, then fuzzy
+    const match = dbSongs?.find(s => s.title.toLowerCase().trim() === r.title.toLowerCase().trim())
+      || dbSongs?.find(s => titlesMatch(s.title, r.title));
+
     if (match) {
-      const { error } = await sb.from('spotify_songs').update({ total_streams: r.streams, daily_streams: r.daily }).eq('id', match.id);
-      if (!error) { await sb.from('spotify_snapshots').upsert({ song_id: match.id, snapshot_date: today, total_streams: r.streams }, { onConflict: 'song_id,snapshot_date' }); updated++; }
-      else errors++;
+      const { error } = await sb.from('spotify_songs')
+        .update({ total_streams: r.streams, daily_streams: r.daily })
+        .eq('id', match.id);
+      if (!error) {
+        await sb.from('spotify_snapshots').upsert(
+          { song_id: match.id, snapshot_date: today, total_streams: r.streams },
+          { onConflict: 'song_id,snapshot_date' }
+        );
+        updated++;
+      } else errors++;
     } else {
-      const { data: ins, error } = await sb.from('spotify_songs').insert({ title: r.title, total_streams: r.streams, daily_streams: r.daily, spotify_url: null, sort_order: ++maxSort }).select('id').single();
-      if (!error && ins) { await sb.from('spotify_snapshots').upsert({ song_id: ins.id, snapshot_date: today, total_streams: r.streams }, { onConflict: 'song_id,snapshot_date' }); inserted++; }
-      else errors++;
+      // Insert new song
+      const { data: ins, error } = await sb.from('spotify_songs').insert({
+        title: r.title, total_streams: r.streams, daily_streams: r.daily,
+        spotify_url: null, sort_order: ++maxSort
+      }).select('id').single();
+      if (!error && ins) {
+        await sb.from('spotify_snapshots').upsert(
+          { song_id: ins.id, snapshot_date: today, total_streams: r.streams },
+          { onConflict: 'song_id,snapshot_date' }
+        );
+        inserted++;
+      } else { errors++; noMatch++; }
     }
   }
 
   const msg = `✅ ${updated} actualizadas · ${inserted} nuevas${errors ? ` · ${errors} errores` : ''}`;
-  statusEl.textContent = msg; showToast(msg);
-  await loadAdminSpotifySongs(); await loadSpotifySongsPublic();
+  statusEl.textContent = msg;
+  showToast(msg);
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
 }
 
 async function deleteAllSongs() {
