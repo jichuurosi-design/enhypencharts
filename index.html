@@ -2061,67 +2061,179 @@ async function renderPastePreview() {
 async function savePasteData() {
   if (!pasteParsed.length) return;
   const statusEl = document.getElementById('paste-save-status');
-  statusEl.textContent = '⏳ Guardando...';
+  const btn = document.getElementById('paste-save-btn');
+  btn.disabled = true; btn.textContent = '⏳ Guardando...';
+  statusEl.textContent = 'Cargando lista...';
 
-  const { data: dbSongs } = await sb.from('spotify_songs').select('id,title,sort_order');
-  const today = new Date().toISOString().slice(0, 10);
+  // 1. Load all DB songs once
+  const { data: dbSongs, error: dbErr } = await sb.from('spotify_songs').select('id,title,sort_order');
+  if (dbErr) {
+    statusEl.textContent = '❌ ' + dbErr.message;
+    btn.disabled = false; btn.textContent = '💾 Guardar en Supabase';
+    return;
+  }
+
   let maxSort = dbSongs?.reduce((m, s) => Math.max(m, s.sort_order || 0), 0) || 0;
 
-  // Separate into updates vs inserts
+  // 2. Match all songs in memory
   const toUpdate = [];
   const toInsert = [];
-
   for (const r of pasteParsed) {
     const match = dbSongs?.find(s => s.title.toLowerCase().trim() === r.title.toLowerCase().trim())
       || dbSongs?.find(s => titlesMatch(s.title, r.title));
-    if (match) {
-      toUpdate.push({ id: match.id, total_streams: r.streams, daily_streams: r.daily });
-    } else {
-      toInsert.push({ title: r.title, total_streams: r.streams, daily_streams: r.daily, spotify_url: null, sort_order: ++maxSort });
-    }
+    if (match) toUpdate.push({ id: match.id, total_streams: r.streams, daily_streams: r.daily });
+    else toInsert.push({ title: r.title, total_streams: r.streams, daily_streams: r.daily, spotify_url: null, sort_order: ++maxSort });
   }
 
-  // Batch updates in chunks of 50
-  let updated = 0, inserted = 0, errors = 0;
-  const CHUNK = 50;
+  statusEl.textContent = `Guardando ${toUpdate.length} canciones en lotes...`;
 
-  for (let i = 0; i < toUpdate.length; i += CHUNK) {
-    const chunk = toUpdate.slice(i, i + CHUNK);
-    statusEl.textContent = `⏳ Actualizando... ${Math.min(i + CHUNK, toUpdate.length)}/${toUpdate.length}`;
-    // Update each in parallel within chunk
-    const results = await Promise.all(chunk.map(s =>
-      sb.from('spotify_songs').update({ total_streams: s.total_streams, daily_streams: s.daily_streams }).eq('id', s.id)
-    ));
-    results.forEach(r => r.error ? errors++ : updated++);
+  // 3. Batch upsert updates in chunks of 50 parallel
+  let updated = 0, errors = 0;
+  const chunkSize = 50;
+  for (let i = 0; i < toUpdate.length; i += chunkSize) {
+    const chunk = toUpdate.slice(i, i + chunkSize);
+    const results = await Promise.all(
+      chunk.map(r => sb.from('spotify_songs').update({ total_streams: r.total_streams, daily_streams: r.daily_streams }).eq('id', r.id))
+    );
+    results.forEach(({ error }) => error ? errors++ : updated++);
+    statusEl.textContent = `Guardando... ${Math.min(i + chunkSize, toUpdate.length)}/${toUpdate.length}`;
   }
 
-  // Batch inserts
+  // 4. Batch insert new songs
+  let inserted = 0;
   if (toInsert.length) {
-    statusEl.textContent = `⏳ Insertando ${toInsert.length} canciones nuevas...`;
-    for (let i = 0; i < toInsert.length; i += CHUNK) {
-      const chunk = toInsert.slice(i, i + CHUNK);
-      const { error } = await sb.from('spotify_songs').insert(chunk);
-      if (error) errors += chunk.length; else inserted += chunk.length;
-    }
-  }
-
-  // Batch snapshots — get all ids at once
-  statusEl.textContent = '⏳ Guardando snapshots...';
-  const { data: allSongs } = await sb.from('spotify_songs').select('id,title');
-  const snapshots = [];
-  for (const r of pasteParsed) {
-    const match = allSongs?.find(s => s.title.toLowerCase().trim() === r.title.toLowerCase().trim())
-      || allSongs?.find(s => titlesMatch(s.title, r.title));
-    if (match) snapshots.push({ song_id: match.id, snapshot_date: today, total_streams: r.streams });
-  }
-  // Upsert snapshots in chunks
-  for (let i = 0; i < snapshots.length; i += CHUNK) {
-    await sb.from('spotify_snapshots').upsert(snapshots.slice(i, i + CHUNK), { onConflict: 'song_id,snapshot_date' });
+    const { data: ins, error } = await sb.from('spotify_songs').insert(toInsert).select('id');
+    if (!error) inserted = ins?.length || toInsert.length;
+    else errors += toInsert.length;
   }
 
   const msg = `✅ ${updated} actualizadas · ${inserted} nuevas${errors ? ` · ${errors} errores` : ''}`;
   statusEl.textContent = msg;
   showToast(msg);
+  btn.disabled = false; btn.textContent = '💾 Guardar en Supabase';
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
+}
+
+  // 1. Load all DB songs once
+  const { data: dbSongs, error: dbErr } = await sb.from('spotify_songs').select('id,title,total_streams,sort_order');
+  if (dbErr) {
+    statusEl.textContent = '❌ ' + dbErr.message;
+    btn.disabled = false; btn.textContent = '💾 Guardar en Supabase';
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  let maxSort = dbSongs?.reduce((m, s) => Math.max(m, s.sort_order || 0), 0) || 0;
+
+  // 2. Build update and insert lists
+  const toUpdate = []; // { id, streams, daily }
+  const toInsert = []; // { title, streams, daily }
+
+  for (const r of pasteParsed) {
+    const match = dbSongs?.find(s => s.title.toLowerCase().trim() === r.title.toLowerCase().trim())
+      || dbSongs?.find(s => titlesMatch(s.title, r.title));
+    if (match) toUpdate.push({ id: match.id, streams: r.streams, daily: r.daily });
+    else toInsert.push({ title: r.title, streams: r.streams, daily: r.daily });
+  }
+
+  statusEl.textContent = `Actualizando ${toUpdate.length} canciones...`;
+
+  // 3. Batch update — split into chunks of 20
+  const chunkSize = 20;
+  let updated = 0, errors = 0;
+  for (let i = 0; i < toUpdate.length; i += chunkSize) {
+    const chunk = toUpdate.slice(i, i + chunkSize);
+    await Promise.all(chunk.map(async r => {
+      const { error } = await sb.from('spotify_songs')
+        .update({ total_streams: r.streams, daily_streams: r.daily })
+        .eq('id', r.id);
+      if (!error) {
+        updated++;
+        await sb.from('spotify_snapshots').upsert(
+          { song_id: r.id, snapshot_date: today, total_streams: r.streams },
+          { onConflict: 'song_id,snapshot_date' }
+        );
+      } else errors++;
+    }));
+    statusEl.textContent = `Actualizando... ${Math.min(i + chunkSize, toUpdate.length)}/${toUpdate.length}`;
+  }
+
+  // 4. Insert new songs
+  let inserted = 0;
+  for (const r of toInsert) {
+    const { data: ins, error } = await sb.from('spotify_songs').insert({
+      title: r.title, total_streams: r.streams, daily_streams: r.daily,
+      spotify_url: null, sort_order: ++maxSort
+    }).select('id').single();
+    if (!error && ins) {
+      inserted++;
+      await sb.from('spotify_snapshots').upsert(
+        { song_id: ins.id, snapshot_date: today, total_streams: r.streams },
+        { onConflict: 'song_id,snapshot_date' }
+      );
+    } else errors++;
+  }
+
+  const msg = `✅ ${updated} actualizadas · ${inserted} nuevas${errors ? ` · ${errors} errores` : ''}`;
+  statusEl.textContent = msg;
+  showToast(msg);
+  btn.disabled = false; btn.textContent = '💾 Guardar en Supabase';
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
+}
+
+  const { data: dbSongs, error: dbErr } = await sb.from('spotify_songs').select('id,title,total_streams,sort_order');
+  if (dbErr) { statusEl.textContent = '❌ Error: ' + dbErr.message; btn.disabled = false; btn.textContent = '💾 Guardar en Supabase'; return; }
+
+  const today = new Date().toISOString().slice(0, 10);
+  let maxSort = dbSongs?.reduce((m, s) => Math.max(m, s.sort_order || 0), 0) || 0;
+  let updated = 0, inserted = 0, errors = 0;
+  const total = pasteParsed.length;
+
+  for (let i = 0; i < pasteParsed.length; i++) {
+    const r = pasteParsed[i];
+    statusEl.textContent = `Guardando ${i + 1}/${total}...`;
+
+    // Exact match first, then fuzzy
+    const match = dbSongs?.find(s => s.title.toLowerCase().trim() === r.title.toLowerCase().trim())
+      || dbSongs?.find(s => titlesMatch(s.title, r.title));
+
+    if (match) {
+      const { error } = await sb.from('spotify_songs')
+        .update({ total_streams: r.streams, daily_streams: r.daily })
+        .eq('id', match.id);
+      if (!error) {
+        // Update snapshot
+        await sb.from('spotify_snapshots').upsert(
+          { song_id: match.id, snapshot_date: today, total_streams: r.streams },
+          { onConflict: 'song_id,snapshot_date' }
+        );
+        updated++;
+        // Update local dbSongs so subsequent fuzzy matches use fresh data
+        match.total_streams = r.streams;
+      } else errors++;
+    } else {
+      // New song
+      const { data: ins, error } = await sb.from('spotify_songs').insert({
+        title: r.title, total_streams: r.streams, daily_streams: r.daily,
+        spotify_url: null, sort_order: ++maxSort
+      }).select('id').single();
+      if (!error && ins) {
+        await sb.from('spotify_snapshots').upsert(
+          { song_id: ins.id, snapshot_date: today, total_streams: r.streams },
+          { onConflict: 'song_id,snapshot_date' }
+        );
+        inserted++;
+        dbSongs.push({ id: ins.id, title: r.title, total_streams: r.streams, sort_order: maxSort });
+      } else errors++;
+    }
+  }
+
+  const msg = `✅ ${updated} actualizadas · ${inserted} nuevas${errors ? ` · ${errors} errores` : ''}`;
+  statusEl.textContent = msg;
+  showToast(msg);
+  btn.disabled = false; btn.textContent = '💾 Guardar en Supabase';
   await loadAdminSpotifySongs();
   await loadSpotifySongsPublic();
 }
@@ -2210,51 +2322,25 @@ async function saveAlbumsPasteData() {
   if (!pasteAlbumsParsed.length) return;
   const statusEl = document.getElementById('paste-albums-save-status');
   statusEl.textContent = '⏳ Guardando...';
-  const { data: dbAlbums } = await sb.from('spotify_albums').select('id,title');
+  const { data: dbAlbums } = await sb.from('spotify_albums').select('id,title,total_streams');
   const today = new Date().toISOString().slice(0, 10);
-  const CHUNK = 50;
-  const toUpdate = [];
-  const toInsert = [];
+  let updated = 0, inserted = 0, errors = 0;
 
   for (const r of pasteAlbumsParsed) {
     const match = dbAlbums?.find(a => titlesMatch(a.title, r.title));
-    if (match) toUpdate.push({ id: match.id, total_streams: r.streams, daily_streams: r.daily });
-    else toInsert.push({ title: r.title, total_streams: r.streams, daily_streams: r.daily, spotify_url: null });
-  }
-
-  let updated = 0, inserted = 0, errors = 0;
-
-  for (let i = 0; i < toUpdate.length; i += CHUNK) {
-    const chunk = toUpdate.slice(i, i + CHUNK);
-    statusEl.textContent = `⏳ Actualizando... ${Math.min(i+CHUNK, toUpdate.length)}/${toUpdate.length}`;
-    const results = await Promise.all(chunk.map(a =>
-      sb.from('spotify_albums').update({ total_streams: a.total_streams, daily_streams: a.daily_streams }).eq('id', a.id)
-    ));
-    results.forEach(r => r.error ? errors++ : updated++);
-  }
-
-  if (toInsert.length) {
-    statusEl.textContent = `⏳ Insertando ${toInsert.length} álbumes nuevos...`;
-    for (let i = 0; i < toInsert.length; i += CHUNK) {
-      const { error } = await sb.from('spotify_albums').insert(toInsert.slice(i, i + CHUNK));
-      if (error) errors += toInsert.slice(i, i+CHUNK).length; else inserted += toInsert.slice(i, i+CHUNK).length;
+    if (match) {
+      const { error } = await sb.from('spotify_albums').update({ total_streams: r.streams, daily_streams: r.daily }).eq('id', match.id);
+      if (!error) { await sb.from('spotify_album_snapshots').upsert({ album_id: match.id, snapshot_date: today, total_streams: r.streams }, { onConflict: 'album_id,snapshot_date' }); updated++; }
+      else errors++;
+    } else {
+      const { error } = await sb.from('spotify_albums').insert({ title: r.title, total_streams: r.streams, daily_streams: r.daily, spotify_url: null });
+      if (!error) inserted++; else errors++;
     }
-  }
-
-  statusEl.textContent = '⏳ Guardando snapshots...';
-  const { data: allAlbums } = await sb.from('spotify_albums').select('id,title');
-  const snaps = [];
-  for (const r of pasteAlbumsParsed) {
-    const match = allAlbums?.find(a => titlesMatch(a.title, r.title));
-    if (match) snaps.push({ album_id: match.id, snapshot_date: today, total_streams: r.streams });
-  }
-  for (let i = 0; i < snaps.length; i += CHUNK) {
-    await sb.from('spotify_album_snapshots').upsert(snaps.slice(i, i+CHUNK), { onConflict: 'album_id,snapshot_date' });
   }
 
   const msg = `✅ ${updated} actualizados · ${inserted} nuevos${errors ? ` · ${errors} errores` : ''}`;
   statusEl.textContent = msg; showToast(msg);
-  await loadAdminAlbums(); await loadBulkAlbumsList(); await loadSpotifyAlbumsPublic();
+  await loadAdminAlbums(); await loadSpotifyAlbumsPublic();
 }
 
 async function deleteAllAlbums() {
@@ -2338,7 +2424,7 @@ async function loadAdminAlbums() {
   if (!container) return;
   if (error) { container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">⚠️ Tabla spotify_albums no encontrada. Crea la tabla en Supabase o precarga la discografía.</p>'; return; }
   if (!data || data.length === 0) { container.innerHTML = '<p style="color:var(--text-muted)">No hay álbumes. Usa "Precargar discografía".</p>'; return; }
-  container.innerHTML = data.map(a => `<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${escapeHtml(a.title)}</div><div class="ali-sub">${fmt(a.total_streams)} streams | +${fmt(a.daily_streams)} hoy | ${a.year||''}</div></div><div class="ali-actions"><button class="btn btn-sm" onclick="editAlbum(${a.id}, '${escapeHtml(a.title).replace(/'/g,"\\'")}', ${a.total_streams}, ${a.daily_streams||0}, ${a.year||0}, '${(a.spotify_url||'').replace(/'/g,"\\'")}')">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteAlbum(${a.id})">✕</button></div></div>`).join('');
+  container.innerHTML = data.map(a => `<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${escapeHtml(a.title)}</div><div class="ali-sub">${fmt(a.total_streams)} streams | +${fmt(a.daily_streams)} hoy | ${a.year||''}</div></div><div class="ali-actions"><button class="btn btn-sm btn-danger" onclick="deleteAlbum(${a.id})">✕</button></div></div>`).join('');
 }
 
 async function loadBulkAlbumsList() {
@@ -2417,44 +2503,6 @@ async function addAlbum() {
   if (error) { showToast('Error al guardar', true); return; }
   showToast('Álbum agregado ✅');
   ['na-title','na-year','na-streams','na-daily','na-url'].forEach(id => document.getElementById(id).value = '');
-  await loadAdminAlbums(); await loadBulkAlbumsList(); await loadSpotifyAlbumsPublic();
-}
-
-async function editAlbum(id, currentTitle, currentStreams, currentDaily, currentYear, currentUrl) {
-  // Build inline edit modal
-  const existing = document.getElementById('album-edit-modal');
-  if (existing) existing.remove();
-  const modal = document.createElement('div');
-  modal.id = 'album-edit-modal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem';
-  modal.innerHTML = `
-    <div style="background:#111;border:1px solid var(--border-dim);border-radius:16px;padding:1.5rem;width:100%;max-width:480px;display:grid;gap:0.8rem">
-      <div style="font-weight:700;font-size:1rem;color:var(--text-main);margin-bottom:0.2rem">✏️ Editar álbum</div>
-      <div class="form-group"><label>Título</label><input class="input" id="ea-title" value="${currentTitle.replace(/"/g,'&quot;')}"></div>
-      <div class="form-group"><label>Año</label><input class="input" id="ea-year" type="number" value="${currentYear||''}"></div>
-      <div class="form-group"><label>Streams totales</label><input class="input" id="ea-streams" value="${currentStreams||0}"></div>
-      <div class="form-group"><label>Daily streams</label><input class="input" id="ea-daily" value="${currentDaily||0}"></div>
-      <div class="form-group"><label>URL Spotify</label><input class="input" id="ea-url" value="${currentUrl||''}"></div>
-      <div style="display:flex;gap:0.8rem;margin-top:0.4rem">
-        <button class="btn" onclick="saveEditAlbum(${id})">💾 Guardar</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('album-edit-modal').remove()">Cancelar</button>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-}
-
-async function saveEditAlbum(id) {
-  const title = document.getElementById('ea-title').value.trim();
-  const year = parseInt(document.getElementById('ea-year').value) || null;
-  const total_streams = parseInt(document.getElementById('ea-streams').value.replace(/\D/g,'')) || 0;
-  const daily_streams = parseInt(document.getElementById('ea-daily').value.replace(/\D/g,'')) || 0;
-  const spotify_url = document.getElementById('ea-url').value.trim() || null;
-  if (!title) { showToast('El título no puede estar vacío', true); return; }
-  const { error } = await sb.from('spotify_albums').update({ title, year, total_streams, daily_streams, spotify_url }).eq('id', id);
-  if (error) { showToast('Error al guardar', true); return; }
-  document.getElementById('album-edit-modal').remove();
-  showToast('Álbum actualizado ✅');
   await loadAdminAlbums(); await loadBulkAlbumsList(); await loadSpotifyAlbumsPublic();
 }
 
@@ -3506,33 +3554,7 @@ function renderAppleTopSongs(songs) {
     </table>`;
 }
 
-function withTimeout(promise, ms = 10000) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
-  ]);
-}
-
-async function safeLoad(fn, name) {
-  try { await withTimeout(fn(), 12000); }
-  catch(e) { console.warn(`[${name}] falló:`, e.message); }
-}
-
-async function loadAll() {
-  await safeLoad(loadConfig, 'config');
-  // Load the rest in parallel but each one fails independently
-  await Promise.allSettled([
-    safeLoad(loadGoalsPublic, 'goals'),
-    safeLoad(loadPlaylistsPublic, 'playlists'),
-    safeLoad(loadSpotifySongsPublic, 'spotify-songs'),
-    safeLoad(loadSpotifyAlbumsPublic, 'spotify-albums'),
-    safeLoad(loadSpChartsPublic, 'sp-charts'),
-    safeLoad(loadGalleryPublic, 'gallery'),
-  ]);
-  safeLoad(loadYTDataPublic, 'youtube');
-  try { loadKworbArtist(); } catch(e) {}
-  try { loadAppleMusic(); } catch(e) {}
-}
+async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic(), loadSpChartsPublic(), loadGalleryPublic()]); loadKworbArtist(); loadAppleMusic(); }
 loadAll();
 let seq=''; document.addEventListener('keydown',e=>{ seq=(seq+e.key.toLowerCase()).slice(-3); if(seq==='adm'){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; } });
 let tap=0, timer; document.querySelector('.nav-logo').addEventListener('click',()=>{ tap++; clearTimeout(timer); timer=setTimeout(()=>tap=0,600); if(tap>=5){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; tap=0; } });
