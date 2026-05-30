@@ -3347,42 +3347,6 @@ async function deleteAppleSong(id) {
   await loadAppleMusic(true);
 }
 
-function parseAppleArtistPage(html) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const result = { peak: null, countries: null, songs: [] };
-  const peakM = html.match(/(?:Global\s+)?Daily\s+Peak[^<]*?(?:#|Top\s*)(\d+)/i)
-    || html.match(/Peak[^<]{0,30}?(?:#|Top\s*)(\d+)/i)
-    || html.match(/(?:#|Top\s*)(\d+)[^<]{0,30}?Peak/i);
-  if (peakM) result.peak = `Top ${peakM[1]}`;
-  const countriesM = html.match(/(\d+)\s*(?:countries?|Countries)/i)
-    || html.match(/Charted[^<]{0,20}?(\d+)/i);
-  if (countriesM) result.countries = countriesM[1] + '+';
-  const tables = doc.querySelectorAll('table');
-  for (const table of tables) {
-    const rows = table.querySelectorAll('tr');
-    if (rows.length < 2) continue;
-    let parsed = 0;
-    rows.forEach((row, i) => {
-      if (i === 0) return;
-      const cells = row.querySelectorAll('td');
-      if (cells.length < 2) return;
-      const rankText = cells[0]?.textContent?.trim();
-      const rank = parseInt(rankText?.replace(/\D/g,'')) || i;
-      const titleEl = cells[1]?.querySelector('a') || cells[1];
-      const title = titleEl?.textContent?.trim() || '';
-      if (!title) return;
-      const artist = cells[2]?.textContent?.trim() || '';
-      const charts = cells[3]?.textContent?.trim() || '';
-      const countriesCell = cells[4]?.textContent?.trim() || '';
-      const countriesCount = parseInt(countriesCell?.replace(/\D/g,'')) || null;
-      result.songs.push({ rank, title, artist, charts, countriesCount });
-      parsed++;
-    });
-    if (parsed > 0) break;
-  }
-  return result;
-}
-
 function renderAppleArtistReach(peak, countries) {
   const el = document.getElementById('apple-artist-reach');
   if (!el) return;
@@ -3404,63 +3368,24 @@ function renderAppleTopSongs(songs) {
   const el = document.getElementById('apple-top-songs');
   if (!el) return;
   if (!songs.length) {
-    el.innerHTML = '<div class="apple-empty">ENHYPEN no aparece en los charts de Apple Music actualmente.</div>';
+    el.innerHTML = '<div class="apple-empty">Sin canciones aún. Agrégalas desde el panel admin 🍎</div>';
     return;
   }
   el.innerHTML = `
     <table class="apple-table">
       <thead><tr><th>RANK</th><th>TRACK / ARTIST</th><th>CHARTS</th><th class="right">COUNTRIES</th></tr></thead>
-      <tbody>${songs.slice(0,50).map(s=>`
+      <tbody>${songs.map(s => `
         <tr>
-          <td><span class="apple-rank">#${s.rank}</span></td>
-          <td><div class="apple-song-name">${escapeHtml(s.title)}</div>${s.artist?`<div class="apple-song-artist">${escapeHtml(s.artist)}</div>`:''}</td>
-          <td>${s.charts?`<span class="apple-chart-badge">${escapeHtml(s.charts.slice(0,30))}</span>`:'—'}</td>
-          <td class="right"><span class="apple-country-count">${s.countriesCount?`🌍 ${s.countriesCount}`:'—'}</span></td>
+          <td><span class="apple-rank">#${s.rank_position}</span></td>
+          <td>
+            <div class="apple-song-name">${escapeHtml(s.song_title)}</div>
+            ${s.artist_name ? `<div class="apple-song-artist">${escapeHtml(s.artist_name)}</div>` : ''}
+          </td>
+          <td>${s.charts ? `<span class="apple-chart-badge">${escapeHtml(s.charts.slice(0,40))}</span>` : '—'}</td>
+          <td class="right"><span class="apple-country-count">${s.countries_count ? `🌍 ${s.countries_count}` : '—'}</span></td>
         </tr>`).join('')}
       </tbody>
     </table>`;
-}
-
-async function loadAppleMusic(forceRefresh = false) {
-  const btn = document.getElementById('apple-refresh-btn');
-  if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
-  if (!forceRefresh) {
-    try {
-      const cached = JSON.parse(sessionStorage.getItem(APPLE_CACHE_KEY) || 'null');
-      if (cached && (Date.now() - cached.ts) < APPLE_CACHE_TTL) {
-        renderAppleArtistReach(cached.peak, cached.countries);
-        renderAppleTopSongs(cached.songs);
-        document.getElementById('apple-updated').textContent = `kworb.net · ${new Date(cached.ts).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})} (caché)`;
-        if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
-        return;
-      }
-    } catch(e) {}
-  }
-  document.getElementById('apple-top-songs').innerHTML = '<div class="loading"><div class="spin"></div></div>';
-  try {
-    const url = `https://kworb.net/apple/artist/${APPLE_ENHYPEN_ID}.html`;
-    const html = await fetchKworbHtml(url);
-    const data = parseAppleArtistPage(html);
-    if (!data.songs.length) {
-      try {
-        const html2 = await fetchKworbHtml(`https://kworb.net/apple/artist/${APPLE_ENHYPEN_ID}_songs.html`);
-        const data2 = parseAppleArtistPage(html2);
-        if (data2.songs.length) data.songs = data2.songs;
-        if (!data.peak && data2.peak) data.peak = data2.peak;
-        if (!data.countries && data2.countries) data.countries = data2.countries;
-      } catch(e) {}
-    }
-    sessionStorage.setItem(APPLE_CACHE_KEY, JSON.stringify({ ts: Date.now(), ...data }));
-    renderAppleArtistReach(data.peak, data.countries);
-    renderAppleTopSongs(data.songs);
-    document.getElementById('apple-updated').textContent = `kworb.net · ${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`;
-  } catch(e) {
-    const err = `<div class="apple-error"><strong>⚠ No se pudo conectar con kworb.net</strong><br>${e.message||'Error de conexión'}</div>`;
-    document.getElementById('apple-artist-reach').innerHTML = err;
-    document.getElementById('apple-top-songs').innerHTML = '';
-    document.getElementById('apple-updated').textContent = 'kworb.net no disponible';
-  }
-  if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
 }
 
 async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic(), loadSpChartsPublic(), loadGalleryPublic()]); loadKworbArtist(); loadAppleMusic(); }
