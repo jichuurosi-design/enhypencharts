@@ -1400,9 +1400,11 @@ footer a:hover { color: var(--primary-red); }
           onfocus="this.style.borderColor='var(--primary-red)'" onblur="this.style.borderColor='var(--border-dim)'"></textarea>
         <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap;margin-top:0.7rem">
           <button class="btn" onclick="processPaste()">● Procesar</button>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('paste-area').value='';document.getElementById('paste-preview').style.display='none';document.getElementById('paste-status').textContent=''">✕ Limpiar</button>
+          <button class="btn" id="paste-save-btn" onclick="savePasteData()" style="display:none;background:#1a5c2e">💾 Guardar en Supabase</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearPaste()">✕ Limpiar</button>
           <button class="btn btn-danger btn-sm" onclick="deleteAllSongs()" style="margin-left:auto">🗑️ Eliminar todas las canciones</button>
           <span id="paste-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
+          <span id="paste-save-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
         </div>
         <!-- Preview -->
         <div id="paste-preview" style="display:none;margin-top:1rem">
@@ -2019,10 +2021,22 @@ function processPaste() {
   if (!pasteParsed.length) {
     statusEl.textContent = '⚠️ No se pudo parsear. Formato esperado: Canción | Streams | Daily';
     document.getElementById('paste-preview').style.display = 'none';
+    document.getElementById('paste-save-btn').style.display = 'none';
     return;
   }
-  statusEl.textContent = `✅ ${pasteParsed.length} canciones detectadas — presiona Guardar`;
-  renderPastePreview();
+  // Show save button immediately — don't wait for preview
+  document.getElementById('paste-save-btn').style.display = 'inline-flex';
+  statusEl.textContent = `✅ ${pasteParsed.length} canciones listas — presiona 💾 Guardar`;
+  renderPastePreview(); // preview is optional, runs in background
+}
+
+function clearPaste() {
+  document.getElementById('paste-area').value = '';
+  document.getElementById('paste-preview').style.display = 'none';
+  document.getElementById('paste-save-btn').style.display = 'none';
+  document.getElementById('paste-status').textContent = '';
+  document.getElementById('paste-save-status').textContent = '';
+  pasteParsed = [];
 }
 
 async function renderPastePreview() {
