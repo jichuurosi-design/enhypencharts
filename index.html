@@ -2630,16 +2630,20 @@ async function loadSpChartsPublic() {
       .eq('chart_type', spCurrentType)
       .eq('region', spCurrentRegion)
       .order('rank_position', { ascending: true });
+
+    if (error) {
+      wrap.innerHTML = `<div class="sp-empty">⚠️ Error: ${error.message}</div>`;
+      return;
+    }
+
     const typeLabel = SP_TYPE_LABELS[spCurrentType] || spCurrentType;
     const title = `${spCurrentRegionFlag} ${spCurrentRegionLabel} ${typeLabel}`;
     const count = (data || []).length;
-    document.getElementById('spTableTitle').innerHTML = `${title} <span class="sp-count-badge">${count} item${count !== 1 ? 's' : ''}</span>`;
-    const now = new Date();
-    document.getElementById('spUpdatedTime').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    if (error) {
-      wrap.innerHTML = `<div class="sp-empty">⚠️ Tabla sp_charts no creada aún. Créala en Supabase con el SQL del setup.</div>`;
-      return;
-    }
+    const titleEl = document.getElementById('spTableTitle');
+    const updatedEl = document.getElementById('spUpdatedTime');
+    if (titleEl) titleEl.innerHTML = `${title} <span class="sp-count-badge">${count} item${count !== 1 ? 's' : ''}</span>`;
+    if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
     if (!data || data.length === 0) {
       wrap.innerHTML = `<div class="sp-empty">Sin entradas para esta combinación.<br><span style="font-size:0.7rem">El admin puede agregar posiciones desde el panel ⚙️</span></div>`;
       return;
@@ -2668,7 +2672,6 @@ async function loadSpChartsPublic() {
       const changeArrow = r.change_dir === 'up' ? '▲' : r.change_dir === 'down' ? '▼' : '✦';
       const changeVal = r.change_val ? `${changeArrow} ${r.change_val}` : '—';
       if (isDailyArtist) {
-        // RANK | ARTIST | YESTERDAY'S POSITION | CHANGES
         const yesterdayPos = r.total_streams ? `#${Number(r.total_streams).toLocaleString('en-US')}` : '—';
         html += `<tr>
           <td><span class="sp-rank-badge">#${r.rank_position}</span></td>
@@ -2692,7 +2695,7 @@ async function loadSpChartsPublic() {
     wrap.innerHTML = html;
   } catch(e) {
     console.error('SpCharts error:', e);
-    wrap.innerHTML = `<div class="sp-empty">⚠️ Error cargando charts. Verifica la tabla sp_charts en Supabase.</div>`;
+    wrap.innerHTML = `<div class="sp-empty">⚠️ ${e.message || 'Error cargando charts'}</div>`;
   }
 }
 
