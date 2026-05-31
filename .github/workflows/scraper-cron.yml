@@ -1,0 +1,30 @@
+name: Run Kworb Spotify Scraper
+
+on:
+  schedule:
+    # Se ejecuta de forma automática todos los días a las 05:00 UTC 
+    # (Que son las 00:00 AM hora de Ecuador, ideal para iniciar el día con datos frescos)
+    - cron: '0 23 * * *'
+  workflow_dispatch: # Esto te activa un botón en GitHub para que puedas probar el script manualmente desde la web
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalar dependencias
+        run: |
+          pip install requests beautifulsoup4 supabase
+
+      - name: Ejecutar Scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python scraper.py
