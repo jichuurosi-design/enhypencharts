@@ -29,4 +29,4 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         # Cambia "proyecto" por el nombre exacto de la carpeta donde vive tu scraper.py
         working-directory: ./proyecto
-        run: python scraper.py
+        run: python scrap*.py
