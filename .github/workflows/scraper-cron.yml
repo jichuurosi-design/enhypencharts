@@ -22,11 +22,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4 supabase
 
-      - name: 🔍 Ver archivos en la raíz (Debug)
-        run: ls -la
-
       - name: Ejecutar Scraper
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: python scraper.py
+        run: python scraper.py   # ← Sin working-directory
