@@ -2,26 +2,27 @@ name: Run Kworb Spotify Scraper
 
 on:
   schedule:
-    # Se ejecuta todos los días a las 23:00 UTC (18:00 hora de Ecuador)
     - cron: '0 23 * * *'
-  workflow_dispatch: # Activa el botón manual en la web
+  workflow_dispatch:
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-      # PASO CLAVE: Descarga los archivos de tu repositorio al servidor virtual
-      - name: Checkout código
+      - name: Descargar codigo del repositorio
         uses: actions/checkout@v4
 
-      - name: Configurar Python
+      # ESTO NOS VA A DECIR LA VERDAD: Ver qué archivos hay realmente en el servidor
+      - name: Depurar y listar archivos
+        run: ls -la
+
+      - name: Configurar entorno Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Instalar dependencias
-        run: |
-          pip install requests beautifulsoup4 supabase lxml
+      - name: Instalar librerias
+        run: pip install requests beautifulsoup4 supabase lxml
 
       - name: Ejecutar Scraper
         env:
