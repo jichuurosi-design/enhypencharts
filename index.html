@@ -1763,28 +1763,30 @@ async function addSpotifySong() {
   await loadSpotifySongsPublic();
 }
 async function editSpotifySong(id, title, currentStreams, currentUrl) {
-  const newStreams = prompt(`Streams totales de "${title}":`, currentStreams);
+  const newTitle = prompt(`Nombre de la canción:`, title);
+  if (newTitle === null) return;
+  const newStreams = prompt(`Streams totales de "${newTitle || title}":`, currentStreams);
   if (newStreams === null) return;
   const newUrl = prompt(`URL de Spotify (deja vacío para mantener la actual):`, currentUrl);
   if (newUrl === null) return;
+
+  const nTitle = newTitle.trim() || title;
   const nStreams = parseInt(newStreams.replace(/\D/g,'')) || 0;
-  // Solo actualizar URL si el usuario escribió algo; si está vacío, conservar la existente
   const nUrl = newUrl.trim() !== '' ? newUrl.trim() : currentUrl;
 
   const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().slice(0,10);
   const { data: snap } = await sb.from('spotify_snapshots').select('total_streams').eq('song_id', id).eq('snapshot_date', yesterdayStr).maybeSingle();
-  // Si no hay snapshot de ayer, usar el valor actual como base para daily
   const oldStreams = snap ? snap.total_streams : currentStreams;
   const dailyIncrease = (oldStreams && nStreams > oldStreams) ? nStreams - oldStreams : 0;
 
-  const updateData = { total_streams: nStreams, daily_streams: dailyIncrease };
+  const updateData = { title: nTitle, total_streams: nStreams, daily_streams: dailyIncrease };
   if (nUrl) updateData.spotify_url = nUrl;
 
   await sb.from('spotify_songs').update(updateData).eq('id', id);
   const today = new Date().toISOString().slice(0,10);
   await sb.from('spotify_snapshots').upsert({ song_id: id, snapshot_date: today, total_streams: nStreams }, { onConflict: 'song_id,snapshot_date' });
-  showToast(`"${title}" actualizado ✅`);
+  showToast(`"${nTitle}" actualizado ✅`);
   await loadAdminSpotifySongs();
   await loadSpotifySongsPublic();
 }
