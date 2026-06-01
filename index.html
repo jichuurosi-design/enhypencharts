@@ -1741,9 +1741,74 @@ async function loadAdminSpotifySongs() {
   if (!data || data.length === 0) { document.getElementById('admin-spotify-songs-list').innerHTML = '<p>No hay canciones aún.</p>'; return; }
   let html = '';
   for (const s of data) {
-    html += `<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${escapeHtml(s.title)}</div><div class="ali-sub">${fmt(s.total_streams)} streams | +${fmt(s.daily_streams)} hoy</div></div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editSpotifySong(${s.id}, '${escapeHtml(s.title).replace(/'/g, "\'")}', ${s.total_streams}, '${(s.spotify_url || '').replace(/'/g, "\'")}')">✏️ Editar</button><button class="btn btn-sm btn-danger" onclick="deleteSpotifySong(${s.id})">✕</button></div></div>`;
+    const safeUrl = (s.spotify_url || '').replace(/"/g, '&quot;');
+    const safeTitle = escapeHtml(s.title);
+    html += `
+    <div class="admin-list-item" id="song-row-${s.id}">
+      <div class="ali-info">
+        <div class="ali-name">${safeTitle}</div>
+        <div class="ali-sub">${fmt(s.total_streams)} streams | +${fmt(s.daily_streams)} hoy</div>
+      </div>
+      <div class="ali-actions">
+        <button class="btn btn-sm btn-ghost" onclick="toggleSongEdit(${s.id})">✏️ Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteSpotifySong(${s.id})">✕</button>
+      </div>
+    </div>
+    <div id="song-edit-${s.id}" style="display:none;background:#0d1117;border:1px solid var(--border-dim);border-top:none;border-radius:0 0 10px 10px;padding:1rem;margin-bottom:0.5rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.6rem">
+        <div class="form-group" style="grid-column:span 2">
+          <label>Nombre de la canción</label>
+          <input class="input" id="se-title-${s.id}" value="${safeTitle}">
+        </div>
+        <div class="form-group">
+          <label>Total Streams</label>
+          <input class="input input-mono" id="se-streams-${s.id}" value="${s.total_streams || 0}">
+        </div>
+        <div class="form-group">
+          <label>Daily Streams</label>
+          <input class="input input-mono" id="se-daily-${s.id}" value="${s.daily_streams || 0}">
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label>URL Spotify</label>
+          <input class="input" id="se-url-${s.id}" value="${safeUrl}" placeholder="https://open.spotify.com/track/...">
+        </div>
+      </div>
+      <div style="display:flex;gap:0.6rem">
+        <button class="btn btn-sm btn-success" onclick="saveSongEdit(${s.id})">💾 Guardar</button>
+        <button class="btn btn-sm btn-ghost" onclick="toggleSongEdit(${s.id})">Cancelar</button>
+      </div>
+    </div>`;
   }
   document.getElementById('admin-spotify-songs-list').innerHTML = html;
+}
+
+function toggleSongEdit(id) {
+  const row  = document.getElementById(`song-row-${id}`);
+  const edit = document.getElementById(`song-edit-${id}`);
+  const isOpen = edit.style.display !== 'none';
+  edit.style.display = isOpen ? 'none' : 'block';
+  row.style.borderRadius = isOpen ? '' : '10px 10px 0 0';
+  row.style.borderBottom = isOpen ? '' : 'none';
+}
+
+async function saveSongEdit(id) {
+  const title   = document.getElementById(`se-title-${id}`).value.trim();
+  const streams = parseInt(document.getElementById(`se-streams-${id}`).value.replace(/\D/g,'')) || 0;
+  const daily   = parseInt(document.getElementById(`se-daily-${id}`).value.replace(/\D/g,'')) || 0;
+  const url     = document.getElementById(`se-url-${id}`).value.trim() || null;
+  if (!title) { showToast('El nombre no puede estar vacío', true); return; }
+  const { error } = await sb.from('spotify_songs').update({
+    title, total_streams: streams, daily_streams: daily, spotify_url: url
+  }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message, true); return; }
+  const today = new Date().toISOString().slice(0,10);
+  await sb.from('spotify_snapshots').upsert(
+    { song_id: id, snapshot_date: today, total_streams: streams },
+    { onConflict: 'song_id,snapshot_date' }
+  );
+  showToast(`"${title}" guardado ✅`);
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
 }
 async function addSpotifySong() {
   const title = document.getElementById('ns-title').value.trim();
@@ -1761,34 +1826,6 @@ async function addSpotifySong() {
   document.getElementById('ns-title').value = '';
   document.getElementById('ns-streams').value = '';
   document.getElementById('ns-url').value = '';
-  await loadAdminSpotifySongs();
-  await loadSpotifySongsPublic();
-}
-async function editSpotifySong(id, title, currentStreams, currentUrl) {
-  const newTitle = prompt(`Nombre de la canción:`, title);
-  if (newTitle === null) return;
-  const newStreams = prompt(`Streams totales de "${newTitle || title}":`, currentStreams);
-  if (newStreams === null) return;
-  const newUrl = prompt(`URL de Spotify (deja vacío para mantener la actual):`, currentUrl);
-  if (newUrl === null) return;
-
-  const nTitle = newTitle.trim() || title;
-  const nStreams = parseInt(newStreams.replace(/\D/g,'')) || 0;
-  const nUrl = newUrl.trim() !== '' ? newUrl.trim() : currentUrl;
-
-  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().slice(0,10);
-  const { data: snap } = await sb.from('spotify_snapshots').select('total_streams').eq('song_id', id).eq('snapshot_date', yesterdayStr).maybeSingle();
-  const oldStreams = snap ? snap.total_streams : currentStreams;
-  const dailyIncrease = (oldStreams && nStreams > oldStreams) ? nStreams - oldStreams : 0;
-
-  const updateData = { title: nTitle, total_streams: nStreams, daily_streams: dailyIncrease };
-  if (nUrl) updateData.spotify_url = nUrl;
-
-  await sb.from('spotify_songs').update(updateData).eq('id', id);
-  const today = new Date().toISOString().slice(0,10);
-  await sb.from('spotify_snapshots').upsert({ song_id: id, snapshot_date: today, total_streams: nStreams }, { onConflict: 'song_id,snapshot_date' });
-  showToast(`"${nTitle}" actualizado ✅`);
   await loadAdminSpotifySongs();
   await loadSpotifySongsPublic();
 }
