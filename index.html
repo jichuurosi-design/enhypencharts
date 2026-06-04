@@ -256,10 +256,29 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
   transition: all 0.2s;
 }
 .goal-card:hover { border-color: var(--border-glow); box-shadow: var(--shadow-red); }
-.goal-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
-.goal-song { font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
+.goal-card-inner { display: flex; gap: 1.2rem; align-items: flex-start; }
+.goal-img {
+  width: 72px; height: 72px;
+  border-radius: 14px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-dim);
+  background: var(--bg-elevated);
+}
+.goal-img-placeholder {
+  width: 72px; height: 72px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+}
+.goal-body { flex: 1; min-width: 0; }
+.goal-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem; }
+.goal-song { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
 .goal-song span { display: block; font-size: 0.7rem; font-weight: 400; color: var(--text-muted); margin-top: 0.2rem; }
-.goal-pct { font-family: 'Orbitron', monospace; font-size: 2rem; font-weight: 800; color: var(--primary-gold); text-shadow: 0 0 6px rgba(234,179,8,0.4); }
+.goal-pct { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 800; color: var(--primary-gold); text-shadow: 0 0 6px rgba(234,179,8,0.4); }
 .progress-bar { width: 100%; height: 6px; background: #1f1f1f; border-radius: 10px; overflow: hidden; margin-bottom: 1.2rem; }
 .progress-fill { height: 100%; background: var(--gradient-red); border-radius: 10px; transition: width 0.7s cubic-bezier(0.2,0.9,0.4,1.1); }
 .goal-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
@@ -437,7 +456,7 @@ section { padding: 2rem 2rem; max-width: 1100px; margin: 0 auto; }
 .admin-section.active { display: block; }
 .admin-card { background: var(--admin-card-bg); border: 1px solid var(--border-dim); border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; }
 .admin-list-item { background: var(--admin-item-bg); border-radius: 16px; padding: 0.8rem 1rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 0.6rem; }
-.img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.8rem; }
+.img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.8rem; }
 .img-item { position: relative; aspect-ratio: 1; background: #0a0a0a; border-radius: 12px; overflow: hidden; }
 .img-item img { width: 100%; height: 100%; object-fit: cover; }
 .img-del { position: absolute; top: 4px; right: 4px; background: black; border: none; color: white; border-radius: 6px; padding: 2px 6px; cursor: pointer; font-size: 0.7rem; }
@@ -995,36 +1014,6 @@ footer a:hover { color: var(--primary-red); }
   #pm-image-col { min-height: 240px; max-height: 42vh; }
   #pm-detail-col { width: 100%; border-left: none; border-top: 1px solid var(--border-dim); max-height: 50vh; }
 }
-/* ===== APPLE MUSIC ===== */
-.apple-wrap{background:#0c0c0c;border:1px solid var(--border-dim);border-radius:20px;padding:1.4rem;margin-bottom:1rem;}
-.apple-top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.3rem;flex-wrap:wrap;gap:.6rem;}
-.apple-logo-title{display:flex;align-items:center;gap:.5rem;font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700;color:#fff;}
-.apple-meta{display:flex;align-items:center;gap:.6rem;font-size:.65rem;color:var(--text-muted);}
-.apple-refresh-btn{background:transparent;border:1px solid var(--border-dim);border-radius:20px;color:var(--text-dim);font-size:.68rem;padding:.22rem .75rem;cursor:pointer;transition:.2s;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:.3rem;}
-.apple-refresh-btn:hover{border-color:#ff2d55;color:#ff2d55;}
-.apple-refresh-btn.spinning svg{animation:spin .7s linear infinite;}
-.apple-reach-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:.5rem;}
-.apple-reach-card{background:#111;border:1px solid var(--border-dim);border-radius:14px;padding:1rem 1.1rem;position:relative;overflow:hidden;}
-.apple-reach-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#ff2d55,transparent);}
-.apple-reach-label{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem;}
-.apple-reach-value{font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:800;color:#fff;line-height:1;}
-.apple-reach-sub{font-size:.7rem;color:#4ade80;margin-top:.4rem;display:flex;align-items:center;gap:.3rem;}
-.apple-section-label{font-size:.72rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:.8rem;}
-.apple-table{width:100%;border-collapse:collapse;}
-.apple-table th{font-family:'Orbitron',monospace;font-size:.58rem;font-weight:600;text-align:left;padding:.6rem .7rem;color:var(--primary-red);border-bottom:1px solid var(--border-dim);letter-spacing:.8px;}
-.apple-table th.right{text-align:right;}
-.apple-table td{padding:.7rem .7rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;color:var(--text-dim);vertical-align:middle;}
-.apple-table tr:last-child td{border-bottom:none;}
-.apple-table tr:hover td{background:rgba(255,45,85,.03);}
-.apple-rank{font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;color:var(--primary-red);background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.3);border-radius:6px;padding:.18rem .55rem;display:inline-block;}
-.apple-song-name{font-weight:600;color:#fff;font-size:.83rem;}
-.apple-song-artist{font-size:.7rem;color:var(--text-muted);margin-top:.15rem;}
-.apple-chart-badge{background:rgba(255,45,85,.12);color:#ff2d55;border:1px solid rgba(255,45,85,.25);border-radius:20px;font-size:.67rem;font-family:'Orbitron',monospace;padding:.12rem .6rem;margin-right:.3rem;display:inline-block;}
-.apple-country-count{font-family:'Orbitron',monospace;font-size:.75rem;color:var(--text-dim);}
-.apple-empty{text-align:center;padding:2.5rem 1rem;color:var(--text-muted);font-size:.82rem;}
-.apple-error{background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.2);border-left:3px solid var(--primary-red);border-radius:0 12px 12px 0;padding:.9rem 1.1rem;font-size:.78rem;color:var(--text-dim);line-height:1.75;}
-.btn-success { background: #1a5c2e !important; color: #fff !important; }
-.btn-success:hover { background: #22733a !important; }
 </style>
 <body>
 
@@ -1131,38 +1120,7 @@ footer a:hover { color: var(--primary-red); }
 
 <!-- APPLE MUSIC -->
 <div id="apple" class="page">
-  <section>
-    <div class="section-header" style="margin-top:0.5rem">
-      <div class="section-title">Apple Music</div>
-      <div class="section-line"></div>
-    </div>
-    <div class="apple-wrap">
-      <div class="apple-top-bar">
-        <div class="apple-logo-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-          Apple Music · ENHYPEN
-        </div>
-        <div class="apple-meta">
-          <span id="apple-updated">—</span>
-          <button class="apple-refresh-btn" id="apple-refresh-btn" onclick="loadAppleMusic(true)">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
-            Actualizar
-          </button>
-        </div>
-      </div>
-      <div id="apple-artist-reach">
-        <div class="kworb-skeleton" style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem">
-          <div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line big"></div></div>
-          <div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line big"></div></div>
-        </div>
-      </div>
-      <div class="apple-section-label" style="margin-top:1.4rem">Global Top 100 Songs</div>
-      <div id="apple-top-songs"><div class="loading"><div class="spin"></div></div></div>
-    </div>
-    <div class="section-header" style="margin-top:2rem">
-      <div class="section-title">Apple Music Playlists</div>
-      <div class="section-line"></div>
-    </div>
+  <section><div class="section-header"><div class="section-title">Apple Music Playlists</div><div class="section-line"></div></div>
     <div id="apple-playlists"><div class="empty"><p>🎶 Playlists de Apple Music se cargarán aquí</p></div></div>
     <div class="tip-box"><p>🍎 Usa Apple Music para sumar streams internacionales. Cada reproducción cuenta igual.</p></div>
   </section>
@@ -1324,13 +1282,12 @@ footer a:hover { color: var(--primary-red); }
     <button class="admin-tab" onclick="switchAdminTab('tab-spotifydata',this)">🎧 Spotify Data</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-albums',this)">💿 Álbumes</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-charts',this)">📊 Sp. Charts</button>
-    <button class="admin-tab" onclick="switchAdminTab('tab-apple',this)">🍎 Apple Music</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-config',this)">⚙️ Configuración</button>
     <button class="admin-tab" onclick="switchAdminTab('tab-images',this)">🖼️ Imágenes</button>
   </div>
   <div class="admin-content">
     <!-- Metas -->
-    <div class="admin-section active" id="tab-goals"><div class="admin-card"><h3>Metas actuales</h3><div id="admin-goals-list"></div></div><div class="admin-card"><h3>+ Agregar meta</h3><div class="form-group"><label>Canción</label><input class="input" id="ng-song" placeholder="ej: Bite Me"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Streams actuales</label><input class="input" id="ng-current" placeholder="ej: 125M"></div><div class="form-group"><label>Meta</label><input class="input" id="ng-target" placeholder="ej: 200M"></div></div><div class="form-group"><label>Plataforma</label><select class="input" id="ng-platform"><option>Spotify</option><option>YouTube</option><option>Apple Music</option></select></div><button class="btn" onclick="addGoal()">Agregar</button></div></div>
+    <div class="admin-section active" id="tab-goals"><div class="admin-card"><h3>Metas actuales</h3><div id="admin-goals-list"></div></div><div class="admin-card"><h3>+ Agregar meta</h3><div class="form-group"><label>Canción</label><input class="input" id="ng-song" placeholder="ej: Bite Me"></div><div class="form-group"><label>🖼️ Imagen (URL opcional)</label><input class="input" id="ng-img" placeholder="https://i.imgur.com/...jpg"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Streams actuales</label><input class="input" id="ng-current" placeholder="ej: 125000000"></div><div class="form-group"><label>Meta</label><input class="input" id="ng-target" placeholder="ej: 200000000"></div></div><div class="form-group"><label>Plataforma</label><select class="input" id="ng-platform"><option>Spotify</option><option>YouTube</option><option>Apple Music</option></select></div><button class="btn" onclick="addGoal()">Agregar</button></div></div>
 
     <!-- Playlists -->
     <div class="admin-section" id="tab-playlists"><div class="admin-card"><h3>Playlists actuales</h3><div id="admin-playlists-list"></div></div><div class="admin-card"><h3>+ Agregar playlist</h3><div class="form-group"><label>Nombre</label><input class="input" id="np-name"></div><div class="form-group"><label>Descripción</label><input class="input" id="np-desc"></div><div class="form-group"><label>URL</label><input class="input" id="np-url"></div><div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.7rem"><div class="form-group"><label>Plataforma</label><select class="input" id="np-platform"><option value="spotify">Spotify</option><option value="youtube">YouTube</option><option value="apple">Apple Music</option><option value="stationhead">Stationhead</option></select></div><div class="form-group"><label>Icono (emoji)</label><input class="input" id="np-icon" placeholder="🎵"></div></div><button class="btn" onclick="addPlaylist()">Agregar</button></div></div>
@@ -1390,42 +1347,51 @@ footer a:hover { color: var(--primary-red); }
       </div>
       <div class="admin-card">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:0.8rem">
-          <h3 style="margin:0">📊 Actualización masiva de streams</h3>
-          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Kworb</a>
+          <h3 style="margin:0">📊 Actualizar desde Excel</h3>
+          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9_songs.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Ver en Kworb</a>
         </div>
-        <div style="background:var(--bg-elevated);border:1px solid var(--border-dim);border-radius:12px;padding:0.9rem;margin-bottom:1rem;font-size:0.72rem;color:var(--text-muted);line-height:1.8">
-          <strong style="color:var(--text-main)">Cómo usar:</strong> Ve a Kworb → selecciona toda la tabla (Ctrl+A o arrastra) → copia (Ctrl+C) → pega abajo → Procesar → Guardar.
+        <div style="background:#111;border:1px solid var(--border-dim);border-radius:12px;padding:0.9rem;margin-bottom:1rem">
+          <div style="font-size:0.72rem;color:var(--text-muted);line-height:1.9">
+            <strong style="color:var(--text-main)">Cómo usar:</strong><br>
+            1. Descarga la tabla de Kworb o edita tu propio Excel<br>
+            2. El archivo debe tener 3 columnas: <code style="background:#1a1a1a;padding:1px 6px;border-radius:3px">Song Title · Streams · Daily</code><br>
+            3. Sube el archivo — se procesará automáticamente y actualizará Supabase
+          </div>
         </div>
-        <label style="font-size:0.72rem;font-weight:600;color:var(--text-dim);margin-bottom:0.4rem;display:block">Pega la tabla de Kworb aquí</label>
-        <textarea id="paste-area" rows="8" placeholder="| Song Title | Streams | Daily |&#10;| --- | --- | --- |&#10;| Bite Me | 503,978,514 | 268,528 |&#10;..."
-          style="width:100%;background:var(--input-bg);border:1px solid var(--border-dim);border-radius:12px;padding:0.8rem;color:var(--text-main);font-family:monospace;font-size:0.75rem;resize:vertical;outline:none;line-height:1.6;box-sizing:border-box"
-          onfocus="this.style.borderColor='var(--primary-red)'" onblur="this.style.borderColor='var(--border-dim)'"></textarea>
-        <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap;margin-top:0.7rem">
-          <button class="btn" onclick="processPaste()">● Procesar</button>
-          <button class="btn" id="paste-save-btn" onclick="savePasteData()" style="display:none;background:#1a5c2e">💾 Guardar en Supabase</button>
-          <button class="btn btn-ghost btn-sm" onclick="clearPaste()">✕ Limpiar</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteAllSongs()" style="margin-left:auto">🗑️ Eliminar todas las canciones</button>
-          <span id="paste-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
-          <span id="paste-save-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
+
+        <!-- Upload zone -->
+        <div id="xl-dropzone" style="border:2px dashed var(--border-dim);border-radius:14px;padding:2rem;text-align:center;cursor:pointer;transition:.2s;margin-bottom:1rem"
+          onclick="document.getElementById('xl-file-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='#1db954'"
+          ondragleave="this.style.borderColor=''"
+          ondrop="event.preventDefault();this.style.borderColor='';handleXLDrop(event)">
+          <div style="font-size:2rem;margin-bottom:0.5rem">📂</div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text-main)">Haz clic o arrastra tu Excel aquí</div>
+          <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem">.xlsx · .xls · .csv</div>
         </div>
+        <input type="file" id="xl-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleXLFile(this.files[0])">
+
         <!-- Preview -->
-        <div id="paste-preview" style="display:none;margin-top:1rem">
-          <div style="font-size:0.72rem;font-weight:600;color:var(--text-dim);margin-bottom:0.5rem" id="paste-preview-label"></div>
-          <div style="overflow-x:auto;max-height:260px;overflow-y:auto;border:1px solid var(--border-dim);border-radius:10px">
-            <table style="width:100%;border-collapse:collapse;min-width:380px">
-              <thead><tr style="background:var(--bg-elevated);position:sticky;top:0">
+        <div id="xl-preview" style="display:none;margin-bottom:1rem">
+          <div style="font-size:0.75rem;font-weight:600;color:var(--text-dim);margin-bottom:0.6rem" id="xl-preview-label"></div>
+          <div style="overflow-x:auto;max-height:280px;overflow-y:auto;border:1px solid var(--border-dim);border-radius:10px">
+            <table style="width:100%;border-collapse:collapse;min-width:420px">
+              <thead><tr style="background:#111;position:sticky;top:0">
                 <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:left;border-bottom:1px solid var(--border-dim)">CANCIÓN</th>
                 <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim)">STREAMS</th>
                 <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim)">DAILY</th>
                 <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:center;border-bottom:1px solid var(--border-dim)">ESTADO</th>
               </tr></thead>
-              <tbody id="paste-preview-body"></tbody>
+              <tbody id="xl-preview-body"></tbody>
             </table>
           </div>
-          <div style="display:flex;gap:0.7rem;margin-top:0.8rem;flex-wrap:wrap;align-items:center">
-            <button class="btn" onclick="savePasteData()">💾 Guardar en Supabase</button>
-          </div>
-          <div id="paste-save-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem"></div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap">
+          <button class="btn" id="xl-save-btn" onclick="saveXLData()" style="display:none">💾 Guardar en Supabase</button>
+          <button class="btn btn-ghost btn-sm" id="xl-clear-btn" onclick="clearXL()" style="display:none">✕ Limpiar</button>
+          <span id="xl-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
         </div>
       </div>
       <div class="admin-card">
@@ -1458,52 +1424,30 @@ footer a:hover { color: var(--primary-red); }
     <!-- Álbumes -->
     <div class="admin-section" id="tab-albums">
       <div class="admin-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:0.8rem">
-          <h3 style="margin:0">📊 Actualización masiva de álbumes</h3>
-          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Kworb</a>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;margin-bottom:1rem">
+          <h3 style="margin:0">💿 Álbumes / EPs</h3>
+          <a href="https://kworb.net/spotify/artist/5t5FqBwTcgKTaWmfEbwQY9.html" target="_blank" class="btn btn-ghost btn-sm">🔗 Kworb Albums</a>
         </div>
-        <div style="background:var(--bg-elevated);border:1px solid var(--border-dim);border-radius:12px;padding:0.9rem;margin-bottom:1rem;font-size:0.72rem;color:var(--text-muted);line-height:1.8">
-          <strong style="color:var(--text-main)">Cómo usar:</strong> Ve a Kworb Albums → copia la tabla → pega abajo → Procesar → Guardar.<br>
-          Formato esperado: <code style="background:#1a1a1a;padding:1px 5px;border-radius:3px">| Album | Streams | Daily |</code> o separado por tabs/comas.
-        </div>
-        <label style="font-size:0.72rem;font-weight:600;color:var(--text-dim);margin-bottom:0.4rem;display:block">Pega la tabla de Kworb aquí</label>
-        <textarea id="paste-albums-area" rows="7" placeholder="| Album | Streams | Daily |&#10;| --- | --- | --- |&#10;| DIMENSION : ANSWER | 1,139,963,107 | 357,608 |&#10;..."
-          style="width:100%;background:var(--input-bg);border:1px solid var(--border-dim);border-radius:12px;padding:0.8rem;color:var(--text-main);font-family:monospace;font-size:0.75rem;resize:vertical;outline:none;line-height:1.6;box-sizing:border-box"
-          onfocus="this.style.borderColor='var(--primary-red)'" onblur="this.style.borderColor='var(--border-dim)'"></textarea>
-        <div style="display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap;margin-top:0.7rem">
-          <button class="btn" onclick="processAlbumsPaste()">● Procesar</button>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('paste-albums-area').value='';document.getElementById('paste-albums-preview').style.display='none';document.getElementById('paste-albums-status').textContent=''">✕ Limpiar</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteAllAlbums()" style="margin-left:auto">🗑️ Eliminar todos los álbumes</button>
-          <span id="paste-albums-status" style="font-size:0.75rem;color:var(--text-muted)"></span>
-        </div>
-        <div id="paste-albums-preview" style="display:none;margin-top:1rem">
-          <div style="font-size:0.72rem;font-weight:600;color:var(--text-dim);margin-bottom:0.5rem" id="paste-albums-preview-label"></div>
-          <div style="overflow-x:auto;max-height:260px;overflow-y:auto;border:1px solid var(--border-dim);border-radius:10px">
-            <table style="width:100%;border-collapse:collapse;min-width:380px">
-              <thead><tr style="background:var(--bg-elevated);position:sticky;top:0">
-                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:left;border-bottom:1px solid var(--border-dim)">ÁLBUM</th>
-                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim)">STREAMS</th>
-                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:right;border-bottom:1px solid var(--border-dim)">DAILY</th>
-                <th style="padding:0.5rem 0.7rem;font-size:0.6rem;color:var(--primary-red);font-family:'Orbitron',monospace;text-align:center;border-bottom:1px solid var(--border-dim)">ESTADO</th>
-              </tr></thead>
-              <tbody id="paste-albums-preview-body"></tbody>
-            </table>
-          </div>
-          <div style="display:flex;gap:0.7rem;margin-top:0.8rem">
-            <button class="btn" onclick="saveAlbumsPasteData()">💾 Guardar en Supabase</button>
-          </div>
-          <div id="paste-albums-save-status" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem"></div>
-        </div>
+        <div id="admin-albums-list"></div>
       </div>
       <div class="admin-card">
-        <h3>💿 Lista de álbumes</h3>
-        <div id="admin-albums-list"></div>
+        <details open>
+          <summary style="cursor:pointer;font-weight:600;color:var(--text-dim);font-size:0.85rem">⚡ Actualización rápida de álbumes</summary>
+          <div style="margin-top:1rem">
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Actualiza los streams de todos los álbumes de una vez.</p>
+            <div id="bulk-albums-list"><div class="loading"><div class="spin"></div></div></div>
+            <div style="margin-top:1rem;display:flex;gap:0.8rem;flex-wrap:wrap">
+              <button class="btn" onclick="saveBulkAlbums()">💾 Guardar álbumes</button>
+              <button class="btn btn-ghost" onclick="loadBulkAlbumsList()">🔄 Recargar</button>
+            </div>
+          </div>
+        </details>
       </div>
       <div class="admin-card">
         <details>
           <summary style="cursor:pointer;font-weight:600;color:var(--text-dim);font-size:0.85rem">📥 Precargar discografía de álbumes</summary>
           <div style="margin-top:1rem">
-            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Carga todos los álbumes/EPs de ENHYPEN con sus streams actuales.</p>
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Carga todos los álbumes/EPs de ENHYPEN con sus streams actuales de Kworb.</p>
             <button class="btn" onclick="preloadAlbums()">📥 Cargar álbumes</button>
             <div id="preload-albums-status" style="margin-top:0.8rem;font-size:0.78rem;color:var(--text-muted)"></div>
           </div>
@@ -1573,56 +1517,6 @@ footer a:hover { color: var(--primary-red); }
           <div class="form-group"><label>Dirección</label><select class="input" id="nc-dir"><option value="up">▲ Subida</option><option value="down">▼ Bajada</option><option value="new">✦ Nuevo</option></select></div>
         </div>
         <button class="btn" onclick="addSpChartEntry()">Agregar entrada</button>
-      </div>
-    </div>
-
-    <!-- Apple Music -->
-    <div class="admin-section" id="tab-apple">
-      <div class="admin-card" style="border-color:rgba(255,45,85,0.25)">
-        <h3 style="color:#ff2d55">🍎 Artist &amp; Reach</h3>
-        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Actualiza manualmente los datos de Apple Music. Déjalo vacío para no modificarlo.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
-          <div class="form-group">
-            <label>Global Daily Peak</label>
-            <input class="input" id="am-peak" placeholder="ej: Top 12" style="font-family:'Orbitron',monospace">
-          </div>
-          <div class="form-group">
-            <label>Countries Charted</label>
-            <input class="input" id="am-countries" placeholder="ej: 85+" style="font-family:'Orbitron',monospace">
-          </div>
-        </div>
-        <button class="btn" style="background:#7a1428" onclick="saveAppleReach()">💾 Guardar Reach</button>
-      </div>
-
-      <div class="admin-card">
-        <h3>🎵 Global Top 100 Songs</h3>
-        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Agrega las canciones de ENHYPEN que aparecen en Apple Music Charts.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.7rem;margin-bottom:0.8rem">
-          <div class="form-group">
-            <label>Rank</label>
-            <input class="input input-mono" id="am-rank" placeholder="ej: 1" type="number" min="1">
-          </div>
-          <div class="form-group" style="grid-column:span 2">
-            <label>Canción</label>
-            <input class="input" id="am-song" placeholder="ej: Bite Me">
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:0.8rem">
-          <div class="form-group">
-            <label>Artista</label>
-            <input class="input" id="am-artist" placeholder="ej: ENHYPEN">
-          </div>
-          <div class="form-group">
-            <label>Charts (países)</label>
-            <input class="input" id="am-charts" placeholder="ej: Indonesia #76">
-          </div>
-        </div>
-        <div class="form-group" style="margin-bottom:0.8rem">
-          <label>Países (#)</label>
-          <input class="input input-mono" id="am-countries-count" placeholder="ej: 1" type="number" min="0">
-        </div>
-        <button class="btn" onclick="addAppleSong()">➕ Agregar canción</button>
-        <div id="am-songs-list" style="margin-top:1rem"></div>
       </div>
     </div>
 
@@ -1697,12 +1591,40 @@ function previewHeroBg(){
 }
 
 // ========== GOALS ==========
+function buildGoalCard(g) {
+  const pct = Math.min(100, Math.round(g.current / g.target * 100));
+  const imgHtml = g.img_url
+    ? `<img class="goal-img" src="${g.img_url}" alt="${escapeHtml(g.song)}" onerror="this.style.display='none'">`
+    : `<div class="goal-img-placeholder">🎯</div>`;
+  return `<div class="goal-card">
+    <div class="goal-card-inner">
+      ${imgHtml}
+      <div class="goal-body">
+        <div class="goal-top">
+          <div class="goal-song">${escapeHtml(g.song)}<span>${fmt(g.target)} streams · ${g.platform}</span></div>
+          <div class="goal-pct">${pct}%</div>
+        </div>
+        <div class="progress-bar" style="margin-bottom:0.8rem"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="goal-stats">
+          <div class="stat"><div class="stat-val">${fmt(g.current)}</div><div class="stat-label">Actuales</div></div>
+          <div class="stat"><div class="stat-val">${fmt(g.target)}</div><div class="stat-label">Meta</div></div>
+          <div class="stat"><div class="stat-val">${fmt(Math.max(0,g.target-g.current))}</div><div class="stat-label">Restantes</div></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
 async function loadGoalsPublic(){
   let {data}=await sb.from('goals').select('*').order('sort_order');
-  if(!data||!data.length){ document.getElementById('home-goal-card').innerHTML='<div class="empty"><p>🎯 Sin metas activas</p></div>'; document.getElementById('goals-list').innerHTML='<div class="empty"><p>Añade metas desde el panel admin</p></div>'; document.getElementById('charts-goals-table').innerHTML='<div class="empty"><p>Sin datos</p></div>'; return; }
-  let g=data[0], pct=Math.min(100,Math.round(g.current/g.target*100));
-  document.getElementById('home-goal-card').innerHTML=`<div class="goal-card"><div class="goal-top"><div class="goal-song">${g.song}<span>${fmt(g.target)} streams · ${g.platform}</span></div><div class="goal-pct">${pct}%</div></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><div class="goal-stats"><div class="stat"><div class="stat-val">${fmt(g.current)}</div><div class="stat-label">Actuales</div></div><div class="stat"><div class="stat-val">${fmt(g.target)}</div><div class="stat-label">Meta</div></div><div class="stat"><div class="stat-val">${fmt(Math.max(0,g.target-g.current))}</div><div class="stat-label">Restantes</div></div></div></div>`;
-  document.getElementById('goals-list').innerHTML=data.map(g=>{ let p=Math.min(100,Math.round(g.current/g.target*100)); return `<div class="goal-card"><div class="goal-top"><div class="goal-song">${g.song}<span>${fmt(g.target)} · ${g.platform}</span></div><div class="goal-pct">${p}%</div></div><div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div><div class="goal-stats"><div class="stat"><div class="stat-val">${fmt(g.current)}</div><div class="stat-label">Actuales</div></div><div class="stat"><div class="stat-val">${fmt(g.target)}</div><div class="stat-label">Meta</div></div><div class="stat"><div class="stat-val">${fmt(Math.max(0,g.target-g.current))}</div><div class="stat-label">Restantes</div></div></div></div>`; }).join('');
+  if(!data||!data.length){
+    document.getElementById('home-goal-card').innerHTML='<div class="empty"><p>🎯 Sin metas activas</p></div>';
+    document.getElementById('goals-list').innerHTML='<div class="empty"><p>Añade metas desde el panel admin</p></div>';
+    document.getElementById('charts-goals-table').innerHTML='<div class="empty"><p>Sin datos</p></div>';
+    return;
+  }
+  document.getElementById('home-goal-card').innerHTML = buildGoalCard(data[0]);
+  document.getElementById('goals-list').innerHTML = data.map(g => buildGoalCard(g)).join('');
   document.getElementById('charts-goals-table').innerHTML=`<table class="charts-table"><thead><tr><th>#</th><th>Canción</th><th>Streams</th><th>Progreso</th></tr></thead><tbody>${data.map((g,i)=>{ let p=Math.min(100,Math.round(g.current/g.target*100)); return `<tr><td>${i+1}</td><td class="song-name">${g.song}</td><td>${fmt(g.current)}</td><td><span class="chart-badge">${p}% de ${fmt(g.target)}</span></td>`; }).join('')}</tbody></tr>`;
 }
 async function loadPlaylistsPublic(){
@@ -1741,74 +1663,9 @@ async function loadAdminSpotifySongs() {
   if (!data || data.length === 0) { document.getElementById('admin-spotify-songs-list').innerHTML = '<p>No hay canciones aún.</p>'; return; }
   let html = '';
   for (const s of data) {
-    const safeUrl = (s.spotify_url || '').replace(/"/g, '&quot;');
-    const safeTitle = escapeHtml(s.title);
-    html += `
-    <div class="admin-list-item" id="song-row-${s.id}">
-      <div class="ali-info">
-        <div class="ali-name">${safeTitle}</div>
-        <div class="ali-sub">${fmt(s.total_streams)} streams | +${fmt(s.daily_streams)} hoy</div>
-      </div>
-      <div class="ali-actions">
-        <button class="btn btn-sm btn-ghost" onclick="toggleSongEdit(${s.id})">✏️ Editar</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteSpotifySong(${s.id})">✕</button>
-      </div>
-    </div>
-    <div id="song-edit-${s.id}" style="display:none;background:#0d1117;border:1px solid var(--border-dim);border-top:none;border-radius:0 0 10px 10px;padding:1rem;margin-bottom:0.5rem">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.6rem">
-        <div class="form-group" style="grid-column:span 2">
-          <label>Nombre de la canción</label>
-          <input class="input" id="se-title-${s.id}" value="${safeTitle}">
-        </div>
-        <div class="form-group">
-          <label>Total Streams</label>
-          <input class="input input-mono" id="se-streams-${s.id}" value="${s.total_streams || 0}">
-        </div>
-        <div class="form-group">
-          <label>Daily Streams</label>
-          <input class="input input-mono" id="se-daily-${s.id}" value="${s.daily_streams || 0}">
-        </div>
-        <div class="form-group" style="grid-column:span 2">
-          <label>URL Spotify</label>
-          <input class="input" id="se-url-${s.id}" value="${safeUrl}" placeholder="https://open.spotify.com/track/...">
-        </div>
-      </div>
-      <div style="display:flex;gap:0.6rem">
-        <button class="btn btn-sm btn-success" onclick="saveSongEdit(${s.id})">💾 Guardar</button>
-        <button class="btn btn-sm btn-ghost" onclick="toggleSongEdit(${s.id})">Cancelar</button>
-      </div>
-    </div>`;
+    html += `<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${escapeHtml(s.title)}</div><div class="ali-sub">${fmt(s.total_streams)} streams | +${fmt(s.daily_streams)} hoy</div></div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editSpotifySong(${s.id}, '${escapeHtml(s.title).replace(/'/g, "\'")}', ${s.total_streams}, '${(s.spotify_url || '').replace(/'/g, "\'")}')">✏️ Editar</button><button class="btn btn-sm btn-danger" onclick="deleteSpotifySong(${s.id})">✕</button></div></div>`;
   }
   document.getElementById('admin-spotify-songs-list').innerHTML = html;
-}
-
-function toggleSongEdit(id) {
-  const row  = document.getElementById(`song-row-${id}`);
-  const edit = document.getElementById(`song-edit-${id}`);
-  const isOpen = edit.style.display !== 'none';
-  edit.style.display = isOpen ? 'none' : 'block';
-  row.style.borderRadius = isOpen ? '' : '10px 10px 0 0';
-  row.style.borderBottom = isOpen ? '' : 'none';
-}
-
-async function saveSongEdit(id) {
-  const title   = document.getElementById(`se-title-${id}`).value.trim();
-  const streams = parseInt(document.getElementById(`se-streams-${id}`).value.replace(/\D/g,'')) || 0;
-  const daily   = parseInt(document.getElementById(`se-daily-${id}`).value.replace(/\D/g,'')) || 0;
-  const url     = document.getElementById(`se-url-${id}`).value.trim() || null;
-  if (!title) { showToast('El nombre no puede estar vacío', true); return; }
-  const { error } = await sb.from('spotify_songs').update({
-    title, total_streams: streams, daily_streams: daily, spotify_url: url
-  }).eq('id', id);
-  if (error) { showToast('Error: ' + error.message, true); return; }
-  const today = new Date().toISOString().slice(0,10);
-  await sb.from('spotify_snapshots').upsert(
-    { song_id: id, snapshot_date: today, total_streams: streams },
-    { onConflict: 'song_id,snapshot_date' }
-  );
-  showToast(`"${title}" guardado ✅`);
-  await loadAdminSpotifySongs();
-  await loadSpotifySongsPublic();
 }
 async function addSpotifySong() {
   const title = document.getElementById('ns-title').value.trim();
@@ -1826,6 +1683,32 @@ async function addSpotifySong() {
   document.getElementById('ns-title').value = '';
   document.getElementById('ns-streams').value = '';
   document.getElementById('ns-url').value = '';
+  await loadAdminSpotifySongs();
+  await loadSpotifySongsPublic();
+}
+async function editSpotifySong(id, title, currentStreams, currentUrl) {
+  const newStreams = prompt(`Streams totales de "${title}":`, currentStreams);
+  if (newStreams === null) return;
+  const newUrl = prompt(`URL de Spotify (deja vacío para mantener la actual):`, currentUrl);
+  if (newUrl === null) return;
+  const nStreams = parseInt(newStreams.replace(/\D/g,'')) || 0;
+  // Solo actualizar URL si el usuario escribió algo; si está vacío, conservar la existente
+  const nUrl = newUrl.trim() !== '' ? newUrl.trim() : currentUrl;
+
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().slice(0,10);
+  const { data: snap } = await sb.from('spotify_snapshots').select('total_streams').eq('song_id', id).eq('snapshot_date', yesterdayStr).maybeSingle();
+  // Si no hay snapshot de ayer, usar el valor actual como base para daily
+  const oldStreams = snap ? snap.total_streams : currentStreams;
+  const dailyIncrease = (oldStreams && nStreams > oldStreams) ? nStreams - oldStreams : 0;
+
+  const updateData = { total_streams: nStreams, daily_streams: dailyIncrease };
+  if (nUrl) updateData.spotify_url = nUrl;
+
+  await sb.from('spotify_songs').update(updateData).eq('id', id);
+  const today = new Date().toISOString().slice(0,10);
+  await sb.from('spotify_snapshots').upsert({ song_id: id, snapshot_date: today, total_streams: nStreams }, { onConflict: 'song_id,snapshot_date' });
+  showToast(`"${title}" actualizado ✅`);
   await loadAdminSpotifySongs();
   await loadSpotifySongsPublic();
 }
@@ -1996,95 +1879,97 @@ const ENHYPEN_DISCOGRAPHY = [
   { title: "事件的起源 (El Inicio del Caso - Chino)", streams: 106457, daily: 220, spotify_url: "" },
 ]; // { id, title, total_streams, daily_streams }
 
-async function preloadDiscography() {
-  const statusEl = document.getElementById('preload-status');
-  statusEl.textContent = '⏳ Cargando discografía...';
-  const { data: existing } = await sb.from('spotify_songs').select('title');
-  const existingTitles = (existing || []).map(s => s.title.toLowerCase().trim());
-  const { data: sortData } = await sb.from('spotify_songs').select('sort_order').order('sort_order', { ascending: false }).limit(1);
-  let maxSort = (sortData && sortData[0]) ? sortData[0].sort_order : 0;
-  const today = new Date().toISOString().slice(0, 10);
-  let inserted = 0, skipped = 0, errors = 0;
-  for (const song of ENHYPEN_DISCOGRAPHY) {
-    if (existingTitles.includes(song.title.toLowerCase().trim())) { skipped++; continue; }
-    const { data: ins, error } = await sb.from('spotify_songs').insert({
-      title: song.title, total_streams: song.streams || 0, daily_streams: song.daily || 0,
-      spotify_url: song.spotify_url || null, sort_order: ++maxSort
-    }).select('id').single();
-    if (!error && ins) {
-      await sb.from('spotify_snapshots').upsert({ song_id: ins.id, snapshot_date: today, total_streams: song.streams || 0 }, { onConflict: 'song_id,snapshot_date' });
-      inserted++;
-    } else { errors++; }
-  }
-  statusEl.textContent = `✅ ${inserted} canciones cargadas · ${skipped} ya existían${errors ? ` · ${errors} errores` : ''}`;
-  showToast(`Discografía cargada: ${inserted} canciones ✅`);
-  await loadAdminSpotifySongs();
-  await loadSpotifySongsPublic();
+// ========== EXCEL UPLOAD SYSTEM ==========
+let xlParsed = [];
+
+function handleXLDrop(e) {
+  const file = e.dataTransfer.files[0];
+  if (file) handleXLFile(file);
 }
 
-// ========== PASTE TABLE ==========
-let pasteParsed = [];
+function handleXLFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const statusEl = document.getElementById('xl-status');
 
-function processPaste() {
-  const text = document.getElementById('paste-area').value.trim();
-  const statusEl = document.getElementById('paste-status');
-  if (!text) { statusEl.textContent = '⚠️ Pega el contenido primero.'; return; }
-
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-  pasteParsed = [];
-
-  for (const line of lines) {
-    let cols;
-    if (line.includes('|')) {
-      cols = line.split('|').map(c => c.trim()).filter(c => c);
-    } else if (line.includes('\t')) {
-      cols = line.split('\t').map(c => c.trim());
-    } else {
-      cols = line.split(/\s{2,}/).map(c => c.trim());
-    }
-    if (cols.length < 2) continue;
-
-    const title = cols[0].replace(/^\d+\.?\s*/, '').trim();
-    if (!title || title === '---' || title === '-' ||
-        title.toLowerCase().includes('song title') ||
-        title.toLowerCase().includes('title') ||
-        title.toLowerCase() === 'song') continue;
-
-    // Parse numbers — remove all non-digit chars except nothing
-    const streamsRaw = (cols[1] || '').replace(/[^0-9]/g, '');
-    const dailyRaw   = (cols[2] || '').replace(/[^0-9]/g, '');
-    const streams = parseInt(streamsRaw) || 0;
-    const daily   = parseInt(dailyRaw)   || 0;
-
-    if (title && streams > 0) pasteParsed.push({ title, streams, daily });
-  }
-
-  if (!pasteParsed.length) {
-    statusEl.textContent = '⚠️ No se pudo parsear. Formato esperado: Canción | Streams | Daily';
-    document.getElementById('paste-preview').style.display = 'none';
-    document.getElementById('paste-save-btn').style.display = 'none';
+  if (ext !== 'csv' && typeof XLSX === 'undefined') {
+    statusEl.textContent = '❌ La librería Excel no cargó. Intenta refrescar la página o usa un archivo .csv';
     return;
   }
-  // Show save button immediately — don't wait for preview
-  document.getElementById('paste-save-btn').style.display = 'inline-flex';
-  statusEl.textContent = `✅ ${pasteParsed.length} canciones listas — presiona 💾 Guardar`;
-  renderPastePreview(); // preview is optional, runs in background
+
+  statusEl.textContent = '⏳ Leyendo archivo...';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      let rows = [];
+      if (ext === 'csv') {
+        const text = new TextDecoder().decode(e.target.result);
+        rows = text.trim().split('\n').map(l => l.split(',').map(c => c.replace(/^"|"$/g,'').trim()));
+      } else {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      }
+      parseXLRows(rows, file.name);
+    } catch(err) {
+      statusEl.textContent = '❌ Error: ' + err.message;
+    }
+  };
+  reader.onerror = () => { statusEl.textContent = '❌ No se pudo leer el archivo.'; };
+  reader.readAsArrayBuffer(file);
 }
 
-function clearPaste() {
-  document.getElementById('paste-area').value = '';
-  document.getElementById('paste-preview').style.display = 'none';
-  document.getElementById('paste-save-btn').style.display = 'none';
-  document.getElementById('paste-status').textContent = '';
-  document.getElementById('paste-save-status').textContent = '';
-  pasteParsed = [];
+function parseXLRows(rows, filename) {
+  xlParsed = [];
+  // Find header row
+  let dataStart = 0;
+  let titleCol = -1, streamsCol = -1, dailyCol = -1;
+  for (let i = 0; i < Math.min(5, rows.length); i++) {
+    const hrow = rows[i].map(c => String(c).toLowerCase());
+    const tIdx = hrow.findIndex(c => c.includes('song') || c.includes('title') || c.includes('canc'));
+    const sIdx = hrow.findIndex(c => c.includes('stream'));
+    const dIdx = hrow.findIndex(c => c.includes('daily') || c.includes('dia'));
+    if (tIdx >= 0) { titleCol = tIdx; streamsCol = sIdx >= 0 ? sIdx : tIdx+1; dailyCol = dIdx >= 0 ? dIdx : tIdx+2; dataStart = i+1; break; }
+  }
+  // Fallback: detect blank first column
+  if (titleCol < 0) {
+    const r = rows[1] || rows[0] || [];
+    const blank0 = String(r[0]||'').trim() === '';
+    titleCol = blank0 ? 1 : 0; streamsCol = blank0 ? 2 : 1; dailyCol = blank0 ? 3 : 2;
+  }
+
+  for (let i = dataStart; i < rows.length; i++) {
+    const row = rows[i];
+    const title = String(row[titleCol]||'').trim();
+    if (!title || title.toLowerCase() === 'nan' || title.toLowerCase() === 'song title') continue;
+
+    const streamsRaw = String(row[streamsCol]||'0').replace(/[^0-9.]/g,'');
+    let streams = parseFloat(streamsRaw)||0;
+    if (streams < 10000 && streams > 0) streams = Math.round(streams*1000);
+    else streams = Math.round(streams);
+
+    const dailyRaw = String(row[dailyCol]||'0');
+    const dailyF = parseFloat(dailyRaw.replace(/[^0-9.]/g,''))||0;
+    const hasDecimal = dailyRaw.includes('.') && dailyF < 1000 && !dailyRaw.match(/\.0+$/);
+    const daily = hasDecimal ? Math.round(dailyF*1000) : Math.round(dailyF);
+
+    if (streams > 0) xlParsed.push({ title, streams, daily });
+  }
+
+  if (!xlParsed.length) {
+    document.getElementById('xl-status').textContent = '❌ No se encontraron datos. Verifica las columnas: Song Title, Streams, Daily.';
+    return;
+  }
+  renderXLPreview(filename);
 }
 
-async function renderPastePreview() {
+async function renderXLPreview(filename) {
   const { data: dbSongs } = await sb.from('spotify_songs').select('id,title,total_streams');
-  const noMatch = pasteParsed.filter(r => !dbSongs?.find(s => titlesMatch(s.title, r.title))).length;
-  document.getElementById('paste-preview-label').textContent = `${pasteParsed.length} canciones · ${pasteParsed.length - noMatch} actualizarán · ${noMatch} serán nuevas`;
-  document.getElementById('paste-preview-body').innerHTML = pasteParsed.map(r => {
+  const noMatch = xlParsed.filter(r => !dbSongs?.find(s => titlesMatch(s.title, r.title))).length;
+
+  document.getElementById('xl-preview-label').textContent = `📄 ${filename} · ${xlParsed.length} canciones`;
+  document.getElementById('xl-preview-body').innerHTML = xlParsed.map(r => {
     const match = dbSongs?.find(s => titlesMatch(s.title, r.title));
     const st = match
       ? `<span style="color:#1db954;font-size:0.72rem">✅ match</span>`
@@ -2092,192 +1977,56 @@ async function renderPastePreview() {
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
       <td style="padding:0.4rem 0.7rem;font-size:0.77rem;color:var(--text-main)">${escapeHtml(r.title)}</td>
       <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:#1db954;text-align:right">${fmtCompact(r.streams)}</td>
-      <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--text-dim);text-align:right">${r.daily ? '+' + fmtCompact(r.daily) : '—'}</td>
+      <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--text-dim);text-align:right">${r.daily?'+'+fmtCompact(r.daily):'—'}</td>
       <td style="padding:0.4rem 0.7rem;text-align:center">${st}</td>
     </tr>`;
   }).join('');
-  document.getElementById('paste-preview').style.display = 'block';
+
+  document.getElementById('xl-status').textContent = `${xlParsed.length} canciones · ${xlParsed.length-noMatch} actualizarán · ${noMatch} serán nuevas`;
+  document.getElementById('xl-preview').style.display = 'block';
+  document.getElementById('xl-save-btn').style.display = 'inline-flex';
+  document.getElementById('xl-clear-btn').style.display = 'inline-flex';
+  document.getElementById('xl-dropzone').style.borderColor = '#1db954';
 }
 
-async function savePasteData() {
-  if (!pasteParsed.length) return;
-  const statusEl = document.getElementById('paste-save-status');
-  const btn = document.getElementById('paste-save-btn');
+async function saveXLData() {
+  if (!xlParsed.length) return;
+  const btn = document.getElementById('xl-save-btn');
+  const statusEl = document.getElementById('xl-status');
   btn.disabled = true; btn.textContent = '⏳ Guardando...';
-  statusEl.textContent = 'Cargando lista...';
 
-  // 1. Load all DB songs once
-  const { data: dbSongs, error: dbErr } = await sb.from('spotify_songs').select('id,title,sort_order');
-  if (dbErr) {
-    statusEl.textContent = '❌ ' + dbErr.message;
-    btn.disabled = false; btn.textContent = '💾 Guardar en Supabase';
-    return;
+  const { data: dbSongs } = await sb.from('spotify_songs').select('id,title,total_streams,sort_order');
+  const today = new Date().toISOString().slice(0,10);
+  let maxSort = dbSongs?.reduce((m,s)=>Math.max(m,s.sort_order||0),0)||0;
+  let updated=0, inserted=0, errors=0;
+
+  for (const r of xlParsed) {
+    const match = dbSongs?.find(s => titlesMatch(s.title, r.title));
+    if (match) {
+      const {error} = await sb.from('spotify_songs').update({ total_streams:r.streams, daily_streams:r.daily }).eq('id',match.id);
+      if (!error) { await sb.from('spotify_snapshots').upsert({song_id:match.id,snapshot_date:today,total_streams:r.streams},{onConflict:'song_id,snapshot_date'}); updated++; }
+      else errors++;
+    } else {
+      const {data:ins,error} = await sb.from('spotify_songs').insert({title:r.title,total_streams:r.streams,daily_streams:r.daily,spotify_url:null,sort_order:++maxSort}).select('id').single();
+      if (!error&&ins) { await sb.from('spotify_snapshots').upsert({song_id:ins.id,snapshot_date:today,total_streams:r.streams},{onConflict:'song_id,snapshot_date'}); inserted++; }
+      else errors++;
+    }
   }
 
-  let maxSort = dbSongs?.reduce((m, s) => Math.max(m, s.sort_order || 0), 0) || 0;
-
-  // 2. Match all songs in memory
-  const toUpdate = [];
-  const toInsert = [];
-  for (const r of pasteParsed) {
-    const match = dbSongs?.find(s => s.title.toLowerCase().trim() === r.title.toLowerCase().trim())
-      || dbSongs?.find(s => titlesMatch(s.title, r.title));
-    if (match) toUpdate.push({ id: match.id, total_streams: r.streams, daily_streams: r.daily });
-    else toInsert.push({ title: r.title, total_streams: r.streams, daily_streams: r.daily, spotify_url: null, sort_order: ++maxSort });
-  }
-
-  statusEl.textContent = `Guardando ${toUpdate.length} canciones en lotes...`;
-
-  // 3. Batch upsert updates in chunks of 50 parallel
-  let updated = 0, errors = 0;
-  const chunkSize = 50;
-  for (let i = 0; i < toUpdate.length; i += chunkSize) {
-    const chunk = toUpdate.slice(i, i + chunkSize);
-    const results = await Promise.all(
-      chunk.map(r => sb.from('spotify_songs').update({ total_streams: r.total_streams, daily_streams: r.daily_streams }).eq('id', r.id))
-    );
-    results.forEach(({ error }) => error ? errors++ : updated++);
-    statusEl.textContent = `Guardando... ${Math.min(i + chunkSize, toUpdate.length)}/${toUpdate.length}`;
-  }
-
-  // 4. Batch insert new songs
-  let inserted = 0;
-  if (toInsert.length) {
-    const { data: ins, error } = await sb.from('spotify_songs').insert(toInsert).select('id');
-    if (!error) inserted = ins?.length || toInsert.length;
-    else errors += toInsert.length;
-  }
-
-  const msg = `✅ ${updated} actualizadas · ${inserted} nuevas${errors ? ` · ${errors} errores` : ''}`;
-  statusEl.textContent = msg;
-  showToast(msg);
-  btn.disabled = false; btn.textContent = '💾 Guardar en Supabase';
-  await loadAdminSpotifySongs();
-  await loadSpotifySongsPublic();
-}
-
-async function deleteAllSongs() {
-  if (!confirm('⚠️ ¿Eliminar TODAS las canciones? Esto no se puede deshacer.')) return;
-  if (!confirm('¿Segura? Se borrarán canciones y sus snapshots históricos.')) return;
-  const statusEl = document.getElementById('paste-status');
-  statusEl.textContent = '⏳ Eliminando...';
-  const { data } = await sb.from('spotify_songs').select('id');
-  if (data && data.length) {
-    const ids = data.map(s => s.id);
-    await sb.from('spotify_snapshots').delete().in('song_id', ids);
-    await sb.from('spotify_songs').delete().in('id', ids);
-  }
-  pasteParsed = [];
-  statusEl.textContent = '🗑️ Todas las canciones eliminadas.';
-  document.getElementById('paste-preview').style.display = 'none';
-  document.getElementById('paste-area').value = '';
-  document.getElementById('paste-status').textContent = '';
-  showToast('Canciones eliminadas');
+  btn.disabled=false; btn.textContent='💾 Guardar en Supabase';
+  const msg = `✅ ${updated} actualizadas · ${inserted} nuevas${errors?` · ${errors} errores`:''}`;
+  statusEl.textContent = msg; showToast(msg);
   await loadAdminSpotifySongs(); await loadSpotifySongsPublic();
 }
 
-// ========== ALBUMS PASTE TABLE ==========
-let pasteAlbumsParsed = [];
-
-function processAlbumsPaste() {
-  const text = document.getElementById('paste-albums-area').value.trim();
-  const statusEl = document.getElementById('paste-albums-status');
-  if (!text) { statusEl.textContent = '⚠️ Pega el contenido primero.'; return; }
-
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-  pasteAlbumsParsed = [];
-
-  for (const line of lines) {
-    let cols;
-    if (line.includes('|')) {
-      cols = line.split('|').map(c => c.trim()).filter(c => c);
-    } else if (line.includes('\t')) {
-      cols = line.split('\t').map(c => c.trim());
-    } else if (line.includes(';')) {
-      cols = line.split(';').map(c => c.trim());
-    } else {
-      cols = line.split(',').map(c => c.trim());
-    }
-    if (cols.length < 2) continue;
-    const title = cols[0];
-    if (!title || title === '---' || title.toLowerCase().includes('album') || title === '-') continue;
-    const streamsRaw = (cols[1] || '0').replace(/,/g, '').replace(/[^0-9]/g, '');
-    const dailyRaw  = (cols[2] || '0').replace(/,/g, '').replace(/[^0-9]/g, '');
-    const streams = parseInt(streamsRaw) || 0;
-    const daily   = parseInt(dailyRaw)   || 0;
-    if (title && streams > 0) pasteAlbumsParsed.push({ title, streams, daily });
-  }
-
-  if (!pasteAlbumsParsed.length) {
-    statusEl.textContent = '⚠️ No se pudieron parsear álbumes. Verifica el formato.';
-    document.getElementById('paste-albums-preview').style.display = 'none';
-    return;
-  }
-  statusEl.textContent = `✅ ${pasteAlbumsParsed.length} álbumes detectados`;
-  renderAlbumsPastePreview();
-}
-
-async function renderAlbumsPastePreview() {
-  const { data: dbAlbums } = await sb.from('spotify_albums').select('id,title,total_streams');
-  const noMatch = pasteAlbumsParsed.filter(r => !dbAlbums?.find(a => titlesMatch(a.title, r.title))).length;
-  document.getElementById('paste-albums-preview-label').textContent = `${pasteAlbumsParsed.length} álbumes · ${pasteAlbumsParsed.length - noMatch} actualizarán · ${noMatch} serán nuevos`;
-  document.getElementById('paste-albums-preview-body').innerHTML = pasteAlbumsParsed.map(r => {
-    const match = dbAlbums?.find(a => titlesMatch(a.title, r.title));
-    const st = match
-      ? `<span style="color:#1db954;font-size:0.72rem">✅ match</span>`
-      : `<span style="color:var(--primary-red);font-size:0.72rem">⚠ nuevo</span>`;
-    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
-      <td style="padding:0.4rem 0.7rem;font-size:0.77rem;color:var(--text-main)">${escapeHtml(r.title)}</td>
-      <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:#1db954;text-align:right">${fmtCompact(r.streams)}</td>
-      <td style="padding:0.4rem 0.7rem;font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--text-dim);text-align:right">${r.daily ? '+' + fmtCompact(r.daily) : '—'}</td>
-      <td style="padding:0.4rem 0.7rem;text-align:center">${st}</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('paste-albums-preview').style.display = 'block';
-}
-
-async function saveAlbumsPasteData() {
-  if (!pasteAlbumsParsed.length) return;
-  const statusEl = document.getElementById('paste-albums-save-status');
-  statusEl.textContent = '⏳ Guardando...';
-  const { data: dbAlbums } = await sb.from('spotify_albums').select('id,title,total_streams');
-  const today = new Date().toISOString().slice(0, 10);
-  let updated = 0, inserted = 0, errors = 0;
-
-  for (const r of pasteAlbumsParsed) {
-    const match = dbAlbums?.find(a => titlesMatch(a.title, r.title));
-    if (match) {
-      const { error } = await sb.from('spotify_albums').update({ total_streams: r.streams, daily_streams: r.daily }).eq('id', match.id);
-      if (!error) { await sb.from('spotify_album_snapshots').upsert({ album_id: match.id, snapshot_date: today, total_streams: r.streams }, { onConflict: 'album_id,snapshot_date' }); updated++; }
-      else errors++;
-    } else {
-      const { error } = await sb.from('spotify_albums').insert({ title: r.title, total_streams: r.streams, daily_streams: r.daily, spotify_url: null });
-      if (!error) inserted++; else errors++;
-    }
-  }
-
-  const msg = `✅ ${updated} actualizados · ${inserted} nuevos${errors ? ` · ${errors} errores` : ''}`;
-  statusEl.textContent = msg; showToast(msg);
-  await loadAdminAlbums(); await loadSpotifyAlbumsPublic();
-}
-
-async function deleteAllAlbums() {
-  if (!confirm('⚠️ ¿Eliminar TODOS los álbumes? Esto no se puede deshacer.')) return;
-  if (!confirm('¿Segura? Se borrarán álbumes y sus snapshots.')) return;
-  const statusEl = document.getElementById('paste-albums-status');
-  statusEl.textContent = '⏳ Eliminando...';
-  const { data } = await sb.from('spotify_albums').select('id');
-  if (data && data.length) {
-    const ids = data.map(a => a.id);
-    await sb.from('spotify_album_snapshots').delete().in('album_id', ids);
-    await sb.from('spotify_albums').delete().in('id', ids);
-  }
-  pasteAlbumsParsed = [];
-  statusEl.textContent = '🗑️ Todos los álbumes eliminados.';
-  document.getElementById('paste-albums-preview').style.display = 'none';
-  document.getElementById('paste-albums-area').value = '';
-  showToast('Álbumes eliminados');
-  await loadAdminAlbums(); await loadSpotifyAlbumsPublic();
+function clearXL() {
+  xlParsed=[];
+  document.getElementById('xl-preview').style.display='none';
+  document.getElementById('xl-save-btn').style.display='none';
+  document.getElementById('xl-clear-btn').style.display='none';
+  document.getElementById('xl-status').textContent='';
+  document.getElementById('xl-dropzone').style.borderColor='';
+  document.getElementById('xl-file-input').value='';
 }
 
 // ========== ALBUMS ==========
@@ -2337,89 +2086,17 @@ async function loadSpotifyAlbumsPublic() {
 }
 
 async function loadAdminAlbums() {
-  const { data, error } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
+  const { data } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
   const container = document.getElementById('admin-albums-list');
   if (!container) return;
-  if (error) { container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">⚠️ Tabla spotify_albums no encontrada.</p>'; return; }
   if (!data || data.length === 0) { container.innerHTML = '<p style="color:var(--text-muted)">No hay álbumes. Usa "Precargar discografía".</p>'; return; }
-  container.innerHTML = data.map(a => `
-    <div class="admin-list-item" id="alb-row-${a.id}">
-      <div class="ali-info">
-        <div class="ali-name">${escapeHtml(a.title)}</div>
-        <div class="ali-sub">${fmt(a.total_streams)} streams | +${fmt(a.daily_streams)} hoy | ${a.year||''}</div>
-      </div>
-      <div class="ali-actions">
-        <button class="btn btn-sm btn-ghost" onclick="toggleAlbumEdit(${a.id})">✏️ Editar</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteAlbum(${a.id})">✕</button>
-      </div>
-    </div>
-    <div id="alb-edit-${a.id}" style="display:none;background:#0d1117;border:1px solid var(--border-dim);border-top:none;border-radius:0 0 10px 10px;padding:1rem;margin-bottom:0.5rem">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.6rem">
-        <div class="form-group" style="grid-column:span 2">
-          <label>Nombre del álbum</label>
-          <input class="input" id="ae-title-${a.id}" value="${escapeHtml(a.title)}">
-        </div>
-        <div class="form-group">
-          <label>Total Streams</label>
-          <input class="input input-mono" id="ae-streams-${a.id}" value="${a.total_streams||0}">
-        </div>
-        <div class="form-group">
-          <label>Daily Streams</label>
-          <input class="input input-mono" id="ae-daily-${a.id}" value="${a.daily_streams||0}">
-        </div>
-        <div class="form-group">
-          <label>Año</label>
-          <input class="input input-mono" id="ae-year-${a.id}" value="${a.year||''}">
-        </div>
-        <div class="form-group">
-          <label>URL Spotify</label>
-          <input class="input" id="ae-url-${a.id}" value="${a.spotify_url||''}" placeholder="https://open.spotify.com/album/...">
-        </div>
-      </div>
-      <div style="display:flex;gap:0.6rem">
-        <button class="btn btn-sm btn-success" onclick="saveAlbumEdit(${a.id})">💾 Guardar</button>
-        <button class="btn btn-sm btn-ghost" onclick="toggleAlbumEdit(${a.id})">Cancelar</button>
-      </div>
-    </div>`).join('');
-}
-
-function toggleAlbumEdit(id) {
-  const row = document.getElementById(`alb-row-${id}`);
-  const edit = document.getElementById(`alb-edit-${id}`);
-  const isOpen = edit.style.display !== 'none';
-  edit.style.display = isOpen ? 'none' : 'block';
-  if (!isOpen) {
-    row.style.borderRadius = '10px 10px 0 0';
-    row.style.borderBottom = 'none';
-  } else {
-    row.style.borderRadius = '';
-    row.style.borderBottom = '';
-  }
-}
-
-async function saveAlbumEdit(id) {
-  const title    = document.getElementById(`ae-title-${id}`).value.trim();
-  const streams  = parseInt(document.getElementById(`ae-streams-${id}`).value.replace(/\D/g,'')) || 0;
-  const daily    = parseInt(document.getElementById(`ae-daily-${id}`).value.replace(/\D/g,'')) || 0;
-  const year     = parseInt(document.getElementById(`ae-year-${id}`).value) || null;
-  const url      = document.getElementById(`ae-url-${id}`).value.trim() || null;
-  if (!title) { showToast('El nombre no puede estar vacío', true); return; }
-  const { error } = await sb.from('spotify_albums').update({
-    title, total_streams: streams, daily_streams: daily, year, spotify_url: url
-  }).eq('id', id);
-  if (error) { showToast('Error: ' + error.message, true); return; }
-  const today = new Date().toISOString().slice(0,10);
-  await sb.from('spotify_album_snapshots').upsert({ album_id: id, snapshot_date: today, total_streams: streams }, { onConflict: 'album_id,snapshot_date' });
-  showToast(`"${title}" guardado ✅`);
-  await loadAdminAlbums();
-  await loadSpotifyAlbumsPublic();
+  container.innerHTML = data.map(a => `<div class="admin-list-item"><div class="ali-info"><div class="ali-name">${escapeHtml(a.title)}</div><div class="ali-sub">${fmt(a.total_streams)} streams | +${fmt(a.daily_streams)} hoy | ${a.year||''}</div></div><div class="ali-actions"><button class="btn btn-sm btn-danger" onclick="deleteAlbum(${a.id})">✕</button></div></div>`).join('');
 }
 
 async function loadBulkAlbumsList() {
   const container = document.getElementById('bulk-albums-list');
   if (!container) return;
-  const { data, error } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
-  if (error) { container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">⚠️ Tabla spotify_albums no encontrada. Primero precarga los álbumes.</p>'; return; }
+  const { data } = await sb.from('spotify_albums').select('*').order('total_streams', { ascending: false });
   if (!data || data.length === 0) { container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">No hay álbumes. Primero precarga la discografía.</p>'; return; }
   let html = '<div style="display:grid;gap:0.5rem">';
   data.forEach(a => {
@@ -2667,91 +2344,61 @@ async function deleteYTVideo(id){ if(!confirm('¿Eliminar video?')) return; awai
 
 // ========== ADMIN DATA LOAD (unificado) ==========
 async function loadAdminData(){
-  // Wrap every section independently so one failure doesn't break the rest
-  try { updateAdminYTStatus(); } catch(e){}
-  try { await loadAdminProfile(); } catch(e){}
-  try { await loadBulkUpdateList(); } catch(e){}
-  try { await loadAdminAlbums(); } catch(e){}
-  try { await loadBulkAlbumsList(); } catch(e){}
-
-  // ── Goals ──
-  try {
-    const {data:goals, error:ge} = await sb.from('goals').select('*').order('sort_order');
-    if(ge) throw ge;
-    document.getElementById('admin-goals-list').innerHTML = goals&&goals.length
-      ? goals.map(g=>`<div class="admin-list-item">
-          <div class="ali-info">
-            <div class="ali-name">${g.song}</div>
-            <div class="ali-sub">${fmt(g.current)} / ${fmt(g.target)} · ${g.platform}</div>
-          </div>
-          <div class="pct-badge">${Math.min(100,Math.round(g.current/g.target*100))}%</div>
-          <div class="ali-actions">
-            <button class="btn btn-sm btn-ghost" onclick="editGoal(${g.id},'${g.song.replace(/'/g,"\'")}',${g.current},${g.target})">✏️</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteGoal(${g.id})">✕</button>
-          </div>
-        </div>`).join('')
-      : '<p style="color:var(--text-muted)">Sin metas aún</p>';
-  } catch(e){ console.error('Goals admin error:',e); }
-
-  // ── Playlists ──
-  try {
-    const {data:playlists, error:pe} = await sb.from('playlists').select('*').order('sort_order');
-    if(pe) throw pe;
-    document.getElementById('admin-playlists-list').innerHTML = playlists&&playlists.length
-      ? playlists.map(p=>`<div class="admin-list-item">
-          <div>${p.icon||'🎵'}</div>
-          <div class="ali-info">
-            <div class="ali-name">${p.name}</div>
-            <div class="ali-sub">${p.description||''} · ${p.platform}</div>
-          </div>
-          <div class="ali-actions">
-            <button class="btn btn-sm btn-ghost" onclick="editPlaylist(${p.id},'${p.name.replace(/'/g,"\'")}','${(p.description||'').replace(/'/g,"\'")}','${p.url||''}','${p.platform}')">✏️</button>
-            <button class="btn btn-sm btn-danger" onclick="deletePlaylist(${p.id})">✕</button>
-          </div>
-        </div>`).join('')
-      : '<p style="color:var(--text-muted)">Sin playlists aún</p>';
-  } catch(e){ console.error('Playlists admin error:',e); }
-
-  // ── Config ──
-  try {
-    const {data:cfg} = await sb.from('site_config').select('*');
-    if(cfg){
-      cfg.forEach(r=>{ const el=document.getElementById('cfg-'+r.key); if(el) el.value=r.value||''; });
-      const get = key => cfg.find(c=>c.key===key)?.value;
-      if(document.getElementById('yt-subs')) document.getElementById('yt-subs').value=get('yt_subs')||'17600000';
-      if(document.getElementById('yt-views')) document.getElementById('yt-views').value=get('yt_views')||'3200000000';
-      if(document.getElementById('yt-subs-daily')) document.getElementById('yt-subs-daily').value=get('yt_subs_daily')||'100000';
-      if(document.getElementById('yt-views-daily')) document.getElementById('yt-views-daily').value=get('yt_views_daily')||'3200000';
-    }
-  } catch(e){ console.error('Config admin error:',e); }
-
-  // ── Videos / Spotify / Charts ──
-  try { await loadAdminVideos(); } catch(e){ console.error('Admin videos error:',e); }
-  try { await loadAdminSpotifySongs(); } catch(e){ console.error('Admin spotify error:',e); }
-  try { await loadAdminSpCharts(); } catch(e){ console.error('Admin charts error:',e); }
-
-  // ── Images ──
-  try {
-    const {data:images, error:ie} = await sb.from('images').select('*').order('created_at',{ascending:false});
-    if(ie) throw ie;
-    document.getElementById('admin-images-grid').innerHTML = images && images.length
-      ? images.map(img=>`
-          <div style="position:relative;border-radius:12px;overflow:hidden;background:var(--bg-elevated);border:1px solid var(--border-dim)">
-            <img src="${img.url}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" onerror="this.style.display='none'">
-            <div style="padding:0.5rem 0.6rem;font-size:0.7rem;color:var(--text-dim);line-height:1.4">
-              <div style="font-weight:600;color:var(--text-main)">${img.author_name||'Admin'}</div>
-              ${img.caption?`<div style="color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${img.caption}</div>`:''}
-              <div style="color:var(--text-muted);margin-top:2px">❤️ ${img.likes||0}</div>
-            </div>
-            <button onclick="deleteImage('${img.id}')" style="position:absolute;top:0.4rem;right:0.4rem;background:rgba(180,0,0,0.88);border:none;color:#fff;border-radius:6px;padding:0.25rem 0.6rem;font-size:0.72rem;cursor:pointer;font-weight:600">🗑️</button>
-          </div>`).join('')
-      : '<p style="color:var(--text-muted);font-size:0.82rem;grid-column:1/-1">Sin publicaciones aún</p>';
-  } catch(e){ console.error('Images admin error:',e); document.getElementById('admin-images-grid').innerHTML='<p style="color:var(--text-muted)">Error al cargar imágenes</p>'; }
+  updateAdminYTStatus();
+  await loadAdminProfile();
+  await loadBulkUpdateList();
+  await loadAdminAlbums();
+  await loadBulkAlbumsList();
+  let {data:goals}=await sb.from('goals').select('*').order('sort_order');
+  document.getElementById('admin-goals-list').innerHTML=goals&&goals.length?goals.map(g=>`<div class="admin-list-item">${g.img_url?`<img src="${g.img_url}" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid var(--border-dim)" onerror="this.style.display='none'">`:'<div style="width:44px;height:44px;border-radius:10px;background:var(--bg-elevated);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🎯</div>'}<div class="ali-info"><div class="ali-name">${g.song}</div><div class="ali-sub">${fmt(g.current)} / ${fmt(g.target)} · ${g.platform}</div></div><div class="pct-badge">${Math.min(100,Math.round(g.current/g.target*100))}%</div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editGoal(${g.id},'${g.song.replace(/'/g,"\\'")}',${g.current},${g.target},'${(g.img_url||'').replace(/'/g,"\\'")}')">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteGoal(${g.id})">✕</button></div></div>`).join(''):'<p>Sin metas</p>';
+  let {data:playlists}=await sb.from('playlists').select('*').order('sort_order');
+  document.getElementById('admin-playlists-list').innerHTML=playlists&&playlists.length?playlists.map(p=>`<div class="admin-list-item"><div>${p.icon||'🎵'}</div><div class="ali-info"><div class="ali-name">${p.name}</div><div class="ali-sub">${p.description||''} · ${p.platform}</div></div><div class="ali-actions"><button class="btn btn-sm btn-ghost" onclick="editPlaylist(${p.id},'${p.name.replace(/'/g,"\\'")}','${(p.description||'').replace(/'/g,"\\'")}','${p.url||''}','${p.platform}')">✏️</button><button class="btn btn-sm btn-danger" onclick="deletePlaylist(${p.id})">✕</button></div></div>`).join(''):'<p>Sin playlists</p>';
+  let {data:cfg}=await sb.from('site_config').select('*');
+  if(cfg){
+    cfg.forEach(r=>{ let el=document.getElementById('cfg-'+r.key); if(el) el.value=r.value||''; });
+    document.getElementById('yt-subs').value=cfg.find(c=>c.key==='yt_subs')?.value||'17600000';
+    document.getElementById('yt-views').value=cfg.find(c=>c.key==='yt_views')?.value||'3200000000';
+    document.getElementById('yt-subs-daily').value=cfg.find(c=>c.key==='yt_subs_daily')?.value||'100000';
+    document.getElementById('yt-views-daily').value=cfg.find(c=>c.key==='yt_views_daily')?.value||'3200000';
+  }
+  await loadAdminVideos();
+  await loadAdminSpotifySongs();
+  await loadAdminSpCharts();
+  let {data:images}=await sb.from('images').select('*').order('sort_order');
+  document.getElementById('admin-images-grid').innerHTML=images&&images.length?images.map(img=>`<div class="img-item"><img src="${img.url}" onerror="this.parentElement.style.display='none'"><button class="img-del" onclick="deleteImage(${img.id})">✕</button></div>`).join(''):'<p>Sin imágenes</p>';
 }
 
 // ========== CRUD METAS, PLAYLISTS, IMÁGENES (igual que tenías) ==========
-async function addGoal(){ let song=document.getElementById('ng-song').value.trim(); let current=parseInt(document.getElementById('ng-current').value.replace(/\D/g,''))||0; let target=parseInt(document.getElementById('ng-target').value.replace(/\D/g,''))||0; let platform=document.getElementById('ng-platform').value; if(!song||!target){ showToast('Completa los campos',true); return; } let {data:exist}=await sb.from('goals').select('sort_order').order('sort_order',{ascending:false}).limit(1); let sort=exist&&exist[0]?exist[0].sort_order+1:1; await sb.from('goals').insert({song,current,target,platform,sort_order:sort}); showToast('Meta agregada'); document.getElementById('ng-song').value=''; document.getElementById('ng-current').value=''; document.getElementById('ng-target').value=''; await loadAdminData(); await loadGoalsPublic(); }
-function editGoal(id,song,current,target){ let n=prompt(`Nuevos streams para "${song}"`,current); if(n===null) return; let val=parseInt(n.replace(/\D/g,'')); if(isNaN(val)){ showToast('Número inválido',true); return; } sb.from('goals').update({current:val}).eq('id',id).then(async()=>{ showToast('Actualizado'); await loadAdminData(); await loadGoalsPublic(); }); }
+async function addGoal(){
+  let song=document.getElementById('ng-song').value.trim();
+  let img_url=document.getElementById('ng-img').value.trim()||null;
+  let current=parseInt(document.getElementById('ng-current').value.replace(/\D/g,''))||0;
+  let target=parseInt(document.getElementById('ng-target').value.replace(/\D/g,''))||0;
+  let platform=document.getElementById('ng-platform').value;
+  if(!song||!target){ showToast('Completa los campos',true); return; }
+  let {data:exist}=await sb.from('goals').select('sort_order').order('sort_order',{ascending:false}).limit(1);
+  let sort=exist&&exist[0]?exist[0].sort_order+1:1;
+  await sb.from('goals').insert({song,current,target,platform,sort_order:sort,img_url});
+  showToast('Meta agregada');
+  document.getElementById('ng-song').value='';
+  document.getElementById('ng-img').value='';
+  document.getElementById('ng-current').value='';
+  document.getElementById('ng-target').value='';
+  await loadAdminData(); await loadGoalsPublic();
+}
+async function editGoal(id, song, current, target, imgUrl){
+  const n = prompt(`Nuevos streams actuales para "${song}":`, current);
+  if(n===null) return;
+  const val = parseInt(n.replace(/\D/g,''));
+  if(isNaN(val)){ showToast('Número inválido',true); return; }
+  const newImg = prompt('URL de imagen (deja vacío para no cambiar):', imgUrl||'');
+  if(newImg===null) return;
+  const updates = { current: val };
+  if(newImg.trim()) updates.img_url = newImg.trim();
+  await sb.from('goals').update(updates).eq('id',id);
+  showToast('Actualizado');
+  await loadAdminData(); await loadGoalsPublic();
+}
 async function deleteGoal(id){ if(confirm('¿Eliminar meta?')){ await sb.from('goals').delete().eq('id',id); showToast('Meta eliminada'); await loadAdminData(); await loadGoalsPublic(); } }
 async function addPlaylist(){ let name=document.getElementById('np-name').value.trim(); let description=document.getElementById('np-desc').value.trim(); let url=document.getElementById('np-url').value.trim(); let platform=document.getElementById('np-platform').value; let icon=document.getElementById('np-icon').value.trim()||platformIcon(platform); if(!name){ showToast('Nombre requerido',true); return; } let {data:exist}=await sb.from('playlists').select('sort_order').order('sort_order',{ascending:false}).limit(1); let sort=exist&&exist[0]?exist[0].sort_order+1:1; await sb.from('playlists').insert({name,description,url,platform,icon,sort_order:sort}); showToast('Playlist agregada'); document.getElementById('np-name').value=''; document.getElementById('np-desc').value=''; document.getElementById('np-url').value=''; document.getElementById('np-icon').value=''; await loadAdminData(); await loadPlaylistsPublic(); }
 function editPlaylist(id,name,desc,url,platform){ let newUrl=prompt(`Editar URL de "${name}"`,url); if(newUrl===null) return; sb.from('playlists').update({url:newUrl}).eq('id',id).then(async()=>{ showToast('Playlist actualizada'); await loadAdminData(); await loadPlaylistsPublic(); }); }
@@ -2797,9 +2444,7 @@ async function addImage(){
       if (r.key === 'admin_profile_initials') authorInitials = r.value;
     });
   } catch(e) {}
-  let nextSort = 1;
-  try { const {data:li}=await sb.from('images').select('sort_order').order('sort_order',{ascending:false}).limit(1); if(li&&li[0]) nextSort=(li[0].sort_order||0)+1; } catch(e){}
-  const { error: imgErr } = await sb.from('images').insert({ url, caption: caption || null, author_name: authorName, author_initials: authorInitials, sort_order: nextSort, likes: 0 });
+  const { error: imgErr } = await sb.from('images').insert({ url, caption: caption || null, author_name: authorName, author_initials: authorInitials, sort_order: Math.floor(Date.now() / 1000) });
   if (imgErr) {
     console.error('Insert error:', imgErr);
     showToast('Error: ' + (imgErr.message || 'fallo al guardar'), true);
@@ -2811,16 +2456,7 @@ async function addImage(){
   await loadAdminData();
   await loadGalleryPublic();
 }
-async function deleteImage(id){
-  if (!id) { showToast('ID no válido', true); return; }
-  if (!confirm('¿Eliminar esta imagen?')) return;
-  const { error } = await sb.from('images').delete().eq('id', id);
-  if (error) { showToast('Error: ' + error.message, true); console.error(error); return; }
-  showToast('Imagen eliminada ✅');
-  document.getElementById('post-modal-overlay')?.classList.remove('open');
-  await loadAdminData();
-  await loadGalleryPublic();
-}
+async function deleteImage(id){ if(confirm('¿Eliminar imagen?')){ await sb.from('images').delete().eq('id',id); showToast('Imagen eliminada'); await loadAdminData(); await loadGalleryPublic(); } }
 
 // ========== SPOTIFY CHARTS (público) ==========
 let spCurrentType = 'daily-songs';
@@ -2867,10 +2503,7 @@ async function loadSpChartsPublic() {
     document.getElementById('spTableTitle').innerHTML = `${title} <span class="sp-count-badge">${count} item${count !== 1 ? 's' : ''}</span>`;
     const now = new Date();
     document.getElementById('spUpdatedTime').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    if (error) {
-      wrap.innerHTML = `<div class="sp-empty">⚠️ Tabla sp_charts no creada aún. Créala en Supabase con el SQL del setup.</div>`;
-      return;
-    }
+    if (error) throw error;
     if (!data || data.length === 0) {
       wrap.innerHTML = `<div class="sp-empty">Sin entradas para esta combinación.<br><span style="font-size:0.7rem">El admin puede agregar posiciones desde el panel ⚙️</span></div>`;
       return;
@@ -2931,11 +2564,7 @@ async function loadSpChartsPublic() {
 async function loadAdminSpCharts() {
   const container = document.getElementById('admin-sp-charts-list');
   if (!container) return;
-  const { data, error } = await sb.from('sp_charts').select('*').order('chart_type').order('region').order('rank_position');
-  if (error) {
-    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">⚠️ Tabla sp_charts no encontrada. Créala en Supabase con el SQL del setup.</p>';
-    return;
-  }
+  const { data } = await sb.from('sp_charts').select('*').order('chart_type').order('region').order('rank_position');
   if (!data || data.length === 0) {
     container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">No hay entradas aún. Agrega posiciones de ENHYPEN desde el formulario de abajo.</p>';
     return;
@@ -3010,7 +2639,7 @@ function closeAdmin(){ document.getElementById('admin-panel').classList.remove('
 function showPage(id,el){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active')); if(el) el.classList.add('active'); document.getElementById('nav-links').classList.remove('open'); window.scrollTo(0,0); }
 function toggleMobileNav(){ document.getElementById('nav-links').classList.toggle('open'); }
 function switchChartTab(id,el){ document.querySelectorAll('#charts .tabs .tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.getElementById('spotify-chart').style.display=id==='spotify-chart'?'block':'none'; document.getElementById('yt-chart').style.display=id==='yt-chart'?'block':'none'; document.getElementById('apple-chart').style.display=id==='apple-chart'?'block':'none'; }
-function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id==='tab-apple') loadAdminAppleSongs(); }
+function switchAdminTab(id,el){ document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
 // ========== KWORB ARTIST CHART ==========
 const KWORB_ARTIST_SLUG = 'enhypen';
@@ -3360,7 +2989,7 @@ document.addEventListener('keydown', e => {
 async function loadGalleryPublic() {
   const grid = document.getElementById('gallery-grid');
   if (!grid) return;
-  const { data } = await sb.from('images').select('*').order('created_at', { ascending: false });
+  const { data } = await sb.from('images').select('*').order('sort_order', { ascending: false });
   if (!data || !data.length) { grid.innerHTML = '<div class="empty"><p>📸 Sin imágenes aún</p></div>'; return; }
   pmData = data;
   grid.innerHTML = data.map((img, idx) => {
@@ -3396,153 +3025,7 @@ async function loadGalleryPublic() {
   }).join('');
 }
 
-// ========== APPLE MUSIC (Manual via Supabase) ==========
-const APPLE_CACHE_KEY = 'enhypen_apple_cache';
-const APPLE_CACHE_TTL = 10 * 60 * 1000;
-
-async function loadAppleMusic(forceRefresh = false) {
-  const btn = document.getElementById('apple-refresh-btn');
-  if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
-
-  try {
-    // Load reach data from site_config
-    const { data: cfg } = await sb.from('site_config').select('key,value')
-      .in('key', ['am_peak','am_countries']);
-    let peak = null, countries = null;
-    if (cfg) cfg.forEach(r => {
-      if (r.key === 'am_peak') peak = r.value;
-      if (r.key === 'am_countries') countries = r.value;
-    });
-
-    // Load songs from apple_charts table
-    const { data: songs, error } = await sb.from('apple_charts')
-      .select('*').order('rank_position', { ascending: true });
-
-    renderAppleArtistReach(peak, countries);
-
-    if (error) {
-      document.getElementById('apple-top-songs').innerHTML =
-        `<div class="apple-empty">⚠️ Crea la tabla <code>apple_charts</code> en Supabase.<br>
-        <span style="font-size:0.72rem">${error.message}</span></div>`;
-    } else {
-      renderAppleTopSongs(songs || []);
-    }
-
-    const now = new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
-    document.getElementById('apple-updated').textContent = `Actualizado · ${now}`;
-
-    // Prefill admin fields
-    const elP = document.getElementById('am-peak');
-    const elC = document.getElementById('am-countries');
-    if (elP && peak) elP.value = peak;
-    if (elC && countries) elC.value = countries;
-
-  } catch(e) {
-    document.getElementById('apple-artist-reach').innerHTML =
-      `<div class="apple-error"><strong>⚠ Error</strong><br>${e.message}</div>`;
-    document.getElementById('apple-top-songs').innerHTML = '';
-  }
-
-  if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
-}
-
-async function saveAppleReach() {
-  const peak = document.getElementById('am-peak').value.trim();
-  const countries = document.getElementById('am-countries').value.trim();
-  if (!peak && !countries) { showToast('Escribe al menos un valor', true); return; }
-  if (peak) await sb.from('site_config').upsert({ key: 'am_peak', value: peak });
-  if (countries) await sb.from('site_config').upsert({ key: 'am_countries', value: countries });
-  showToast('Apple Music Reach guardado ✅');
-  await loadAppleMusic(true);
-}
-
-async function loadAdminAppleSongs() {
-  const { data } = await sb.from('apple_charts').select('*').order('rank_position', { ascending: true });
-  const list = document.getElementById('am-songs-list');
-  if (!list) return;
-  if (!data || !data.length) { list.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">Sin canciones aún</p>'; return; }
-  list.innerHTML = data.map(s => `
-    <div class="admin-list-item">
-      <div class="ali-info">
-        <div class="ali-name">#${s.rank_position} · ${escapeHtml(s.song_title)}</div>
-        <div class="ali-sub">${escapeHtml(s.artist_name||'')} · ${escapeHtml(s.charts||'')} · 🌍 ${s.countries_count||0}</div>
-      </div>
-      <button class="btn btn-sm btn-danger" onclick="deleteAppleSong(${s.id})">✕</button>
-    </div>`).join('');
-}
-
-async function addAppleSong() {
-  const rank = parseInt(document.getElementById('am-rank').value) || 0;
-  const song = document.getElementById('am-song').value.trim();
-  const artist = document.getElementById('am-artist').value.trim();
-  const charts = document.getElementById('am-charts').value.trim();
-  const countriesCount = parseInt(document.getElementById('am-countries-count').value) || 0;
-  if (!song || !rank) { showToast('Rank y canción son requeridos', true); return; }
-  const { error } = await sb.from('apple_charts').insert({
-    rank_position: rank, song_title: song, artist_name: artist,
-    charts, countries_count: countriesCount
-  });
-  if (error) { showToast('Error: ' + error.message, true); return; }
-  document.getElementById('am-rank').value = '';
-  document.getElementById('am-song').value = '';
-  document.getElementById('am-artist').value = '';
-  document.getElementById('am-charts').value = '';
-  document.getElementById('am-countries-count').value = '';
-  showToast('Canción agregada ✅');
-  await loadAdminAppleSongs();
-  await loadAppleMusic(true);
-}
-
-async function deleteAppleSong(id) {
-  if (!confirm('¿Eliminar esta canción?')) return;
-  await sb.from('apple_charts').delete().eq('id', id);
-  showToast('Eliminada');
-  await loadAdminAppleSongs();
-  await loadAppleMusic(true);
-}
-
-function renderAppleArtistReach(peak, countries) {
-  const el = document.getElementById('apple-artist-reach');
-  if (!el) return;
-  const peakHtml = peak
-    ? `<div class="apple-reach-value">${peak}</div><div class="apple-reach-sub">▲ Peaked</div>`
-    : `<div class="apple-reach-value" style="font-size:.9rem;color:var(--text-muted)">—</div>`;
-  const countriesHtml = countries
-    ? `<div class="apple-reach-value">${countries}</div><div class="apple-reach-sub">✓ Consistent</div>`
-    : `<div class="apple-reach-value" style="font-size:.9rem;color:var(--text-muted)">—</div>`;
-  el.innerHTML = `
-    <div style="font-size:.8rem;font-weight:700;color:var(--text-dim);margin-bottom:.8rem;text-transform:uppercase;letter-spacing:1px">Artist &amp; Reach</div>
-    <div class="apple-reach-grid">
-      <div class="apple-reach-card"><div class="apple-reach-label">Global Daily Peak</div>${peakHtml}</div>
-      <div class="apple-reach-card"><div class="apple-reach-label">Countries Charted</div>${countriesHtml}</div>
-    </div>`;
-}
-
-function renderAppleTopSongs(songs) {
-  const el = document.getElementById('apple-top-songs');
-  if (!el) return;
-  if (!songs.length) {
-    el.innerHTML = '<div class="apple-empty">Sin canciones aún. Agrégalas desde el panel admin 🍎</div>';
-    return;
-  }
-  el.innerHTML = `
-    <table class="apple-table">
-      <thead><tr><th>RANK</th><th>TRACK / ARTIST</th><th>CHARTS</th><th class="right">COUNTRIES</th></tr></thead>
-      <tbody>${songs.map(s => `
-        <tr>
-          <td><span class="apple-rank">#${s.rank_position}</span></td>
-          <td>
-            <div class="apple-song-name">${escapeHtml(s.song_title)}</div>
-            ${s.artist_name ? `<div class="apple-song-artist">${escapeHtml(s.artist_name)}</div>` : ''}
-          </td>
-          <td>${s.charts ? `<span class="apple-chart-badge">${escapeHtml(s.charts.slice(0,40))}</span>` : '—'}</td>
-          <td class="right"><span class="apple-country-count">${s.countries_count ? `🌍 ${s.countries_count}` : '—'}</span></td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
-}
-
-async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic(), loadSpChartsPublic(), loadGalleryPublic()]); loadKworbArtist(); loadAppleMusic(); }
+async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic(), loadSpChartsPublic(), loadGalleryPublic()]); loadKworbArtist(); }
 loadAll();
 let seq=''; document.addEventListener('keydown',e=>{ seq=(seq+e.key.toLowerCase()).slice(-3); if(seq==='adm'){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; } });
 let tap=0, timer; document.querySelector('.nav-logo').addEventListener('click',()=>{ tap++; clearTimeout(timer); timer=setTimeout(()=>tap=0,600); if(tap>=5){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; tap=0; } });
