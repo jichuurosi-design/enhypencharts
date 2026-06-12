@@ -3192,7 +3192,7 @@ async function saveArtistChartManual() {
   await loadKworbArtist(true);
 }
 // ========== SPOTIFY API (complementa datos manuales) ==========
-const ENHYPEN_SPOTIFY_ID = '5K4W6rqBFWDnAN6FQUkS6x';
+const ENHYPEN_SPOTIFY_ID = '5t5FqBwTcgKTaWmfEbwQY9';
 const SP_TOKEN_CACHE_KEY = 'sp_api_token_v2';
 const SP_TOP_TRACKS_CACHE_KEY = 'sp_top_tracks_v2';
 const SP_SUPABASE_URL = 'https://kwduielzkoxlbwycuxdc.supabase.co/functions/v1/spotify-token';
@@ -3256,7 +3256,8 @@ async function enrichArtistChartWithAPI(manualFollowers) {
   if (manualFollowers) return null;
   const artist = await fetchSpotifyArtistData();
   if (!artist) return null;
-  return { followers: artist.followers?.total, popularity: artist.popularity };
+  const followersTotal = artist.followers?.total ?? artist.followers ?? null;
+    return { followers: followersTotal, popularity: artist.popularity ?? null };
 }
 
 // Renderiza la sección de Top Tracks en la página de Spotify
@@ -3318,7 +3319,9 @@ async function testSpotifyAPI() {
     resultEl.textContent = '✅ Token obtenido!\n⏳ Buscando artista en Spotify API...';
     const artist = await fetchSpotifyArtistData();
     if (!artist) { resultEl.textContent = '✅ Token OK\n❌ Error al obtener datos del artista'; return; }
-    resultEl.textContent = `✅ Conexión exitosa!\n\nArtista: ${artist.name}\nFollowers: ${artist.followers?.total?.toLocaleString()}\nPopularity: ${artist.popularity}/100\nGéneros: ${(artist.genres||[]).join(', ')||'—'}\n\nToken en caché por 55 min.`;
+    const fol = artist.followers?.total ?? artist.followers;
+    const pop = artist.popularity;
+    resultEl.textContent = `✅ Conexión exitosa!\n\nArtista: ${artist.name}\nFollowers: ${fol?.toLocaleString() ?? '—'}\nPopularity: ${pop != null ? pop+'/100' : '—'}\nGéneros: ${(artist.genres||[]).join(', ')||'—'}\n\nToken en caché por 55 min.`;
     showToast('Spotify API conectada ✅');
   } catch(e) {
     resultEl.textContent = '❌ Error: ' + e.message;
