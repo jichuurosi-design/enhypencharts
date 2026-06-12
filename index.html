@@ -1025,6 +1025,15 @@ footer a:hover { color: var(--primary-red); }
 .apple-error{background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.2);border-left:3px solid var(--primary-red);border-radius:0 12px 12px 0;padding:.9rem 1.1rem;font-size:.78rem;color:var(--text-dim);line-height:1.75;}
 .btn-success { background: #1a5c2e !important; color: #fff !important; }
 .btn-success:hover { background: #22733a !important; }
+/* ===== SPOTIFY API TOP TRACKS TABLE ===== */
+.sp-chart-table { width:100%; border-collapse:collapse; }
+.sp-chart-table th { font-family:'Orbitron',monospace; font-size:0.58rem; font-weight:600; text-align:left; padding:0.6rem 0.7rem; color:#1db954; border-bottom:1px solid var(--border-dim); letter-spacing:.8px; }
+.sp-chart-table td { padding:0.65rem 0.7rem; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.8rem; color:var(--text-dim); vertical-align:middle; }
+.sp-chart-table tr:last-child td { border-bottom:none; }
+.sp-chart-table tr:hover td { background:rgba(29,185,84,0.03); }
+.sp-rank-badge { font-family:'Orbitron',monospace; font-size:0.72rem; font-weight:700; color:#1db954; background:rgba(29,185,84,0.12); border:1px solid rgba(29,185,84,0.3); border-radius:6px; padding:.18rem .55rem; display:inline-block; }
+.sp-song-name { font-weight:600; color:#fff; font-size:0.83rem; }
+.sp-artist-name { font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem; }
 </style>
 <body>
 
@@ -1114,9 +1123,25 @@ footer a:hover { color: var(--primary-red); }
         </div>
       </div>
     </div>
-    <div class="section-header"><div class="section-title">Top Canciones - Spotify</div><div class="section-line"></div></div>
+    <!-- Popularity Badge (rellena desde Spotify API) -->
+    <div style="margin-top:0.6rem;margin-bottom:0.2rem">
+      <span id="sp-api-popularity-badge" style="display:none;align-items:center;gap:0.4rem;background:rgba(29,185,84,0.1);border:1px solid rgba(29,185,84,0.3);border-radius:20px;padding:0.25rem 0.8rem;font-size:0.7rem;color:#1db954;font-family:'Orbitron',monospace;font-weight:600"></span>
+    </div>
+    <div class="section-header" style="margin-top:1.2rem"><div class="section-title">Top Canciones - Spotify</div><div class="section-line"></div></div>
     <div id="spotify-songs-table"><div class="loading"><div class="spin"></div><br>Cargando canciones...</div></div>
     <div class="tip-box"><p>📊 Datos actualizados manualmente por el staff. Los streams diarios se calculan automáticamente al actualizar el total.</p></div>
+  </section>
+  <!-- TOP TRACKS DESDE SPOTIFY API (automático) -->
+  <section>
+    <div class="section-header">
+      <div class="section-title">
+        Top Tracks · Spotify API
+        <span style="background:rgba(29,185,84,0.15);border:1px solid rgba(29,185,84,0.35);color:#1db954;font-size:0.62rem;font-family:'Orbitron',monospace;padding:0.15rem 0.6rem;border-radius:20px;margin-left:0.6rem;vertical-align:middle;font-weight:600">AUTO</span>
+      </div>
+      <div class="section-line"></div>
+    </div>
+    <div id="sp-api-top-tracks"><div class="loading"><div class="spin"></div><br>Cargando desde Spotify API...</div></div>
+    <div class="tip-box" style="border-color:rgba(29,185,84,0.2)"><p>🎵 Top 10 canciones de ENHYPEN obtenidas en tiempo real desde Spotify API. El <strong>Popularity Score</strong> (0–100) refleja la popularidad actual en la plataforma.</p></div>
   </section>
   <section>
     <div class="section-header"><div class="section-title">Album / EP Chart</div><div class="section-line"></div></div>
@@ -1360,6 +1385,24 @@ footer a:hover { color: var(--primary-red); }
 
     <!-- Spotify Data -->
     <div class="admin-section" id="tab-spotifydata">
+      <!-- Spotify API Status Card -->
+      <div class="admin-card" style="border-color:rgba(29,185,84,0.4);background:rgba(29,185,84,0.04)">
+        <h3 style="color:#1db954">⚡ Spotify API — Estado</h3>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Datos obtenidos automáticamente de la Spotify Web API. Los Followers se completan solo si no hay valor manual. El Top Tracks se actualiza cada 30 min.</p>
+        <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1rem">
+          <button class="btn" style="background:#1a5c2e" onclick="testSpotifyAPI()">🔍 Probar conexión API</button>
+          <button class="btn btn-ghost" onclick="loadSpotifyTopTracksAPI()">🔄 Recargar Top Tracks</button>
+        </div>
+        <div id="sp-api-test-result" style="font-size:0.78rem;color:var(--text-muted);background:#0d1117;border:1px solid var(--border-dim);border-radius:10px;padding:0.8rem;display:none;font-family:monospace;white-space:pre-wrap"></div>
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.8rem;line-height:1.8">
+          <strong style="color:var(--text-dim)">¿Qué trae la API?</strong><br>
+          ✅ Followers reales (auto-rellena si no hay manual)<br>
+          ✅ Top 10 Tracks con Popularity Score en vivo<br>
+          ❌ Monthly Listeners → sigue siendo manual<br>
+          ❌ Total Streams → sigue siendo manual / calculado<br>
+          ❌ Posiciones en charts → sigue siendo manual
+        </div>
+      </div>
       <!-- Artist Chart Manual -->
       <div class="admin-card" style="border-color:rgba(29,185,84,0.25)">
         <h3 style="color:#1db954">🎧 Artist Chart — Oyentes y Seguidores</h3>
@@ -3096,6 +3139,18 @@ async function loadKworbArtist(forceRefresh = false) {
     } catch(e) {}
   }
 
+  // 3.5 Si no hay followers manual, enriquecer con Spotify API (no bloquea)
+  if (!followers) {
+    enrichArtistChartWithAPI(followers).then(apiData => {
+      if (apiData && apiData.followers) {
+        followers = apiData.followers;
+        renderArtistChart(listeners, followers, totalStreams, totalDaily);
+        const pb = document.getElementById('sp-api-popularity-badge');
+        if (pb && apiData.popularity) { pb.textContent = `D83cDfaf Popularity Score: ${apiData.popularity}/100`; pb.style.display = 'inline-flex'; }
+      }
+    }).catch(() => {});
+  }
+
   // Render inmediato con lo que hay
   renderArtistChart(listeners, followers, totalStreams, totalDaily);
 
@@ -3136,6 +3191,140 @@ async function saveArtistChartManual() {
   showToast('Artist Chart guardado ✅');
   await loadKworbArtist(true);
 }
+// ========== SPOTIFY API (complementa datos manuales) ==========
+const ENHYPEN_SPOTIFY_ID = '5K4W6rqBFWDnAN6FQUkS6x';
+const SP_TOKEN_CACHE_KEY = 'sp_api_token_v2';
+const SP_TOP_TRACKS_CACHE_KEY = 'sp_top_tracks_v2';
+const SP_SUPABASE_URL = 'https://kwduielzkoxlbwycuxdc.supabase.co/functions/v1/spotify-token';
+
+async function getSpotifyToken() {
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(SP_TOKEN_CACHE_KEY) || 'null');
+    if (cached && cached.expires > Date.now()) return cached.token;
+    const res = await fetch(SP_SUPABASE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3ZHVpZWx6a294bGJ3eWN1eGRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjM4MzEsImV4cCI6MjA5NTM5OTgzMX0.lSixP5W3IzHNqyLhuq9NVt_hAtZF9zOAGk-F8tg14p0', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3ZHVpZWx6a294bGJ3eWN1eGRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4MjM4MzEsImV4cCI6MjA5NTM5OTgzMX0.lSixP5W3IzHNqyLhuq9NVt_hAtZF9zOAGk-F8tg14p0' }
+    });
+    if (!res.ok) throw new Error('Edge Function status ' + res.status);
+    const data = await res.json();
+    if (!data.token) throw new Error('No token in response');
+    sessionStorage.setItem(SP_TOKEN_CACHE_KEY, JSON.stringify({ token: data.token, expires: Date.now() + 55 * 60 * 1000 }));
+    return data.token;
+  } catch(e) {
+    console.warn('Spotify token error:', e.message);
+    return null;
+  }
+}
+
+async function fetchSpotifyArtistData() {
+  try {
+    const token = await getSpotifyToken();
+    if (!token) return null;
+    const res = await fetch(`https://api.spotify.com/v1/artists/${ENHYPEN_SPOTIFY_ID}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Spotify API status ' + res.status);
+    return await res.json();
+  } catch(e) {
+    console.warn('Spotify artist fetch error:', e.message);
+    return null;
+  }
+}
+
+async function fetchSpotifyTopTracks() {
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(SP_TOP_TRACKS_CACHE_KEY) || 'null');
+    if (cached && cached.expires > Date.now()) return cached.tracks;
+    const token = await getSpotifyToken();
+    if (!token) return null;
+    const res = await fetch(`https://api.spotify.com/v1/artists/${ENHYPEN_SPOTIFY_ID}/top-tracks?market=US`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Spotify top-tracks status ' + res.status);
+    const { tracks } = await res.json();
+    sessionStorage.setItem(SP_TOP_TRACKS_CACHE_KEY, JSON.stringify({ tracks, expires: Date.now() + 30 * 60 * 1000 }));
+    return tracks;
+  } catch(e) {
+    console.warn('Spotify top tracks error:', e.message);
+    return null;
+  }
+}
+
+// Enriquece el Artist Chart con followers reales si el admin no los seteó manualmente
+async function enrichArtistChartWithAPI(manualFollowers) {
+  // Solo actúa si no hay dato manual
+  if (manualFollowers) return null;
+  const artist = await fetchSpotifyArtistData();
+  if (!artist) return null;
+  return { followers: artist.followers?.total, popularity: artist.popularity };
+}
+
+// Renderiza la sección de Top Tracks en la página de Spotify
+async function loadSpotifyTopTracksAPI() {
+  const container = document.getElementById('sp-api-top-tracks');
+  if (!container) return;
+  container.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  const tracks = await fetchSpotifyTopTracks();
+  if (!tracks || !tracks.length) {
+    container.innerHTML = '<div class="sp-empty" style="font-size:0.78rem;color:var(--text-muted)">⚠️ No se pudo conectar con Spotify API. Verifica que la Edge Function esté desplegada.</div>';
+    return;
+  }
+  const rows = tracks.map((t, i) => {
+    const img = t.album?.images?.[2]?.url || t.album?.images?.[0]?.url || '';
+    const album = t.album?.name || '';
+    const pop = t.popularity || 0;
+    const popColor = pop >= 70 ? '#1db954' : pop >= 40 ? '#eab308' : 'var(--text-muted)';
+    const explicit = t.explicit ? '<span style="background:#333;color:#aaa;font-size:0.58rem;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle">E</span>' : '';
+    const duration = t.duration_ms ? `${Math.floor(t.duration_ms/60000)}:${String(Math.floor((t.duration_ms%60000)/1000)).padStart(2,'0')}` : '—';
+    return `<tr>
+      <td><span class="sp-rank-badge">#${i+1}</span></td>
+      <td>
+        ${img ? `<img src="${img}" style="width:36px;height:36px;border-radius:6px;vertical-align:middle;margin-right:8px;border:1px solid var(--border-dim);flex-shrink:0">` : ''}
+        <div style="display:inline-block;vertical-align:middle">
+          <div class="sp-song-name">${escapeHtml(t.name)}${explicit}</div>
+          <div class="sp-artist-name">${escapeHtml(album)}</div>
+        </div>
+      </td>
+      <td style="text-align:center">
+        <div style="display:inline-flex;align-items:center;gap:4px">
+          <div style="width:40px;height:4px;background:#1a1a1a;border-radius:4px;overflow:hidden"><div style="height:100%;width:${pop}%;background:${popColor};border-radius:4px"></div></div>
+          <span style="font-family:'Orbitron',monospace;font-size:0.7rem;color:${popColor}">${pop}</span>
+        </div>
+      </td>
+      <td style="color:var(--text-muted);font-size:0.78rem">${duration}</td>
+      <td><a href="${t.external_urls?.spotify || '#'}" target="_blank" style="color:#1db954;font-size:0.75rem;text-decoration:none">🎵 Escuchar</a></td>
+    </tr>`;
+  }).join('');
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem">
+      <div class="dot-live" style="width:6px;height:6px;background:#1db954;box-shadow:0 0 8px #1db954"></div>
+      <span style="font-size:0.65rem;color:#1db954;font-family:'Orbitron',monospace;letter-spacing:1px">DATOS EN VIVO · Spotify API</span>
+    </div>
+    <table class="sp-chart-table">
+      <thead><tr><th>RANK</th><th>TRACK / ÁLBUM</th><th style="text-align:center">POPULARITY</th><th>DURACIÓN</th><th>LINK</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ========== SPOTIFY API TEST (admin) ==========
+async function testSpotifyAPI() {
+  const resultEl = document.getElementById('sp-api-test-result');
+  if (!resultEl) return;
+  resultEl.style.display = 'block';
+  resultEl.textContent = '⏳ Conectando con Edge Function...';
+  try {
+    const token = await getSpotifyToken();
+    if (!token) { resultEl.textContent = '❌ No se obtuvo token.\n\nVerifica:\n• Edge Function "spotify-token" desplegada en Supabase\n• Secrets SPOTIFY_CLIENT_ID y SPOTIFY_CLIENT_SECRET seteados'; return; }
+    resultEl.textContent = '✅ Token obtenido!\n⏳ Buscando artista en Spotify API...';
+    const artist = await fetchSpotifyArtistData();
+    if (!artist) { resultEl.textContent = '✅ Token OK\n❌ Error al obtener datos del artista'; return; }
+    resultEl.textContent = `✅ Conexión exitosa!\n\nArtista: ${artist.name}\nFollowers: ${artist.followers?.total?.toLocaleString()}\nPopularity: ${artist.popularity}/100\nGéneros: ${(artist.genres||[]).join(', ')||'—'}\n\nToken en caché por 55 min.`;
+    showToast('Spotify API conectada ✅');
+  } catch(e) {
+    resultEl.textContent = '❌ Error: ' + e.message;
+  }
+}
+
 // ========== THEME SYSTEM ==========
 const THEME_DOTS = { black: 'td-black', white: 'td-white', celeste: 'td-celeste' };
 const THEME_LABELS = { black: 'Black', white: 'White', celeste: 'Celeste' };
@@ -3542,7 +3731,7 @@ function renderAppleTopSongs(songs) {
     </table>`;
 }
 
-async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic(), loadSpChartsPublic(), loadGalleryPublic()]); loadKworbArtist(); loadAppleMusic(); }
+async function loadAll(){ await Promise.all([loadConfig(), loadGoalsPublic(), loadPlaylistsPublic(), loadSpotifySongsPublic(), loadSpotifyAlbumsPublic(), loadYTDataPublic(), loadSpChartsPublic(), loadGalleryPublic()]); loadKworbArtist(); loadAppleMusic(); loadSpotifyTopTracksAPI(); }
 loadAll();
 let seq=''; document.addEventListener('keydown',e=>{ seq=(seq+e.key.toLowerCase()).slice(-3); if(seq==='adm'){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; } });
 let tap=0, timer; document.querySelector('.nav-logo').addEventListener('click',()=>{ tap++; clearTimeout(timer); timer=setTimeout(()=>tap=0,600); if(tap>=5){ document.getElementById('admin-btn').style.display='inline-flex'; document.getElementById('admin-indicator').style.display='flex'; tap=0; } });
